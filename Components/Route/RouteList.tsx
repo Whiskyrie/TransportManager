@@ -32,7 +32,7 @@ const RouteList: React.FC<RouteListProps> = ({
   const renderRouteItem = ({ item }: { item: Route }) => (
     <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
       <View style={styles.routeInfo}>
-        <Text style={styles.routeCode}>{truncateText(item.code, 8)}</Text>
+        <Text style={styles.routeCode}>{truncateText(item.id, 8)}</Text>
         <View
           style={[
             styles.statusBadge,
@@ -59,7 +59,7 @@ const RouteList: React.FC<RouteListProps> = ({
     <FlatList
       data={routes}
       renderItem={renderRouteItem}
-      keyExtractor={(item) => item.code.toString()}
+      keyExtractor={(item) => item.id.toString()}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }

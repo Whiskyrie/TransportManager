@@ -16,10 +16,16 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
           <Text style={styles.detailText}>Status: {route.status}</Text>
           <Text style={styles.detailText}>Distância: {route.distance} km</Text>
           <Text style={styles.detailText}>
-            Início: {route.startLocation.address}
+            Início:{" "}
+            {typeof route.startLocation === "string"
+              ? route.startLocation
+              : route.startLocation.address}
           </Text>
           <Text style={styles.detailText}>
-            Destino: {route.endLocation.address}
+            Destino:{" "}
+            {typeof route.endLocation === "string"
+              ? route.endLocation
+              : route.endLocation.address}
           </Text>
           <Text style={styles.detailText}>
             Duração Estimada: {route.estimatedDuration} min

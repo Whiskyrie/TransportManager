@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import AppHeader from "../Components/Route/AppHeader";
 import CustomButton from "../Components/Route/CustomButton";
-import RouteMap from "../Components/Route/RouteMap";
 import RouteFilter from "../Components/Route/RouteFilter";
 import RouteList from "../Components/Route/RouteList";
 import RouteDetails from "../Components/Route/RouteDetails";
@@ -40,7 +39,10 @@ const formatRoutes = (routes: any[]): Route[] => {
     }
 
     return {
-      ...route,
+      id: route.id,
+      distance: route.distance,
+      estimatedDuration: route.estimatedDuration,
+      status: route.status,
       startLocation,
       endLocation,
     };
@@ -72,6 +74,7 @@ const RoutesListScreen: React.FC = () => {
 
   useEffect(() => {
     fetchRoutes();
+    console.log(routes); // Verifica se 'routes' está correto após a primeira busca
   }, []);
 
   const handleAddRoute = async (newRoute: Partial<Route>) => {
@@ -91,9 +94,10 @@ const RoutesListScreen: React.FC = () => {
     (route) =>
       route &&
       (statusFilter === "All" || route.status === statusFilter) &&
-      route.code && // Verifica se `code` não é `undefined`
-      route.code.includes(searchQuery)
+      route.id && // Verifica se `id` não é `undefined`
+      route.id.includes(searchQuery)
   );
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchRoutes().finally(() => setRefreshing(false));
@@ -101,7 +105,6 @@ const RoutesListScreen: React.FC = () => {
 
   const renderHeader = () => (
     <>
-      <RouteMap routes={filteredRoutes} />
       <RouteFilter
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -149,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
   },
   listContent: {
-    padding: 14,
+    padding: 15,
   },
   errorMessage: {
     color: "red",

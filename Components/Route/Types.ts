@@ -1,6 +1,6 @@
 // File: types.ts
 
-export type RouteStatus = 'Em Progresso' | 'Pendente' | 'Concluído' | 'Cancelado';
+export type RouteStatus = 'Em Progresso' | 'Pendente' | 'Concluído' | 'Cancelada';
 export interface RouteLocation {
     name: string;
     address: string;
