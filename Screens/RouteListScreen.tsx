@@ -9,12 +9,10 @@ import AddRouteDialog from "../Components/Route/AddRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
 
-// Função para converter as strings startLocation e endLocation em objetos
 const formatRoutes = (routes: any[]): Route[] => {
   return routes.map((route) => {
     let startLocation: RouteLocation = { name: "", address: "" };
     let endLocation: RouteLocation = { name: "", address: "" };
-
     if (typeof route.startLocation === "string") {
       try {
         startLocation = JSON.parse(route.startLocation);
@@ -24,20 +22,18 @@ const formatRoutes = (routes: any[]): Route[] => {
           address: route.startLocation,
         };
       }
-    } else {
+    } else if (route.startLocation) {
       startLocation = route.startLocation;
     }
-
     if (typeof route.endLocation === "string") {
       try {
         endLocation = JSON.parse(route.endLocation);
       } catch (e) {
         endLocation = { name: route.endLocation, address: route.endLocation };
       }
-    } else {
+    } else if (route.endLocation) {
       endLocation = route.endLocation;
     }
-
     return {
       id: route.id,
       distance: route.distance,
@@ -74,7 +70,6 @@ const RoutesListScreen: React.FC = () => {
 
   useEffect(() => {
     fetchRoutes();
-    console.log(routes); // Verifica se 'routes' está correto após a primeira busca
   }, []);
 
   const handleAddRoute = async (newRoute: Partial<Route>) => {
@@ -90,13 +85,16 @@ const RoutesListScreen: React.FC = () => {
     }
   };
 
-  const filteredRoutes = routes.filter(
-    (route) =>
-      route &&
-      (statusFilter === "All" || route.status === statusFilter) &&
-      route.id && // Verifica se `id` não é `undefined`
-      route.id.includes(searchQuery)
-  );
+  // Adicione verificação para garantir que `routes` é um array
+  const filteredRoutes = Array.isArray(routes)
+    ? routes.filter(
+        (route) =>
+          route &&
+          (statusFilter === "All" || route.status === statusFilter) &&
+          route.id && // Verifica se `id` não é `undefined`
+          route.id.includes(searchQuery)
+      )
+    : [];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -149,10 +147,9 @@ const RoutesListScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   listContent: {
-    padding: 15,
+    padding: 16,
   },
   errorMessage: {
     color: "red",

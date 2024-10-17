@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { getStatusColor } from "../../Utils/helper";
 
-import { RouteStatus } from '../../Utils/Helper';
+import { RouteStatus } from "../../Utils/helper";
 
 interface ListItemProps {
   title: string;
@@ -10,7 +11,12 @@ interface ListItemProps {
   status?: RouteStatus;
 }
 
-const ListItem: React.FC<ListItemProps> = ({ title, subtitle, onPress, status }) => {
+const ListItem: React.FC<ListItemProps> = ({
+  title,
+  subtitle,
+  onPress,
+  status,
+}) => {
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.container}>
@@ -19,7 +25,12 @@ const ListItem: React.FC<ListItemProps> = ({ title, subtitle, onPress, status })
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         {status && (
-          <View style={[styles.statusIndicator, { backgroundColor: getStatusColor(status) }]}>
+          <View
+            style={[
+              styles.statusIndicator,
+              { backgroundColor: getStatusColor(status) },
+            ]}
+          >
             <Text style={styles.statusText}>{status}</Text>
           </View>
         )}
@@ -30,23 +41,23 @@ const ListItem: React.FC<ListItemProps> = ({ title, subtitle, onPress, status })
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   textContainer: {
     flex: 1,
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
   },
   statusIndicator: {
     paddingHorizontal: 8,
@@ -54,13 +65,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
-
-// Importe a função getStatusColor do seu arquivo de helpers
-import { getStatusColor } from '../../Utils/Helper';
 
 export default ListItem;

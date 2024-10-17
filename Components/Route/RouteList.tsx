@@ -27,33 +27,47 @@ const RouteList: React.FC<RouteListProps> = ({
   ListHeaderComponent,
   contentContainerStyle,
 }) => {
-  console.log("Recebendo rotas para exibir:", routes);
+  console.log("Routes recebidas no RouteList:", routes);
 
-  const renderRouteItem = ({ item }: { item: Route }) => (
-    <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
-      <View style={styles.routeInfo}>
-        <Text style={styles.routeCode}>{truncateText(item.id, 8)}</Text>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(item.status) },
-          ]}
-        >
-          <Text style={styles.statusText}>{item.status}</Text>
+  const renderRouteItem = ({ item }: { item: Route }) => {
+    if (!item || !item.id || !item.startLocation || !item.endLocation) {
+      console.error("Item inválido:", item);
+      return null; // Certifique-se de que o item é válido antes de renderizar
+    }
+    return (
+      <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
+        <View style={styles.routeInfo}>
+          <Text style={styles.routeCode}>{truncateText(item.id, 8)}</Text>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: getStatusColor(item.status) },
+            ]}
+          >
+            <Text style={styles.statusText}>{item.status}</Text>
+          </View>
+        </View>
+        <View style={styles.routeDetails}>
+          <Text>Distância: {item.distance} km</Text>
+          <Text>Duração Estimada: {item.estimatedDuration} min</Text>
+          <Text>
+            De:{" "}
+            {truncateText((item.startLocation as RouteLocation).address, 30)}
+          </Text>
+          <Text>
+            Para:{" "}
+            {truncateText((item.endLocation as RouteLocation).address, 30)}
+          </Text>
         </View>
       </View>
-      <View style={styles.routeDetails}>
-        <Text>Distância: {item.distance} km</Text>
-        <Text>Duração Estimada: {item.estimatedDuration} min</Text>
-        <Text>
-          De: {truncateText((item.startLocation as RouteLocation).address, 30)}
-        </Text>
-        <Text>
-          Para: {truncateText((item.endLocation as RouteLocation).address, 30)}
-        </Text>
-      </View>
-    </View>
-  );
+    );
+  };
+
+  // Verifica se routes é um array válido antes de renderizar a FlatList
+  if (!Array.isArray(routes)) {
+    console.error("Routes não é um array:", routes);
+    return <Text>Erro: Rotas inválidas</Text>;
+  }
 
   return (
     <FlatList
@@ -77,6 +91,8 @@ const getStatusColor = (status: string) => {
       return "#4169E1";
     case "Concluído":
       return "#32CD32";
+    case "Cancelada":
+      return "#FF0000";
     default:
       return "#808080";
   }
