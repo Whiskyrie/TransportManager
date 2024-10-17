@@ -7,7 +7,7 @@ export interface RouteLocation {
 }
 
 export interface Route {
-    code: string;
+    id: string;
     status: RouteStatus;
     distance: number;
     startLocation: string | RouteLocation;
