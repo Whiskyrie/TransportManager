@@ -22,8 +22,16 @@ const RouteMap: React.FC<RouteMapProps> = ({ routes }) => {
     const fetchCoordinates = async () => {
       const coords = await Promise.all(
         routes.map(async (route) => {
-          const startCoords = await Geocoder.from(route.startLocation.name);
-          const endCoords = await Geocoder.from(route.endLocation.name);
+          const startCoords = await Geocoder.from(
+            typeof route.startLocation === "string"
+              ? route.startLocation
+              : route.startLocation.name
+          );
+          const endCoords = await Geocoder.from(
+            typeof route.endLocation === "string"
+              ? route.endLocation
+              : route.endLocation.name
+          );
           return {
             start: {
               latitude: startCoords.results[0].geometry.location.lat,
@@ -63,8 +71,16 @@ const RouteMap: React.FC<RouteMapProps> = ({ routes }) => {
           <Marker
             key={`start-${index}`}
             coordinate={coord.start}
-            title={`Início: ${routes[index].startLocation.name}`}
-            description={routes[index].startLocation.address}
+            title={`Início: ${
+              typeof routes[index].startLocation === "string"
+                ? routes[index].startLocation
+                : routes[index].startLocation.name
+            }`}
+            description={
+              typeof routes[index].startLocation !== "string"
+                ? routes[index].startLocation.address
+                : ""
+            }
           />
         ))}
       </MapView>

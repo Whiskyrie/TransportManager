@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 const AppHeader: React.FC = () => {
   return (
     <View style={styles.header}>
       <Image
-        source={require('/Users/evand/OneDrive/Documentos/TrabalhoAplicativoMovel/TransportManager/Assets/icon.png')}  // Certifique-se de ter este arquivo na pasta assets
+        source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")} // Certifique-se de ter este arquivo na pasta assets
         style={styles.logo}
       />
       <Text style={styles.title}>Rubi Ride</Text>
@@ -15,13 +15,13 @@ const AppHeader: React.FC = () => {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
     marginTop: 30,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   logo: {
     width: 40,
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

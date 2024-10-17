@@ -7,8 +7,8 @@ import {
   Text,
   ViewStyle,
 } from "react-native";
-import { truncateText } from "../../Utils/Helper";
-import { Route } from "../Route/Types";
+import { truncateText } from "../../Utils/helper";
+import { Route, RouteLocation } from "../Route/Types";
 
 interface RouteListProps {
   routes: Route[];
@@ -27,6 +27,8 @@ const RouteList: React.FC<RouteListProps> = ({
   ListHeaderComponent,
   contentContainerStyle,
 }) => {
+  console.log("Recebendo rotas para exibir:", routes);
+
   const renderRouteItem = ({ item }: { item: Route }) => (
     <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
       <View style={styles.routeInfo}>
@@ -43,8 +45,12 @@ const RouteList: React.FC<RouteListProps> = ({
       <View style={styles.routeDetails}>
         <Text>Distância: {item.distance} km</Text>
         <Text>Duração Estimada: {item.estimatedDuration} min</Text>
-        <Text>De: {truncateText(item.startLocation.address, 30)}</Text>
-        <Text>Para: {truncateText(item.endLocation.address, 30)}</Text>
+        <Text>
+          De: {truncateText((item.startLocation as RouteLocation).address, 30)}
+        </Text>
+        <Text>
+          Para: {truncateText((item.endLocation as RouteLocation).address, 30)}
+        </Text>
       </View>
     </View>
   );

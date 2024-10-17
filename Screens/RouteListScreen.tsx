@@ -7,8 +7,45 @@ import RouteFilter from "../Components/Route/RouteFilter";
 import RouteList from "../Components/Route/RouteList";
 import RouteDetails from "../Components/Route/RouteDetails";
 import AddRouteDialog from "../Components/Route/AddRouteDialog";
-import { Route, RouteStatus } from "../Components/Route/Types";
+import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
+
+// Função para converter as strings startLocation e endLocation em objetos
+const formatRoutes = (routes: any[]): Route[] => {
+  return routes.map((route) => {
+    let startLocation: RouteLocation = { name: "", address: "" };
+    let endLocation: RouteLocation = { name: "", address: "" };
+
+    if (typeof route.startLocation === "string") {
+      try {
+        startLocation = JSON.parse(route.startLocation);
+      } catch (e) {
+        startLocation = {
+          name: route.startLocation,
+          address: route.startLocation,
+        };
+      }
+    } else {
+      startLocation = route.startLocation;
+    }
+
+    if (typeof route.endLocation === "string") {
+      try {
+        endLocation = JSON.parse(route.endLocation);
+      } catch (e) {
+        endLocation = { name: route.endLocation, address: route.endLocation };
+      }
+    } else {
+      endLocation = route.endLocation;
+    }
+
+    return {
+      ...route,
+      startLocation,
+      endLocation,
+    };
+  });
+};
 
 const RoutesListScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,7 +60,8 @@ const RoutesListScreen: React.FC = () => {
     try {
       const response = await api.getAllRoutes();
       console.log("Rotas buscadas:", response.data);
-      setRoutes(response.data);
+      const formattedRoutes = formatRoutes(response.data);
+      setRoutes(formattedRoutes);
       setErrorMessage(""); // Limpa qualquer mensagem de erro anterior
     } catch (error) {
       const errorMsg = handleApiError(error);
@@ -39,7 +77,7 @@ const RoutesListScreen: React.FC = () => {
   const handleAddRoute = async (newRoute: Partial<Route>) => {
     try {
       const response = await api.createRoute(newRoute);
-      const savedRoute = response.data;
+      const savedRoute = formatRoutes([response.data])[0];
       setRoutes((prevRoutes) => [...prevRoutes, savedRoute]);
       console.log("Nova rota salva:", savedRoute);
       setErrorMessage(""); // Limpa qualquer mensagem de erro anterior
@@ -56,7 +94,6 @@ const RoutesListScreen: React.FC = () => {
       route.code && // Verifica se `code` não é `undefined`
       route.code.includes(searchQuery)
   );
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchRoutes().finally(() => setRefreshing(false));

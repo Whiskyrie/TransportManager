@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 // Substitua pelo URL do seu backend
-const API_URL = 'http://localhost:3000'; // Use o IP da sua máquina na rede local
+const API_URL = 'http://10.0.2.2:3000/'; // Use o IP da sua máquina na rede local
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: API_URL,
@@ -32,14 +32,14 @@ axiosInstance.interceptors.response.use(
 );
 
 export const api = {
-    getAllRoutes: () => axiosInstance.get('http://localhost:3000/routes'),
-    getRoute: (id: string) => axiosInstance.get(`http://localhost:3000/routes/${id}`),
-    createRoute: (routeData: any) => axiosInstance.post('http://localhost:3000/routes', routeData),
-    updateRoute: (id: string, routeData: any) => axiosInstance.patch(`http://localhost:3000/routes/${id}`, routeData),
-    deleteRoute: (id: string) => axiosInstance.delete(`http://localhost:3000/routes/${id}`),
-    startRoute: (id: string) => axiosInstance.post(`http://localhost:3000/routes/${id}/start`),
-    completeRoute: (id: string) => axiosInstance.post(`http://localhost:3000/routes/${id}/complete`),
-    cancelRoute: (id: string) => axiosInstance.post(`http://localhost:3000/routes/${id}/cancel`),
+    getAllRoutes: () => axiosInstance.get('routes'),
+    getRoute: (id: string) => axiosInstance.get(`routes/${id}`),
+    createRoute: (routeData: any) => axiosInstance.post('routes', routeData),
+    updateRoute: (id: string, routeData: any) => axiosInstance.patch(`routes/${id}`, routeData),
+    deleteRoute: (id: string) => axiosInstance.delete(`routes/${id}`),
+    startRoute: (id: string) => axiosInstance.post(`routes/${id}/start`),
+    completeRoute: (id: string) => axiosInstance.post(`routes/${id}/complete`),
+    cancelRoute: (id: string) => axiosInstance.post(`routes/${id}/cancel`),
 };
 
 export const handleApiError = (error: any) => {
