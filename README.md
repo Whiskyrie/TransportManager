@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Transporte
 
-![React Native](https://reactnative.dev/img/header_logo.svg) ![Nest.js](https://docs.nestjs.com/assets/logo-small.svg) ![PostgreSQL](https://www.postgresql.org/media/img/about/press/elephant.png) ![JWT](https://jwt.io/img/pic_logo.svg)
+<img src="https://reactnative.dev/img/header_logo.svg" alt="React Native" width="50"/> <img src="https://docs.nestjs.com/assets/logo-small.svg" alt="Nest.js" width="50"/> <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width="50"/>
 
 Este projeto é um aplicativo móvel para gerenciamento de transporte, desenvolvido usando React Native para o front-end e Nest.js para o back-end. O objetivo é fornecer uma plataforma eficiente para gerenciar rotas de transporte, motoristas e veículos.
 
