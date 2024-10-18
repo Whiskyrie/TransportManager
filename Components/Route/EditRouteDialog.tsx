@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker"; // Adicionei Picker aqui
 import { Route, RouteLocation } from "./Types";
 
 interface EditRouteDialogProps {
@@ -92,6 +93,18 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
             }
             keyboardType="numeric"
           />
+          <Picker
+            selectedValue={editedRoute.status}
+            style={styles.picker}
+            onValueChange={(itemValue) =>
+              setEditedRoute({ ...editedRoute, status: itemValue })
+            }
+          >
+            <Picker.Item label="Pendente" value="Pendente" />
+            <Picker.Item label="Em Progresso" value="Em Progresso" />
+            <Picker.Item label="Concluído" value="Concluído" />
+            <Picker.Item label="Cancelada" value="Cancelada" />
+          </Picker>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
@@ -137,6 +150,11 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
+    marginBottom: 10,
+  },
+  picker: {
+    height: 50,
+    width: "100%",
     marginBottom: 10,
   },
   buttonContainer: {

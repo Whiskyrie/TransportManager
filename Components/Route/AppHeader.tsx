@@ -1,14 +1,13 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, Dimensions } from "react-native";
 
 const AppHeader: React.FC = () => {
   return (
     <View style={styles.header}>
       <Image
-        source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")} // Certifique-se de ter este arquivo na pasta assets
+        source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
         style={styles.logo}
       />
-      <Text style={styles.title}>Rubi Ride</Text>
     </View>
   );
 };
@@ -16,6 +15,7 @@ const AppHeader: React.FC = () => {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     padding: 10,
     marginTop: 30,
@@ -24,13 +24,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E0E0E0",
   },
   logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    width: Dimensions.get("window").width * 0.155,
+    height: undefined,
+    aspectRatio: 1,
   },
 });
 
