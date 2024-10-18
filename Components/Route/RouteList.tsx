@@ -6,7 +6,9 @@ import {
   View,
   Text,
   ViewStyle,
+  TouchableOpacity,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { truncateText } from "../../Utils/helper";
 import { Route, RouteLocation } from "../Route/Types";
 
@@ -17,6 +19,8 @@ interface RouteListProps {
   onRefresh: () => void;
   ListHeaderComponent?: React.ReactElement;
   contentContainerStyle?: ViewStyle;
+  onDeleteRoute: (route: Route) => void;
+  onEditRoute: (route: Route) => void;
 }
 
 const RouteList: React.FC<RouteListProps> = ({
@@ -26,6 +30,8 @@ const RouteList: React.FC<RouteListProps> = ({
   onRefresh,
   ListHeaderComponent,
   contentContainerStyle,
+  onDeleteRoute,
+  onEditRoute,
 }) => {
   console.log("Routes received in RouteList:", routes);
   if (!Array.isArray(routes)) {
@@ -50,29 +56,48 @@ const RouteList: React.FC<RouteListProps> = ({
     const endCity = getCityAbbreviation(item.endLocation as RouteLocation);
 
     return (
-      <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
-        <View style={styles.routeInfo}>
-          <Text style={styles.routeCode}>{`${startCity} - ${endCity}`}</Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusColor(item.status) },
-            ]}
-          >
-            <Text style={styles.statusText}>{item.status}</Text>
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          onPress={() => onSelectRoute(item)}
+          style={styles.routeInfoContainer}
+        >
+          <View style={styles.routeInfo}>
+            <Text style={styles.routeCode}>{`${startCity} - ${endCity}`}</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(item.status) },
+              ]}
+            >
+              <Text style={styles.statusText}>{item.status}</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.routeDetails}>
-          <Text>Distância: {item.distance} km</Text>
-          <Text>Duração Estimada: {item.estimatedDuration} min</Text>
-          <Text>
-            De:{" "}
-            {truncateText((item.startLocation as RouteLocation).address, 30)}
-          </Text>
-          <Text>
-            Para:{" "}
-            {truncateText((item.endLocation as RouteLocation).address, 30)}
-          </Text>
+          <View style={styles.routeDetails}>
+            <Text>Distância: {item.distance} km</Text>
+            <Text>Duração Estimada: {item.estimatedDuration} min</Text>
+            <Text>
+              De:{" "}
+              {truncateText((item.startLocation as RouteLocation).address, 30)}
+            </Text>
+            <Text>
+              Para:{" "}
+              {truncateText((item.endLocation as RouteLocation).address, 30)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            onPress={() => onEditRoute(item)}
+            style={styles.actionButton}
+          >
+            <Icon name="pencil" size={24} color="#007bff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => onDeleteRoute(item)}
+            style={styles.actionButton}
+          >
+            <Icon name="delete" size={24} color="#dc3545" />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -88,7 +113,17 @@ const RouteList: React.FC<RouteListProps> = ({
       }
       ListHeaderComponent={ListHeaderComponent}
       contentContainerStyle={contentContainerStyle}
-      ListEmptyComponent={<Text>No routes available</Text>}
+      ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Icon name="map-marker-off" size={64} color="#808080" />
+          <Text style={styles.emptyText}>
+            Nenhuma rota disponível no momento
+          </Text>
+          <Text style={styles.emptySubText}>
+            Por favor, tente novamente mais tarde ou adicione novas rotas.
+          </Text>
+        </View>
+      }
     />
   );
 };
@@ -119,6 +154,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    flexDirection: "row",
+  },
+  routeInfoContainer: {
+    flex: 1,
   },
   routeInfo: {
     flexDirection: "row",
@@ -142,6 +181,32 @@ const styles = StyleSheet.create({
   },
   routeDetails: {
     marginTop: 10,
+  },
+  actionButtons: {
+    flexDirection: "column",
+    justifyContent: "space-around",
+    marginLeft: 10,
+  },
+  actionButton: {
+    padding: 5,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#808080",
+    marginTop: 10,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: "#808080",
+    textAlign: "center",
+    marginTop: 5,
   },
 });
 

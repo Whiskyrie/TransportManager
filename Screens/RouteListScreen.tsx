@@ -6,6 +6,8 @@ import RouteFilter from "../Components/Route/RouteFilter";
 import RouteList from "../Components/Route/RouteList";
 import RouteDetails from "../Components/Route/RouteDetails";
 import AddRouteDialog from "../Components/Route/AddRouteDialog";
+import DeleteRouteDialog from "../Components/Route/DeleteRouteDialog";
+import EditRouteDialog from "../Components/Route/EditRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
 
@@ -16,7 +18,6 @@ const formatRoutes = (routes: Route[]): Route[] => {
 
     if (!route.id || !route.startLocation || !route.endLocation) {
       console.warn("Rota inválida encontrada:", route);
-      // Você pode optar por retornar um objeto Route padrão ou pular esta rota
       return {
         id: route.id || "",
         distance: 0,
@@ -55,7 +56,6 @@ const formatRoutes = (routes: Route[]): Route[] => {
       };
     }
 
-    // Retorna um objeto Route com valores padrão para campos ausentes
     return {
       id: route.id || "",
       distance: route.distance || 0,
@@ -73,8 +73,12 @@ const RoutesListScreen: React.FC = () => {
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
+  const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
+  const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [routeToDelete, setRouteToDelete] = useState<Route | null>(null);
+  const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
 
   const fetchRoutes = async () => {
     try {
@@ -107,6 +111,53 @@ const RoutesListScreen: React.FC = () => {
       const errorMsg = handleApiError(error);
       setErrorMessage(`Error adding route: ${errorMsg}`);
     }
+  };
+
+  const handleDeleteRoute = (route: Route) => {
+    setRouteToDelete(route);
+    setIsDeleteDialogVisible(true);
+  };
+
+  const confirmDeleteRoute = async () => {
+    if (routeToDelete) {
+      try {
+        await api.deleteRoute(routeToDelete.id);
+        setRoutes((prevRoutes) =>
+          prevRoutes.filter((route) => route.id !== routeToDelete.id)
+        );
+        setErrorMessage("");
+      } catch (error) {
+        const errorMsg = handleApiError(error);
+        setErrorMessage(`Error deleting route: ${errorMsg}`);
+      }
+    }
+    setIsDeleteDialogVisible(false);
+    setRouteToDelete(null);
+  };
+
+  const handleEditRoute = (route: Route) => {
+    setRouteToEdit(route);
+    setIsEditDialogVisible(true);
+  };
+
+  const confirmEditRoute = async (editedRoute: Partial<Route>) => {
+    if (routeToEdit) {
+      try {
+        const response = await api.updateRoute(routeToEdit.id, editedRoute);
+        const updatedRoute = formatRoutes([response.data])[0];
+        setRoutes((prevRoutes) =>
+          prevRoutes.map((route) =>
+            route.id === updatedRoute.id ? updatedRoute : route
+          )
+        );
+        setErrorMessage("");
+      } catch (error) {
+        const errorMsg = handleApiError(error);
+        setErrorMessage(`Error updating route: ${errorMsg}`);
+      }
+    }
+    setIsEditDialogVisible(false);
+    setRouteToEdit(null);
   };
 
   const filteredRoutes = routes.filter(
@@ -148,6 +199,8 @@ const RoutesListScreen: React.FC = () => {
         onRefresh={onRefresh}
         ListHeaderComponent={renderHeader()}
         contentContainerStyle={styles.listContent}
+        onDeleteRoute={handleDeleteRoute}
+        onEditRoute={handleEditRoute}
       />
       {selectedRoute && (
         <RouteDetails
@@ -160,6 +213,19 @@ const RoutesListScreen: React.FC = () => {
         onClose={() => setIsAddDialogVisible(false)}
         onSave={handleAddRoute}
       />
+      <DeleteRouteDialog
+        visible={isDeleteDialogVisible}
+        onClose={() => setIsDeleteDialogVisible(false)}
+        onConfirm={confirmDeleteRoute}
+      />
+      {routeToEdit && (
+        <EditRouteDialog
+          visible={isEditDialogVisible}
+          onClose={() => setIsEditDialogVisible(false)}
+          onSave={confirmEditRoute}
+          route={routeToEdit}
+        />
+      )}
     </View>
   );
 };
