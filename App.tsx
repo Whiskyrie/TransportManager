@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import OnboardingScreen from "./Screens/OnboardingScreen";
 import SplashScreen from "./Screens/SplashScreen";
 import RouteListScreen from "./Screens/RouteListScreen";
@@ -16,7 +17,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       {currentScreen === "onboarding" && (
         <OnboardingScreen onFinish={handleOnboardingFinish} />
       )}
@@ -24,7 +25,7 @@ const App: React.FC = () => {
         <SplashScreen onFinish={handleSplashFinish} />
       )}
       {currentScreen === "routeList" && <RouteListScreen />}
-    </View>
+    </GestureHandlerRootView>
   );
 };
 

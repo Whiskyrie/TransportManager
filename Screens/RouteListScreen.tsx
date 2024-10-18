@@ -233,9 +233,15 @@ const RoutesListScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+    width: "100%",
+  },
+  header: {
+    padding: 16,
+    backgroundColor: "white",
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
   },
   errorMessage: {
     color: "red",

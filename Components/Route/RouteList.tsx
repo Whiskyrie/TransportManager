@@ -146,14 +146,15 @@ const getStatusColor = (status: string) => {
 const styles = StyleSheet.create({
   itemContainer: {
     backgroundColor: "white",
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 8,
-    elevation: 3,
+    borderRadius: 8,
+    width: "100%",
+    padding: 12,
+    marginVertical: 6,
+    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 1,
     flexDirection: "row",
   },
   routeInfoContainer: {
@@ -166,29 +167,33 @@ const styles = StyleSheet.create({
   },
   routeCode: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
   },
   statusBadge: {
     alignSelf: "flex-start",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 10,
   },
   statusText: {
     color: "white",
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "bold",
   },
   routeDetails: {
-    marginTop: 10,
+    marginTop: 4,
+  },
+  detailText: {
+    fontSize: 12,
+    color: "#666",
   },
   actionButtons: {
     flexDirection: "column",
     justifyContent: "space-around",
-    marginLeft: 10,
+    marginLeft: 8,
   },
   actionButton: {
-    padding: 5,
+    padding: 4,
   },
   emptyContainer: {
     flex: 1,
