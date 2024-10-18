@@ -1,42 +1,39 @@
 import React, { useState } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import Onboarding from "../TransportManager/Screens/OnboardingScreen"; // Importando a tela de Onboarding
-import RoutesListScreen from "../TransportManager/Screens/RouteListScreen"; // Importe outras telas conforme necessário
-// import VehicleListScreen from './src/screens/VehicleListScreen';
-// import DriverListScreen from './src/screens/DriverListScreen';
-
-const Stack = createStackNavigator();
+import { View, StyleSheet } from "react-native";
+import OnboardingScreen from "./Screens/OnboardingScreen";
+import SplashScreen from "./Screens/SplashScreen";
+import RouteListScreen from "./Screens/RouteListScreen";
 
 const App: React.FC = () => {
-  const [isFirstLaunch, setIsFirstLaunch] = useState(true);
+  const [currentScreen, setCurrentScreen] = useState("onboarding");
 
-  const handleStart = () => {
-    setIsFirstLaunch(false);
+  const handleOnboardingFinish = () => {
+    setCurrentScreen("splash");
+  };
+
+  const handleSplashFinish = () => {
+    setCurrentScreen("routeList");
   };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Onboarding">
-        {isFirstLaunch ? (
-          <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
-            {(props) => <Onboarding {...props} onStart={handleStart} />}
-          </Stack.Screen>
-        ) : (
-          <>
-            <Stack.Screen
-              name="RoutesList"
-              component={RoutesListScreen}
-              options={{ headerShown: false }}
-            />
-            {/* Adicione outras telas conforme necessário */}
-            {/* <Stack.Screen name="VehicleList" component={VehicleListScreen} /> */}
-            {/* <Stack.Screen name="DriverList" component={DriverListScreen} /> */}
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      {currentScreen === "onboarding" && (
+        <OnboardingScreen onFinish={handleOnboardingFinish} />
+      )}
+      {currentScreen === "splash" && (
+        <SplashScreen onFinish={handleSplashFinish} />
+      )}
+      {currentScreen === "routeList" && <RouteListScreen />}
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default App;
