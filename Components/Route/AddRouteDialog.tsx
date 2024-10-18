@@ -45,17 +45,17 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
           <TextInput
             style={styles.input}
             placeholder="Local de Origem"
-            value={startLocation.name}
+            value={startLocation.address}
             onChangeText={(text) =>
-              setStartLocation({ ...startLocation, name: text })
+              setStartLocation({ ...startLocation, address: text })
             }
           />
           <TextInput
             style={styles.input}
             placeholder="Local de Destino"
-            value={endLocation.name}
+            value={endLocation.address}
             onChangeText={(text) =>
-              setEndLocation({ ...endLocation, name: text })
+              setEndLocation({ ...endLocation, address: text })
             }
           />
           <TextInput

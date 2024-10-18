@@ -4,16 +4,16 @@ import Route from "../Models/Route";
 class RouteService extends BaseService<Route> {
 
     getPendingRoutes(): Route[] {
-        return this.items.filter(route => route.status === 'pending')
+        return this.items.filter(route => route.status === 'Pendente')
     }
 
     getInProgressRoutes(): Route[] {
-        return this.items.filter(route => route.status === 'inProgress')
+        return this.items.filter(route => route.status === 'Em Progresso')
     }
 
     startRoute(id: string): Route | undefined {
         const route = this.getById(id);
-        if (route && route.status === 'pending') {
+        if (route && route.status === 'Pendente') {
             route.start();
             return route;
         }
@@ -21,7 +21,7 @@ class RouteService extends BaseService<Route> {
     }
     completeRoute(id: string): Route | undefined {
         const route = this.getById(id);
-        if (route && route.status === 'inProgress') {
+        if (route && route.status === 'Em Progresso') {
             route.complete();
             return route;
         }
@@ -30,7 +30,7 @@ class RouteService extends BaseService<Route> {
 
     cancelRoute(id: string): Route | undefined {
         const route = this.getById(id);
-        if (route && route.status === 'pending') {
+        if (route && route.status === 'Pendente') {
             route.cancel();
             return route;
         }

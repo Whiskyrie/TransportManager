@@ -27,17 +27,32 @@ const RouteList: React.FC<RouteListProps> = ({
   ListHeaderComponent,
   contentContainerStyle,
 }) => {
-  console.log("Routes recebidas no RouteList:", routes);
+  console.log("Routes received in RouteList:", routes);
+  if (!Array.isArray(routes)) {
+    console.error("Routes is not an array:", routes);
+    return <Text>Error: Invalid routes data</Text>;
+  }
+
+  const getCityAbbreviation = (location: RouteLocation) => {
+    if (!location || !location.address) return "";
+    const addressParts = location.address.split(",");
+    const city =
+      addressParts.length > 0 ? addressParts[0].trim() : location.address;
+    return truncateText(city, 15);
+  };
 
   const renderRouteItem = ({ item }: { item: Route }) => {
     if (!item || !item.id || !item.startLocation || !item.endLocation) {
-      console.error("Item inválido:", item);
-      return null; // Certifique-se de que o item é válido antes de renderizar
+      console.error("Invalid item:", item);
+      return null;
     }
+    const startCity = getCityAbbreviation(item.startLocation as RouteLocation);
+    const endCity = getCityAbbreviation(item.endLocation as RouteLocation);
+
     return (
       <View style={styles.itemContainer} onTouchEnd={() => onSelectRoute(item)}>
         <View style={styles.routeInfo}>
-          <Text style={styles.routeCode}>{truncateText(item.id, 8)}</Text>
+          <Text style={styles.routeCode}>{`${startCity} - ${endCity}`}</Text>
           <View
             style={[
               styles.statusBadge,
@@ -63,12 +78,6 @@ const RouteList: React.FC<RouteListProps> = ({
     );
   };
 
-  // Verifica se routes é um array válido antes de renderizar a FlatList
-  if (!Array.isArray(routes)) {
-    console.error("Routes não é um array:", routes);
-    return <Text>Erro: Rotas inválidas</Text>;
-  }
-
   return (
     <FlatList
       data={routes}
@@ -79,6 +88,7 @@ const RouteList: React.FC<RouteListProps> = ({
       }
       ListHeaderComponent={ListHeaderComponent}
       contentContainerStyle={contentContainerStyle}
+      ListEmptyComponent={<Text>No routes available</Text>}
     />
   );
 };

@@ -9,36 +9,58 @@ import AddRouteDialog from "../Components/Route/AddRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
 
-const formatRoutes = (routes: any[]): Route[] => {
-  return routes.map((route) => {
-    let startLocation: RouteLocation = { name: "", address: "" };
-    let endLocation: RouteLocation = { name: "", address: "" };
+const formatRoutes = (routes: Route[]): Route[] => {
+  return routes.map((route): Route => {
+    let startLocation: RouteLocation = { address: "" };
+    let endLocation: RouteLocation = { address: "" };
+
+    if (!route.id || !route.startLocation || !route.endLocation) {
+      console.warn("Rota inválida encontrada:", route);
+      // Você pode optar por retornar um objeto Route padrão ou pular esta rota
+      return {
+        id: route.id || "",
+        distance: 0,
+        estimatedDuration: 0,
+        status: "Pendente",
+        startLocation: { address: "" },
+        endLocation: { address: "" },
+      };
+    }
+
+    // Processa startLocation
     if (typeof route.startLocation === "string") {
       try {
         startLocation = JSON.parse(route.startLocation);
       } catch (e) {
         startLocation = {
-          name: route.startLocation,
           address: route.startLocation,
         };
       }
-    } else if (route.startLocation) {
-      startLocation = route.startLocation;
+    } else if (route.startLocation && typeof route.startLocation === "object") {
+      startLocation = {
+        address: route.startLocation.address || "",
+      };
     }
+
+    // Processa endLocation
     if (typeof route.endLocation === "string") {
       try {
         endLocation = JSON.parse(route.endLocation);
       } catch (e) {
-        endLocation = { name: route.endLocation, address: route.endLocation };
+        endLocation = { address: route.endLocation };
       }
-    } else if (route.endLocation) {
-      endLocation = route.endLocation;
+    } else if (route.endLocation && typeof route.endLocation === "object") {
+      endLocation = {
+        address: route.endLocation.address || "",
+      };
     }
+
+    // Retorna um objeto Route com valores padrão para campos ausentes
     return {
-      id: route.id,
-      distance: route.distance,
-      estimatedDuration: route.estimatedDuration,
-      status: route.status,
+      id: route.id || "",
+      distance: route.distance || 0,
+      estimatedDuration: route.estimatedDuration || 0,
+      status: route.status || "Pendente",
       startLocation,
       endLocation,
     };
@@ -57,14 +79,16 @@ const RoutesListScreen: React.FC = () => {
   const fetchRoutes = async () => {
     try {
       const response = await api.getAllRoutes();
-      console.log("Rotas buscadas:", response.data);
-      const formattedRoutes = formatRoutes(response.data);
+      console.log("Routes fetched:", response.data);
+      const formattedRoutes = Array.isArray(response.data)
+        ? formatRoutes(response.data)
+        : [];
       setRoutes(formattedRoutes);
-      setErrorMessage(""); // Limpa qualquer mensagem de erro anterior
+      setErrorMessage("");
     } catch (error) {
       const errorMsg = handleApiError(error);
       setErrorMessage(errorMsg);
-      setRoutes([]); // Limpa as rotas em caso de erro
+      setRoutes([]);
     }
   };
 
@@ -77,24 +101,20 @@ const RoutesListScreen: React.FC = () => {
       const response = await api.createRoute(newRoute);
       const savedRoute = formatRoutes([response.data])[0];
       setRoutes((prevRoutes) => [...prevRoutes, savedRoute]);
-      console.log("Nova rota salva:", savedRoute);
-      setErrorMessage(""); // Limpa qualquer mensagem de erro anterior
+      console.log("New route saved:", savedRoute);
+      setErrorMessage("");
     } catch (error) {
       const errorMsg = handleApiError(error);
-      setErrorMessage(`Erro ao adicionar rota: ${errorMsg}`);
+      setErrorMessage(`Error adding route: ${errorMsg}`);
     }
   };
 
-  // Adicione verificação para garantir que `routes` é um array
-  const filteredRoutes = Array.isArray(routes)
-    ? routes.filter(
-        (route) =>
-          route &&
-          (statusFilter === "All" || route.status === statusFilter) &&
-          route.id && // Verifica se `id` não é `undefined`
-          route.id.includes(searchQuery)
-      )
-    : [];
+  const filteredRoutes = routes.filter(
+    (route) =>
+      (statusFilter === "All" || route.status === statusFilter) &&
+      route.id &&
+      route.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);

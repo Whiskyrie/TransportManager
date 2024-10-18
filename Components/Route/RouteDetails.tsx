@@ -1,6 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Route } from "../Route/Types";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Certifique-se de instalar este pacote
 
 interface RouteDetailsProps {
   route: Route;
@@ -12,24 +20,50 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
     <Modal visible={true} animationType="slide" transparent>
       <View style={styles.modalContainer}>
         <View style={styles.dialogContainer}>
-          <Text style={styles.title}>Detalhes da Rota</Text>
-          <Text style={styles.detailText}>Status: {route.status}</Text>
-          <Text style={styles.detailText}>Distância: {route.distance} km</Text>
-          <Text style={styles.detailText}>
-            Início:{" "}
-            {typeof route.startLocation === "string"
-              ? route.startLocation
-              : route.startLocation.address}
-          </Text>
-          <Text style={styles.detailText}>
-            Destino:{" "}
-            {typeof route.endLocation === "string"
-              ? route.endLocation
-              : route.endLocation.address}
-          </Text>
-          <Text style={styles.detailText}>
-            Duração Estimada: {route.estimatedDuration} min
-          </Text>
+          <ScrollView>
+            <Text style={styles.title}>Detalhes da Rota</Text>
+
+            <View style={styles.detailRow}>
+              <Icon name="flag-checkered" size={24} color="#007bff" />
+              <Text style={styles.detailLabel}>Status:</Text>
+              <Text style={styles.detailText}>{route.status}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Icon name="map-marker-distance" size={24} color="#007bff" />
+              <Text style={styles.detailLabel}>Distância:</Text>
+              <Text style={styles.detailText}>{route.distance} km</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Icon name="map-marker" size={24} color="#007bff" />
+              <Text style={styles.detailLabel}>Início:</Text>
+              <Text style={styles.detailText}>
+                {typeof route.startLocation === "string"
+                  ? route.startLocation
+                  : route.startLocation.address}
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Icon name="map-marker-check" size={24} color="#007bff" />
+              <Text style={styles.detailLabel}>Destino:</Text>
+              <Text style={styles.detailText}>
+                {typeof route.endLocation === "string"
+                  ? route.endLocation
+                  : route.endLocation.address}
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Icon name="clock-outline" size={24} color="#007bff" />
+              <Text style={styles.detailLabel}>Duração Estimada:</Text>
+              <Text style={styles.detailText}>
+                {route.estimatedDuration} min
+              </Text>
+            </View>
+          </ScrollView>
+
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>Fechar</Text>
           </TouchableOpacity>
@@ -48,29 +82,49 @@ const styles = StyleSheet.create({
   },
   dialogContainer: {
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
-    width: "80%",
+    width: "90%",
+    maxHeight: "80%",
+    elevation: 5,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+    paddingBottom: 10,
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
+    flex: 1,
+    color: "#555",
   },
   detailText: {
     fontSize: 16,
-    marginBottom: 10,
+    flex: 2,
+    color: "#333",
   },
   closeButton: {
     marginTop: 20,
-    padding: 10,
+    padding: 15,
     backgroundColor: "#007bff",
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
   },
   closeButtonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
 });

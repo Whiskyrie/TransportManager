@@ -1,8 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { getStatusColor } from "../../Utils/helper";
-
-import { RouteStatus } from "../../Utils/helper";
+import { getStatusColor, RouteStatus } from "../../Utils/helper";
 
 interface ListItemProps {
   title: string;

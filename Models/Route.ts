@@ -55,6 +55,7 @@ class Route extends BaseModel implements IRoute {
 
     toJSON(): object {
         return {
+            id: this.id,
             startLocation: this.startLocation,
             endLocation: this.endLocation,
             distance: this.distance,
