@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import OnboardingScreen from "./Screens/OnboardingScreen";
 import SplashScreen from "./Screens/SplashScreen";
 import RouteListScreen from "./Screens/RouteListScreen";
+import HomeScreen from "./Screens/HomeScreen";
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState("onboarding");
@@ -13,7 +14,11 @@ const App: React.FC = () => {
   };
 
   const handleSplashFinish = () => {
-    setCurrentScreen("routeList");
+    setCurrentScreen("home"); // Redirecionar para a HomeScreen
+  };
+
+  const handleNavigation = (screen: string) => {
+    setCurrentScreen(screen);
   };
 
   return (
@@ -24,7 +29,11 @@ const App: React.FC = () => {
       {currentScreen === "splash" && (
         <SplashScreen onFinish={handleSplashFinish} />
       )}
-      {currentScreen === "routeList" && <RouteListScreen />}
+      {currentScreen === "home" && <HomeScreen onNavigate={handleNavigation} />}
+      {currentScreen === "routeList" && (
+        <RouteListScreen onNavigate={handleNavigation} />
+      )}
+      {/* Adicione as outras telas aqui no futuro */}
     </GestureHandlerRootView>
   );
 };

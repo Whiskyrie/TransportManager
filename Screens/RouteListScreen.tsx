@@ -10,6 +10,8 @@ import DeleteRouteDialog from "../Components/Route/DeleteRouteDialog";
 import EditRouteDialog from "../Components/Route/EditRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const formatRoutes = (routes: Route[]): Route[] => {
   return routes.map((route): Route => {
@@ -67,7 +69,9 @@ const formatRoutes = (routes: Route[]): Route[] => {
   });
 };
 
-const RoutesListScreen: React.FC = () => {
+const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
+  onNavigate,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RouteStatus | "All">("All");
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -192,6 +196,13 @@ const RoutesListScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <AppHeader />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => onNavigate("home")}
+      >
+        <Icon name="arrow-back" size={24} color="#007bff" />
+        <Text style={styles.backButtonText}>Voltar</Text>
+      </TouchableOpacity>
       <RouteList
         routes={filteredRoutes}
         onSelectRoute={setSelectedRoute}
@@ -235,6 +246,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     width: "100%",
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "white",
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: "#007bff",
+    marginLeft: 8,
   },
   header: {
     padding: 16,
