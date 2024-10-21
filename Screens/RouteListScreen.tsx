@@ -10,8 +10,6 @@ import DeleteRouteDialog from "../Components/Route/DeleteRouteDialog";
 import EditRouteDialog from "../Components/Route/EditRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import Icon from "react-native-vector-icons/MaterialIcons";
 
 const formatRoutes = (routes: Route[]): Route[] => {
   return routes.map((route): Route => {

@@ -3,7 +3,6 @@ import { Modal, View, Text, TextInput, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "./CustomButton";
 import { Route, RouteLocation } from "./Types";
-import { getRouteData } from "Utils/routeService";
 
 interface EditRouteDialogProps {
   visible: boolean;
@@ -24,21 +23,8 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
     setEditedRoute(route);
   }, [route]);
 
-  const handleSave = async () => {
-    const { distance, duration } = await getRouteData(
-      typeof editedRoute.startLocation === "object"
-        ? editedRoute.startLocation.address
-        : "",
-      typeof editedRoute.endLocation === "object"
-        ? editedRoute.endLocation.address
-        : ""
-    );
-    const updatedRoute: Partial<Route> = {
-      ...editedRoute,
-      distance,
-      estimatedDuration: duration,
-    };
-    onSave(updatedRoute);
+  const handleSave = () => {
+    onSave(editedRoute);
     onClose();
   };
 
@@ -123,6 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     width: "80%",
+    maxHeight: "80%",
   },
   title: {
     fontSize: 18,
@@ -140,13 +127,12 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    marginBottom: 2,
+    marginBottom: 10,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 2,
-    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
 });
 

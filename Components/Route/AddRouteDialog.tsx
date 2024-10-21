@@ -3,13 +3,13 @@ import { View, Text, TextInput, Modal, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "./CustomButton";
 import { Route, RouteLocation, RouteStatus } from "./Types";
-import { getRouteData } from "Utils/routeService";
 
 interface AddRouteDialogProps {
   visible: boolean;
   onClose: () => void;
   onSave: (route: Partial<Route>) => void;
 }
+
 const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   visible,
   onClose,
@@ -25,16 +25,12 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [estimatedDuration, setEstimatedDuration] = useState("");
   const [status, setStatus] = useState<RouteStatus>("Pendente");
 
-  const handleSave = async () => {
-    const { distance, duration } = await getRouteData(
-      startLocation.address,
-      endLocation.address
-    );
+  const handleSave = () => {
     const newRoute: Partial<Route> = {
       startLocation,
       endLocation,
-      distance,
-      estimatedDuration: duration,
+      distance: parseFloat(distance),
+      estimatedDuration: parseFloat(estimatedDuration),
       status,
     };
     onSave(newRoute);
@@ -66,13 +62,15 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
             style={styles.input}
             placeholder="Distância (km)"
             value={distance}
-            editable={false}
+            onChangeText={setDistance}
+            keyboardType="numeric"
           />
           <TextInput
             style={styles.input}
-            placeholder="Duração Estimada (min)"
+            placeholder="Duração Estimada (minutos)"
             value={estimatedDuration}
-            editable={false}
+            onChangeText={setEstimatedDuration}
+            keyboardType="numeric"
           />
           <Picker
             selectedValue={status}

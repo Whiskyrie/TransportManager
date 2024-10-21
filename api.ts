@@ -1,7 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import { Platform } from 'react-native';
 
-const API_URL = 'http://192.168.0.8:3000/'; // Use o IP correto para iOS se necessário
+const API_URL = 'http://10.0.2.2:3000/'; // Use o IP correto para iOS se necessário
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: API_URL,
