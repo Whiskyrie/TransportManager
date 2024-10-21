@@ -3,13 +3,13 @@ import { View, Text, TextInput, Modal, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "./CustomButton";
 import { Route, RouteLocation, RouteStatus } from "./Types";
+import { getRouteData } from "Utils/routeService";
 
 interface AddRouteDialogProps {
   visible: boolean;
   onClose: () => void;
   onSave: (route: Partial<Route>) => void;
 }
-
 const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   visible,
   onClose,
@@ -25,12 +25,16 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [estimatedDuration, setEstimatedDuration] = useState("");
   const [status, setStatus] = useState<RouteStatus>("Pendente");
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const { distance, duration } = await getRouteData(
+      startLocation.address,
+      endLocation.address
+    );
     const newRoute: Partial<Route> = {
       startLocation,
       endLocation,
-      distance: parseFloat(distance),
-      estimatedDuration: parseFloat(estimatedDuration),
+      distance,
+      estimatedDuration: duration,
       status,
     };
     onSave(newRoute);
@@ -62,15 +66,13 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
             style={styles.input}
             placeholder="Distância (km)"
             value={distance}
-            onChangeText={setDistance}
-            keyboardType="numeric"
+            editable={false}
           />
           <TextInput
             style={styles.input}
-            placeholder="Duração Estimada (minutos)"
+            placeholder="Duração Estimada (min)"
             value={estimatedDuration}
-            onChangeText={setEstimatedDuration}
-            keyboardType="numeric"
+            editable={false}
           />
           <Picker
             selectedValue={status}
@@ -91,6 +93,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     </Modal>
   );
 };
+
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,

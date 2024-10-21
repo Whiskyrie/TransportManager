@@ -11,7 +11,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  await app.listen(3000, '0.0.0.0', () => {
+  await app.listen(3000, () => {
     console.log('Servidor está rodando na porta 3000');
   });
 }

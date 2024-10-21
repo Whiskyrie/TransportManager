@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-  RefreshControl,
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -18,8 +17,7 @@ interface HomeScreenProps {
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
-  const [refreshing, setRefreshing] = useState(false);
-  const scaleAnim = new Animated.Value(1);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -34,13 +32,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
       useNativeDriver: true,
     }).start();
   };
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
 
   const Card = ({
     icon,
@@ -68,12 +59,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   );
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Bem-vindo ao RubiRide!</Text>
       <Text style={styles.subtitle}>Escolha uma opção para começar:</Text>
       <View style={styles.cardsContainer}>

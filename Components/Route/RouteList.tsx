@@ -33,7 +33,6 @@ const RouteList: React.FC<RouteListProps> = ({
   onDeleteRoute,
   onEditRoute,
 }) => {
-  console.log("Routes received in RouteList:", routes);
   if (!Array.isArray(routes)) {
     console.error("Routes is not an array:", routes);
     return <Text>Error: Invalid routes data</Text>;

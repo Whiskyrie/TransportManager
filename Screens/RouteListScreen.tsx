@@ -87,7 +87,6 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   const fetchRoutes = async () => {
     try {
       const response = await api.getAllRoutes();
-      console.log("Routes fetched:", response.data);
       const formattedRoutes = Array.isArray(response.data)
         ? formatRoutes(response.data)
         : [];
@@ -195,14 +194,7 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
 
   return (
     <View style={styles.container}>
-      <AppHeader />
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => onNavigate("home")}
-      >
-        <Icon name="arrow-back" size={24} color="#007bff" />
-        <Text style={styles.backButtonText}>Voltar</Text>
-      </TouchableOpacity>
+      <AppHeader onNavigate={onNavigate} />
       <RouteList
         routes={filteredRoutes}
         onSelectRoute={setSelectedRoute}

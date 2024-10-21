@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker"; // Adicionei Picker aqui
+import { Modal, View, Text, TextInput, StyleSheet } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import CustomButton from "./CustomButton";
 import { Route, RouteLocation } from "./Types";
+import { getRouteData } from "Utils/routeService";
 
 interface EditRouteDialogProps {
   visible: boolean;
@@ -29,8 +24,21 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
     setEditedRoute(route);
   }, [route]);
 
-  const handleSave = () => {
-    onSave(editedRoute);
+  const handleSave = async () => {
+    const { distance, duration } = await getRouteData(
+      typeof editedRoute.startLocation === "object"
+        ? editedRoute.startLocation.address
+        : "",
+      typeof editedRoute.endLocation === "object"
+        ? editedRoute.endLocation.address
+        : ""
+    );
+    const updatedRoute: Partial<Route> = {
+      ...editedRoute,
+      distance,
+      estimatedDuration: duration,
+    };
+    onSave(updatedRoute);
     onClose();
   };
 
@@ -73,25 +81,13 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
             style={styles.input}
             placeholder="Distância (km)"
             value={editedRoute.distance?.toString()}
-            onChangeText={(text) =>
-              setEditedRoute({
-                ...editedRoute,
-                distance: parseFloat(text) || 0,
-              })
-            }
-            keyboardType="numeric"
+            editable={false} // Torna o campo inalterável
           />
           <TextInput
             style={styles.input}
             placeholder="Duração Estimada (min)"
             value={editedRoute.estimatedDuration?.toString()}
-            onChangeText={(text) =>
-              setEditedRoute({
-                ...editedRoute,
-                estimatedDuration: parseInt(text) || 0,
-              })
-            }
-            keyboardType="numeric"
+            editable={false} // Torna o campo inalterável
           />
           <Picker
             selectedValue={editedRoute.status}
@@ -106,18 +102,8 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
             <Picker.Item label="Cancelada" value="Cancelada" />
           </Picker>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onClose}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
-              onPress={handleSave}
-            >
-              <Text style={styles.buttonText}>Salvar</Text>
-            </TouchableOpacity>
+            <CustomButton title="Cancelar" onPress={onClose} type="secondary" />
+            <CustomButton title="Salvar" onPress={handleSave} type="primary" />
           </View>
         </View>
       </View>
@@ -136,8 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    width: "90%",
-    maxHeight: "80%",
+    width: "80%",
   },
   title: {
     fontSize: 18,
@@ -155,27 +140,13 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 2,
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: 20,
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  cancelButton: {
-    backgroundColor: "#ccc",
-  },
-  saveButton: {
-    backgroundColor: "#007bff",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
+    marginTop: 2,
+    width: "100%",
   },
 });
 
