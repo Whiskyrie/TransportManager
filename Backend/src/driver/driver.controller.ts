@@ -5,7 +5,7 @@ import { UpdateDriverDto } from './dto/update-driver.dto';
 
 @Controller('driver')
 export class DriverController {
-  constructor(private readonly driverService: DriverService) {}
+  constructor(private readonly driverService: DriverService) { }
 
   @Post()
   create(@Body() createDriverDto: CreateDriverDto) {
@@ -19,16 +19,16 @@ export class DriverController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.driverService.findOne(+id);
+    return this.driverService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDriverDto: UpdateDriverDto) {
-    return this.driverService.update(+id, updateDriverDto);
+    return this.driverService.update(id, updateDriverDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.driverService.remove(+id);
+    return this.driverService.remove(id);
   }
 }

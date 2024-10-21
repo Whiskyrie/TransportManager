@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Route } from '../routes/entities/route.entity'; // Importe a entidade Route
+import { Route } from '../routes/entities/route.entity';
+import { Driver } from '../driver/entities/driver.entity';
+import { Vehicle } from '../vehicle/entities/vehicle.entity';
 import { DatabaseService } from './database.service';
 import { DatabaseController } from './database.controller';
 
@@ -13,10 +15,10 @@ import { DatabaseController } from './database.controller';
             username: 'postgres',
             password: '811920',
             database: 'postgres',
-            entities: [Route],
+            entities: [Route, Driver, Vehicle], // Inclua todas as entidades aqui
             synchronize: true,
         }),
-        TypeOrmModule.forFeature([Route]), // Inclua isso para garantir que o Repositório Route seja importado corretamente
+        TypeOrmModule.forFeature([Route, Driver, Vehicle]), // Inclua todas as entidades aqui
     ],
     providers: [DatabaseService],
     controllers: [DatabaseController],

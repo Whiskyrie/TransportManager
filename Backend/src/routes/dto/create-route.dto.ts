@@ -1,15 +1,22 @@
-import { IsString, IsNumber } from 'class-validator';
+// create-route.dto.ts
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class CreateRouteDto {
-    @IsString()
+    @IsNotEmpty()
     startLocation: string;
 
-    @IsString()
+    @IsNotEmpty()
     endLocation: string;
 
-    @IsNumber()
+    @IsNotEmpty()
     distance: number;
 
-    @IsNumber()
+    @IsNotEmpty()
     estimatedDuration: number;
+
+    @IsUUID()
+    vehicleId: string;
+
+    @IsUUID()
+    driverId: string;
 }

@@ -1,8 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { BaseEntity } from '../../common/base.entity';
+// route.entity.ts
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Driver } from 'src/driver/entities/driver.entity';
+import { Vehicle } from 'src/vehicle/entities/vehicle.entity';
 
 @Entity()
-export class Route extends BaseEntity {
+export class Route {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -17,6 +19,12 @@ export class Route extends BaseEntity {
 
     @Column('float')
     estimatedDuration: number;
+
+    @ManyToOne(() => Driver, { eager: true })
+    driver: Driver;
+
+    @ManyToOne(() => Vehicle, { eager: true })
+    vehicle: Vehicle;
 
     @Column({
         type: 'enum',
