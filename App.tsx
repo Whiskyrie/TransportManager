@@ -5,6 +5,7 @@ import OnboardingScreen from "./Screens/OnboardingScreen";
 import SplashScreen from "./Screens/SplashScreen";
 import RouteListScreen from "./Screens/RouteListScreen";
 import HomeScreen from "./Screens/HomeScreen";
+import VehicleListScreen from "./Screens/VehicleListScreen"; // Importação da nova tela
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState("onboarding");
@@ -32,6 +33,9 @@ const App: React.FC = () => {
       {currentScreen === "home" && <HomeScreen onNavigate={handleNavigation} />}
       {currentScreen === "routeList" && (
         <RouteListScreen onNavigate={handleNavigation} />
+      )}
+      {currentScreen === "vehicleList" && ( // Adicionando a VehicleListScreen
+        <VehicleListScreen onNavigate={handleNavigation} />
       )}
       {/* Adicione as outras telas aqui no futuro */}
     </GestureHandlerRootView>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomInput from "./CustomInput";
 import { RouteStatus } from "../Route/Types";

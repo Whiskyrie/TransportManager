@@ -6,12 +6,15 @@ export class Vehicle {
     id: string;
 
     @Column()
-    make: string;
+    brand: string;
 
     @Column()
     model: string;
 
     @Column()
-    plateNumber: string;
+    year: number;
+
+    @Column()
+    plate: string;
 }
 

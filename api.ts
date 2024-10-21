@@ -31,6 +31,7 @@ axiosInstance.interceptors.response.use(
 );
 
 export const api = {
+    // Funções para rotas
     getAllRoutes: () => axiosInstance.get('routes'),
     getRoute: (id: string) => axiosInstance.get(`routes/${id}`),
     createRoute: (routeData: any) => axiosInstance.post('routes', routeData),
@@ -39,6 +40,13 @@ export const api = {
     startRoute: (id: string) => axiosInstance.post(`routes/${id}/start`),
     completeRoute: (id: string) => axiosInstance.post(`routes/${id}/complete`),
     cancelRoute: (id: string) => axiosInstance.post(`routes/${id}/cancel`),
+
+    // Funções para veículos
+    getAllVehicles: () => axiosInstance.get('vehicles'),
+    getVehicle: (id: string) => axiosInstance.get(`vehicles/${id}`),
+    createVehicle: (vehicleData: any) => axiosInstance.post('vehicles', vehicleData),
+    updateVehicle: (id: string, vehicleData: any) => axiosInstance.patch(`vehicles/${id}`, vehicleData),
+    deleteVehicle: (id: string) => axiosInstance.delete(`vehicles/${id}`),
 };
 
 export const handleApiError = (error: any) => {

@@ -72,7 +72,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         <Card
           icon="directions-car"
           label="Veículos"
-          screen="vehicles"
+          screen="vehicleList"
           description="Verifique e gerencie seus veículos"
         />
         <Card
