@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import AppHeader from "../Components/Vehicle/AppHeader";
-import CustomButton from "../Components/Vehicle/CustomButton";
+import AppHeader from "../Components/Driver/AppHeader";
+import CustomButton from "../Components/Driver/CustomButton";
 import VehicleFilter from "../Components/Vehicle/VehicleFilter";
 import VehicleList from "../Components/Vehicle/VehicleList";
 import VehicleDetails from "../Components/Vehicle/VehicleDetails";
 import AddVehicleDialog from "../Components/Vehicle/AddVehicleDialog";
 import DeleteVehicleDialog from "../Components/Vehicle/DeleteRouteVehicle";
 import EditVehicleDialog from "../Components/Vehicle/EditVehicleDialog";
-import { Vehicle, VehicleStatus } from "../Components/Vehicle/Types";
+import { Vehicles, VehicleStatus } from "../Components/Vehicle/Types";
 import { api, handleApiError } from "../api";
 
 const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
@@ -18,15 +18,15 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   const [statusFilter, setStatusFilter] = useState<VehicleStatus | "All">(
     "All"
   );
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicles | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicles[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
-  const [vehicleToEdit, setVehicleToEdit] = useState<Vehicle | null>(null);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicles | null>(null);
+  const [vehicleToEdit, setVehicleToEdit] = useState<Vehicles | null>(null);
 
   const fetchVehicles = async () => {
     try {
@@ -44,7 +44,7 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
     fetchVehicles();
   }, []);
 
-  const handleAddVehicle = async (newVehicle: Partial<Vehicle>) => {
+  const handleAddVehicle = async (newVehicle: Partial<Vehicles>) => {
     try {
       const response = await api.createVehicle(newVehicle);
       setVehicles((prevVehicles) => [...prevVehicles, response.data]);
@@ -55,7 +55,7 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
     }
   };
 
-  const handleDeleteVehicle = (vehicle: Vehicle) => {
+  const handleDeleteVehicle = (vehicle: Vehicles) => {
     setVehicleToDelete(vehicle);
     setIsDeleteDialogVisible(true);
   };
@@ -77,12 +77,12 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
     setVehicleToDelete(null);
   };
 
-  const handleEditVehicle = (vehicle: Vehicle) => {
+  const handleEditVehicle = (vehicle: Vehicles) => {
     setVehicleToEdit(vehicle);
     setIsEditDialogVisible(true);
   };
 
-  const confirmEditVehicle = async (editedVehicle: Partial<Vehicle>) => {
+  const confirmEditVehicle = async (editedVehicle: Partial<Vehicles>) => {
     if (vehicleToEdit) {
       try {
         const response = await api.updateVehicle(

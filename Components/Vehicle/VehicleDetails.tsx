@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Vehicle } from "./Types";
+import { Vehicles } from "./Types";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface VehicleDetailsProps {
-  vehicle: Vehicle;
+  vehicle: Vehicles;
   onClose: () => void;
 }
 

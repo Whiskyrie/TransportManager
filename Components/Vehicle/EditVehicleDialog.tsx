@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, StyleSheet } from "react-native";
-import CustomButton from "./CustomButton";
-import { Vehicle } from "./Types";
+import CustomButton from "../Driver/CustomButton";
+import { Vehicles } from "./Types";
 
 interface EditVehicleDialogProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (editedVehicle: Partial<Vehicle>) => void;
-  vehicle: Vehicle;
+  onSave: (editedVehicle: Partial<Vehicles>) => void;
+  vehicle: Vehicles;
 }
 
 const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
@@ -16,7 +16,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
   onSave,
   vehicle,
 }) => {
-  const [editedVehicle, setEditedVehicle] = useState<Partial<Vehicle>>({});
+  const [editedVehicle, setEditedVehicle] = useState<Partial<Vehicles>>({});
 
   useEffect(() => {
     setEditedVehicle(vehicle);

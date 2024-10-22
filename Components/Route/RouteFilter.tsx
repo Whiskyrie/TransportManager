@@ -22,7 +22,7 @@ const RouteFilter: React.FC<RouteFilterProps> = ({
       label="Procurar Rota"
       value={searchQuery}
       onChangeText={setSearchQuery}
-      placeholder="Digite o nome da cidade"
+      placeholder="Buscar por cidade de origem ou destino"
     />
     <Picker
       selectedValue={statusFilter}

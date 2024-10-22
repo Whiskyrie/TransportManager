@@ -10,6 +10,8 @@ import DeleteRouteDialog from "../Components/Route/DeleteRouteDialog";
 import EditRouteDialog from "../Components/Route/EditRouteDialog";
 import { Route, RouteStatus, RouteLocation } from "../Components/Route/Types";
 import { api, handleApiError } from "../api";
+import { Vehicles } from "Components/Vehicle/Types";
+import { Drivers } from "Components/Driver/Types";
 
 const formatRoutes = (routes: Route[]): Route[] => {
   return routes.map((route): Route => {
@@ -25,6 +27,8 @@ const formatRoutes = (routes: Route[]): Route[] => {
         status: "Pendente",
         startLocation: { address: "" },
         endLocation: { address: "" },
+        vehicle: route.vehicle as Vehicles,
+        driver: route.driver as Drivers,
       };
     }
 
@@ -58,11 +62,13 @@ const formatRoutes = (routes: Route[]): Route[] => {
 
     return {
       id: route.id || "",
-      distance: route.distance || 0,
-      estimatedDuration: route.estimatedDuration || 0,
-      status: route.status || "Pendente",
-      startLocation,
-      endLocation,
+      distance: 0,
+      estimatedDuration: 0,
+      status: "Pendente",
+      startLocation: { address: "" },
+      endLocation: { address: "" },
+      vehicle: route.vehicle as Vehicles,
+      driver: route.driver as Drivers,
     };
   });
 };
@@ -161,12 +167,28 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
     setRouteToEdit(null);
   };
 
-  const filteredRoutes = routes.filter(
-    (route) =>
-      (statusFilter === "All" || route.status === statusFilter) &&
-      route.id &&
-      route.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRoutes = routes.filter((route) => {
+    const matchesStatus =
+      statusFilter === "All" || route.status === statusFilter;
+
+    if (!matchesStatus) return false;
+
+    if (!searchQuery) return true;
+
+    const searchLower = searchQuery.toLowerCase();
+    const startAddress =
+      typeof route.startLocation === "object"
+        ? route.startLocation.address?.toLowerCase()
+        : "";
+    const endAddress =
+      typeof route.endLocation === "object"
+        ? route.endLocation.address?.toLowerCase()
+        : "";
+
+    return (
+      startAddress.includes(searchLower) || endAddress.includes(searchLower)
+    );
+  });
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);

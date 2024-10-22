@@ -9,9 +9,15 @@ import {
 
 interface CustomButtonProps {
   title: string;
+
   onPress: () => void;
-  type?: "primary" | "secondary" | "danger";
+
+  type: "primary" | "secondary";
+
   style?: ViewStyle;
+
+  disabled?: boolean;
+
   textStyle?: TextStyle;
 }
 

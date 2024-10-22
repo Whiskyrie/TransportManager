@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Modal, StyleSheet } from "react-native";
-import CustomButton from "./CustomButton";
-import { Vehicle } from "./Types";
+import CustomButton from "../Driver/CustomButton";
+import { Vehicles } from "./Types";
 
 interface AddVehicleDialogProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (vehicle: Partial<Vehicle>) => void;
+  onSave: (vehicle: Partial<Vehicles>) => void;
 }
 
 const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
@@ -20,7 +20,7 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   const [plate, setPlate] = useState("");
 
   const handleSave = () => {
-    const newVehicle: Partial<Vehicle> = {
+    const newVehicle: Partial<Vehicles> = {
       model,
       brand,
       year: parseInt(year),

@@ -1,7 +1,7 @@
 export type VehicleStatus = 'Disponível' | 'Indisponível' | 'Em manutenção';
 
 
-export interface Vehicle {
+export interface Vehicles {
     id: string;
     plate: string;
     year: number;

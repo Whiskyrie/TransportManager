@@ -7,19 +7,20 @@ import {
   Text,
   ViewStyle,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Vehicle } from "./Types";
+import { Vehicles } from "./Types";
 
 interface VehicleListProps {
-  vehicles: Vehicle[];
-  onSelectVehicle: (vehicle: Vehicle) => void;
+  vehicles: Vehicles[];
+  onSelectVehicle: (vehicle: Vehicles) => void;
   refreshing: boolean;
   onRefresh: () => void;
   ListHeaderComponent?: React.ReactElement;
   contentContainerStyle?: ViewStyle;
-  onDeleteVehicle: (vehicle: Vehicle) => void;
-  onEditVehicle: (vehicle: Vehicle) => void;
+  onDeleteVehicle: (vehicle: Vehicles) => void;
+  onEditVehicle: (vehicle: Vehicles) => void;
 }
 
 const VehicleList: React.FC<VehicleListProps> = ({
@@ -32,42 +33,70 @@ const VehicleList: React.FC<VehicleListProps> = ({
   onDeleteVehicle,
   onEditVehicle,
 }) => {
-  const renderVehicleItem = ({ item }: { item: Vehicle }) => (
+  const renderVehicleItem = ({ item }: { item: Vehicles }) => (
     <View style={styles.itemContainer}>
+      <View style={styles.iconContainer}>
+        <Icon name="car" size={32} color="#4A90E2" />
+      </View>
       <TouchableOpacity
         onPress={() => onSelectVehicle(item)}
         style={styles.vehicleInfoContainer}
+        activeOpacity={0.7}
       >
         <View style={styles.vehicleInfo}>
-          <Text style={styles.plateText}>{item.plate}</Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusColor(item.status) },
-            ]}
-          >
-            <Text style={styles.statusText}>{item.status}</Text>
+          <View style={styles.headerContainer}>
+            <Text style={styles.plateText}>{item.plate}</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(item.status) },
+              ]}
+            >
+              <Icon
+                name={getStatusIcon(item.status)}
+                size={12}
+                color="white"
+                style={styles.statusIcon}
+              />
+              <Text style={styles.statusText}>{item.status}</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.vehicleDetails}>
-          <Text>Modelo: {item.model}</Text>
-          <Text>Marca: {item.brand}</Text>
+          <View style={styles.vehicleDetails}>
+            <View style={styles.detailRow}>
+              <Icon name="car-info" size={16} color="#666" />
+              <Text style={styles.detailText}>Modelo: {item.model}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Icon name="factory" size={16} color="#666" />
+              <Text style={styles.detailText}>Marca: {item.brand}</Text>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
       <View style={styles.actionButtons}>
         <TouchableOpacity
           onPress={() => onEditVehicle(item)}
-          style={styles.actionButton}
+          style={[styles.actionButton, styles.editButton]}
         >
-          <Icon name="pencil" size={24} color="#007bff" />
+          <Icon name="pencil" size={20} color="#FFF" />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onDeleteVehicle(item)}
-          style={styles.actionButton}
+          style={[styles.actionButton, styles.deleteButton]}
         >
-          <Icon name="delete" size={24} color="#dc3545" />
+          <Icon name="delete" size={20} color="#FFF" />
         </TouchableOpacity>
       </View>
+    </View>
+  );
+
+  const EmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Icon name="car-off" size={80} color="#D1D5DB" />
+      <Text style={styles.emptyText}>Nenhum veículo disponível no momento</Text>
+      <Text style={styles.emptySubText}>
+        Por favor, tente novamente mais tarde ou adicione novos veículos.
+      </Text>
     </View>
   );
 
@@ -77,21 +106,20 @@ const VehicleList: React.FC<VehicleListProps> = ({
       renderItem={renderVehicleItem}
       keyExtractor={(item) => item.id}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#4A90E2"]}
+        />
       }
       ListHeaderComponent={ListHeaderComponent}
-      contentContainerStyle={contentContainerStyle}
-      ListEmptyComponent={
-        <View style={styles.emptyContainer}>
-          <Icon name="car-off" size={64} color="#808080" />
-          <Text style={styles.emptyText}>
-            Nenhum veículo disponível no momento
-          </Text>
-          <Text style={styles.emptySubText}>
-            Por favor, tente novamente mais tarde ou adicione novos veículos.
-          </Text>
-        </View>
-      }
+      contentContainerStyle={[
+        styles.listContainer,
+        contentContainerStyle,
+        vehicles.length === 0 && styles.emptyListContainer,
+      ]}
+      ListEmptyComponent={EmptyComponent}
+      showsVerticalScrollIndicator={false}
     />
   );
 };
@@ -99,81 +127,143 @@ const VehicleList: React.FC<VehicleListProps> = ({
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Disponível":
-      return "#32CD32";
+      return "#34D399";
     case "Indisponível":
-      return "#FF0000";
+      return "#EF4444";
     case "Em manutenção":
-      return "#FFA500";
+      return "#F59E0B";
     default:
-      return "#808080";
+      return "#6B7280";
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "Disponível":
+      return "check-circle";
+    case "Indisponível":
+      return "close-circle";
+    case "Em manutenção":
+      return "wrench";
+    default:
+      return "help-circle";
   }
 };
 
 const styles = StyleSheet.create({
+  listContainer: {
+    padding: 16,
+  },
+  emptyListContainer: {
+    flex: 1,
+  },
   itemContainer: {
     backgroundColor: "white",
-    borderRadius: 8,
-    width: "100%",
-    padding: 12,
-    marginVertical: 6,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
+    borderRadius: 16,
+    marginBottom: 16,
+    padding: 16,
     flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  iconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   vehicleInfoContainer: {
     flex: 1,
   },
   vehicleInfo: {
+    justifyContent: "space-between",
+  },
+  headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8,
   },
   plateText: {
+    fontSize: 18,
     fontWeight: "bold",
-    fontSize: 16,
+    color: "#1F2937",
   },
   statusBadge: {
-    alignSelf: "flex-start",
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusIcon: {
+    marginRight: 4,
   },
   statusText: {
     color: "white",
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   vehicleDetails: {
     marginTop: 4,
   },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  detailText: {
+    marginLeft: 8,
+    color: "#4B5563",
+    fontSize: 14,
+  },
   actionButtons: {
     flexDirection: "column",
     justifyContent: "space-around",
-    marginLeft: 8,
+    marginLeft: 12,
   },
   actionButton: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  editButton: {
+    backgroundColor: "#4A90E2",
+  },
+  deleteButton: {
+    backgroundColor: "#EF4444",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    minHeight: Dimensions.get("window").height * 0.5,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#808080",
-    marginTop: 10,
+    color: "#374151",
+    marginTop: 16,
   },
   emptySubText: {
-    fontSize: 14,
-    color: "#808080",
+    fontSize: 16,
+    color: "#6B7280",
     textAlign: "center",
-    marginTop: 5,
+    marginTop: 8,
+    paddingHorizontal: 32,
   },
 });
 

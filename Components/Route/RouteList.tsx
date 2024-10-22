@@ -7,6 +7,7 @@ import {
   Text,
   ViewStyle,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { truncateText } from "../../Utils/helper";
@@ -51,51 +52,97 @@ const RouteList: React.FC<RouteListProps> = ({
       console.error("Invalid item:", item);
       return null;
     }
+
     const startCity = getCityAbbreviation(item.startLocation as RouteLocation);
     const endCity = getCityAbbreviation(item.endLocation as RouteLocation);
 
     return (
       <View style={styles.itemContainer}>
-        <TouchableOpacity
-          onPress={() => onSelectRoute(item)}
-          style={styles.routeInfoContainer}
-        >
-          <View style={styles.routeInfo}>
-            <Text style={styles.routeCode}>{`${startCity} - ${endCity}`}</Text>
+        <View style={styles.mainContent}>
+          <View style={styles.headerSection}>
+            <View style={styles.routeIconContainer}>
+              <Icon name="truck-delivery" size={24} color="#4A90E2" />
+            </View>
+            <View style={styles.routeMainInfo}>
+              <View style={styles.routeCodeContainer}>
+                <Text style={styles.routeCode}>{startCity}</Text>
+                <Icon name="arrow-right" size={16} color="#265fa1" />
+                <Text style={styles.routeCode}>{endCity}</Text>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => onSelectRoute(item)}
+            style={styles.routeDetailsContainer}
+            activeOpacity={0.7}
+          >
+            <View style={styles.routeDetails}>
+              <View style={styles.detailRow}>
+                <Icon name="map-marker-distance" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  Distância: {item.distance} km
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Icon name="clock-outline" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  Duração: {item.estimatedDuration} min
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Icon name="ray-start" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  De:{" "}
+                  {truncateText(
+                    (item.startLocation as RouteLocation).address,
+                    30
+                  )}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Icon name="ray-end" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  Para:{" "}
+                  {truncateText(
+                    (item.endLocation as RouteLocation).address,
+                    30
+                  )}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.footerSection}>
             <View
               style={[
                 styles.statusBadge,
                 { backgroundColor: getStatusColor(item.status) },
               ]}
             >
+              <Icon
+                name={getStatusIcon(item.status)}
+                size={12}
+                color="white"
+                style={styles.statusIcon}
+              />
               <Text style={styles.statusText}>{item.status}</Text>
             </View>
           </View>
-          <View style={styles.routeDetails}>
-            <Text>Distância: {item.distance} km</Text>
-            <Text>Duração Estimada: {item.estimatedDuration} min</Text>
-            <Text>
-              De:{" "}
-              {truncateText((item.startLocation as RouteLocation).address, 30)}
-            </Text>
-            <Text>
-              Para:{" "}
-              {truncateText((item.endLocation as RouteLocation).address, 30)}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        </View>
+
         <View style={styles.actionButtons}>
           <TouchableOpacity
             onPress={() => onEditRoute(item)}
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.editButton]}
           >
-            <Icon name="pencil" size={24} color="#007bff" />
+            <Icon name="pencil" size={20} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => onDeleteRoute(item)}
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.deleteButton]}
           >
-            <Icon name="delete" size={24} color="#dc3545" />
+            <Icon name="delete" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
       </View>
@@ -108,13 +155,21 @@ const RouteList: React.FC<RouteListProps> = ({
       renderItem={renderRouteItem}
       keyExtractor={(item) => item.id.toString()}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#4A90E2"]}
+        />
       }
       ListHeaderComponent={ListHeaderComponent}
-      contentContainerStyle={contentContainerStyle}
+      contentContainerStyle={[
+        styles.listContainer,
+        contentContainerStyle,
+        routes.length === 0 && styles.emptyListContainer,
+      ]}
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
-          <Icon name="map-marker-off" size={64} color="#808080" />
+          <Icon name="map-marker-off" size={80} color="#D1D5DB" />
           <Text style={styles.emptyText}>
             Nenhuma rota disponível no momento
           </Text>
@@ -123,6 +178,7 @@ const RouteList: React.FC<RouteListProps> = ({
           </Text>
         </View>
       }
+      showsVerticalScrollIndicator={false}
     />
   );
 };
@@ -130,87 +186,157 @@ const RouteList: React.FC<RouteListProps> = ({
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Em Progresso":
-      return "#FFA500";
+      return "#F59E0B";
     case "Pendente":
-      return "#4169E1";
+      return "#4A90E2";
     case "Concluído":
-      return "#32CD32";
+      return "#34D399";
     case "Cancelada":
-      return "#FF0000";
+      return "#EF4444";
     default:
-      return "#808080";
+      return "#6B7280";
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "Em Progresso":
+      return "progress-clock";
+    case "Pendente":
+      return "clock-outline";
+    case "Concluído":
+      return "check-circle";
+    case "Cancelada":
+      return "close-circle";
+    default:
+      return "help-circle";
   }
 };
 
 const styles = StyleSheet.create({
-  itemContainer: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    width: "100%",
-    padding: 12,
-    marginVertical: 6,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    flexDirection: "row",
+  listContainer: {
+    padding: 16,
   },
-  routeInfoContainer: {
+  emptyListContainer: {
     flex: 1,
   },
-  routeInfo: {
+  itemContainer: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    marginBottom: 16,
+    padding: 16,
     flexDirection: "row",
-    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  mainContent: {
+    flex: 1,
+  },
+  headerSection: {
+    flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
+  },
+  routeIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#c5def7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  routeMainInfo: {
+    flex: 1,
+  },
+  routeDetailsContainer: {
+    flex: 1,
+  },
+  routeCodeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   routeCode: {
-    fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 16.225,
+    fontWeight: "700",
+    color: "#191723",
+  },
+  footerSection: {
+    marginTop: 12,
+    alignItems: "flex-start",
   },
   statusBadge: {
-    alignSelf: "flex-start",
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusIcon: {
+    marginRight: 4,
   },
   statusText: {
     color: "white",
-    fontSize: 10,
-    fontWeight: "bold",
+    fontSize: 12.225,
+    fontWeight: "600",
   },
   routeDetails: {
     marginTop: 4,
   },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 4,
+  },
   detailText: {
-    fontSize: 12,
-    color: "#666",
+    marginLeft: 8,
+    color: "#4B5563",
+    fontSize: 14,
   },
   actionButtons: {
     flexDirection: "column",
-    justifyContent: "space-around",
-    marginLeft: 8,
+    justifyContent: "flex-end",
+    gap: 32,
+    marginBottom: 32,
   },
   actionButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  editButton: {
+    backgroundColor: "#4A90E2",
+  },
+  deleteButton: {
+    backgroundColor: "#EF4444",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    minHeight: Dimensions.get("window").height * 0.5,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#808080",
-    marginTop: 10,
+    color: "#374151",
+    marginTop: 16,
   },
   emptySubText: {
-    fontSize: 14,
-    color: "#808080",
+    fontSize: 16,
+    color: "#6B7280",
     textAlign: "center",
-    marginTop: 5,
+    marginTop: 8,
+    paddingHorizontal: 32,
   },
 });
 
