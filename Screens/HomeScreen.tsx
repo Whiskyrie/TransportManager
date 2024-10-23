@@ -78,8 +78,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         <Card
           icon="person"
           label="Motoristas"
-          screen="drivers"
-          description="Encontre e se conecte com motoristas"
+          screen="driverList" // Atualizado para corresponder à nova rota
+          description="Gerencie e monitore seus motoristas"
         />
       </View>
       <TouchableOpacity style={styles.settingsButton}>

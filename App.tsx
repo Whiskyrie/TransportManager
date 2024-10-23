@@ -5,7 +5,8 @@ import OnboardingScreen from "./Screens/OnboardingScreen";
 import SplashScreen from "./Screens/SplashScreen";
 import RouteListScreen from "./Screens/RouteListScreen";
 import HomeScreen from "./Screens/HomeScreen";
-import VehicleListScreen from "./Screens/VehicleListScreen"; // Importação da nova tela
+import VehicleListScreen from "./Screens/VehicleListScreen";
+import DriverListScreen from "./Screens/DriverListScreen";
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState("onboarding");
@@ -15,7 +16,7 @@ const App: React.FC = () => {
   };
 
   const handleSplashFinish = () => {
-    setCurrentScreen("home"); // Redirecionar para a HomeScreen
+    setCurrentScreen("home");
   };
 
   const handleNavigation = (screen: string) => {
@@ -34,10 +35,12 @@ const App: React.FC = () => {
       {currentScreen === "routeList" && (
         <RouteListScreen onNavigate={handleNavigation} />
       )}
-      {currentScreen === "vehicleList" && ( // Adicionando a VehicleListScreen
+      {currentScreen === "vehicleList" && (
         <VehicleListScreen onNavigate={handleNavigation} />
       )}
-      {/* Adicione as outras telas aqui no futuro */}
+      {currentScreen === "driverList" && ( // Nova rota
+        <DriverListScreen onNavigate={handleNavigation} />
+      )}
     </GestureHandlerRootView>
   );
 };

@@ -2,8 +2,6 @@
 
 import { Drivers } from "Components/Driver/Types";
 import { Vehicles } from "Components/Vehicle/Types";
-import Driver from "Models/Driver";
-import Vehicle from "Models/Vehicle";
 
 export type RouteStatus = 'Em Progresso' | 'Pendente' | 'Concluído' | 'Cancelada';
 export interface RouteLocation {

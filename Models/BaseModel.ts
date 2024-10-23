@@ -26,7 +26,21 @@ abstract class BaseModel implements IBaseModel {
         this.updatedAt = new Date();
     }
 
-    abstract toJSON(): object;
+    toJSON(): object {
+
+        return {
+
+            id: this.id,
+
+            createdAt: this.createdAt,
+
+            updatedAt: this.updatedAt,
+
+            isActive: this.isActive
+
+        };
+
+    }
 }
 
 export default BaseModel;

@@ -1,3 +1,4 @@
+import { VehicleStatus } from "Components/Vehicle/Types";
 import BaseModel, { IBaseModel } from "./BaseModel";
 
 export interface IVehicle extends IBaseModel {
@@ -10,31 +11,40 @@ export interface IVehicle extends IBaseModel {
 }
 
 class Vehicle extends BaseModel implements IVehicle {
-
     plate: string;
     model: string;
     brand: string;
     year: number;
+    status: VehicleStatus; // Adicione o status
 
-    constructor(id: string, plate: string, model: string, brand: string, year: number, createdAt: Date, updatedAt: Date, isActive: boolean) {
-
+    constructor(
+        id: string,
+        plate: string,
+        model: string,
+        brand: string,
+        year: number,
+        status: VehicleStatus,
+        createdAt: Date,
+        updatedAt: Date,
+        isActive: boolean
+    ) {
         super(id, createdAt, updatedAt, isActive);
         this.plate = plate;
         this.model = model;
         this.brand = brand;
         this.year = year;
-
+        this.status = status;
     }
 
     toJSON(): object {
         return {
-            id: this.id,
+            ...super.toJSON(),
             plate: this.plate,
             model: this.model,
             brand: this.brand,
-            year: this.year
+            year: this.year,
+            status: this.status
         };
     }
 }
-
 export default Vehicle;

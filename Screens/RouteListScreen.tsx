@@ -18,21 +18,11 @@ const formatRoutes = (routes: Route[]): Route[] => {
     let startLocation: RouteLocation = { address: "" };
     let endLocation: RouteLocation = { address: "" };
 
-    if (!route.id || !route.startLocation || !route.endLocation) {
+    if (!route.id) {
       console.warn("Rota inválida encontrada:", route);
-      return {
-        id: route.id || "",
-        distance: 0,
-        estimatedDuration: 0,
-        status: "Pendente",
-        startLocation: { address: "" },
-        endLocation: { address: "" },
-        vehicle: route.vehicle as Vehicles,
-        driver: route.driver as Drivers,
-      };
+      return route;
     }
 
-    // Processa startLocation
     if (typeof route.startLocation === "string") {
       try {
         startLocation = JSON.parse(route.startLocation);
@@ -47,7 +37,6 @@ const formatRoutes = (routes: Route[]): Route[] => {
       };
     }
 
-    // Processa endLocation
     if (typeof route.endLocation === "string") {
       try {
         endLocation = JSON.parse(route.endLocation);
@@ -61,12 +50,13 @@ const formatRoutes = (routes: Route[]): Route[] => {
     }
 
     return {
-      id: route.id || "",
-      distance: 0,
-      estimatedDuration: 0,
-      status: "Pendente",
-      startLocation: { address: "" },
-      endLocation: { address: "" },
+      ...route,
+      id: route.id,
+      distance: route.distance || 0,
+      estimatedDuration: route.estimatedDuration || 0,
+      status: route.status || "Pendente",
+      startLocation: startLocation,
+      endLocation: endLocation,
       vehicle: route.vehicle as Vehicles,
       driver: route.driver as Drivers,
     };

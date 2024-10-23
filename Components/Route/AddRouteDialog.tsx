@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "./CustomButton";
@@ -15,13 +16,12 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "../Driver/Types";
 import { Vehicles } from "../Vehicle/Types";
 import { Route, RouteStatus } from "./Types";
+import { api, handleApiError } from "api"; // Ajuste o caminho conforme sua estrutura
 
 interface AddRouteDialogProps {
   visible: boolean;
   onClose: () => void;
   onSave: (route: Partial<Route>) => void;
-  drivers?: Drivers[];
-  vehicles?: Vehicles[];
   isLoading?: boolean;
 }
 
@@ -29,8 +29,6 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   visible,
   onClose,
   onSave,
-  drivers = [],
-  vehicles = [],
   isLoading = false,
 }) => {
   const [startLocation, setStartLocation] = useState("");
@@ -41,6 +39,48 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [selectedDriver, setSelectedDriver] = useState<string>("");
   const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Estados para os dados e loading
+  const [drivers, setDrivers] = useState<Drivers[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicles[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [loadingError, setLoadingError] = useState<string>("");
+
+  // Função para carregar os motoristas
+  const loadDrivers = async () => {
+    try {
+      const response = await api.getAllDrivers();
+      setDrivers(response.data);
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      setLoadingError(errorMessage);
+      Alert.alert("Erro", "Falha ao carregar motoristas: " + errorMessage);
+    }
+  };
+
+  // Função para carregar os veículos
+  const loadVehicles = async () => {
+    try {
+      const response = await api.getAllVehicles();
+      setVehicles(response.data);
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      setLoadingError(errorMessage);
+      Alert.alert("Erro", "Falha ao carregar veículos: " + errorMessage);
+    }
+  };
+
+  // Efeito para carregar os dados quando o modal for aberto
+  useEffect(() => {
+    if (visible) {
+      setIsLoadingData(true);
+      setLoadingError("");
+
+      Promise.all([loadDrivers(), loadVehicles()]).finally(() =>
+        setIsLoadingData(false)
+      );
+    }
+  }, [visible]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -58,29 +98,35 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
 
     const selectedDriverObj = drivers.find((d) => d.id === selectedDriver);
     const selectedVehicleObj = vehicles.find((v) => v.id === selectedVehicle);
 
     if (!selectedDriverObj || !selectedVehicleObj) {
-      console.error("Driver or vehicle not found");
+      Alert.alert("Erro", "Motorista ou veículo não encontrado");
       return;
     }
 
-    const newRoute: Partial<Route> = {
-      startLocation,
-      endLocation,
-      distance: parseFloat(distance),
-      estimatedDuration: parseFloat(estimatedDuration),
-      status,
-      driver: selectedDriverObj,
-      vehicle: selectedVehicleObj,
-    };
+    try {
+      const newRoute: Partial<Route> = {
+        startLocation,
+        endLocation,
+        distance: parseFloat(distance),
+        estimatedDuration: parseFloat(estimatedDuration),
+        status,
+        driver: selectedDriverObj,
+        vehicle: selectedVehicleObj,
+      };
 
-    onSave(newRoute);
-    resetForm();
+      await api.createRoute(newRoute);
+      onSave(newRoute);
+      resetForm();
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      Alert.alert("Erro", "Falha ao salvar rota: " + errorMessage);
+    }
   };
 
   const resetForm = () => {
@@ -132,117 +178,132 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.scrollContent}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#0066CC" />
-            ) : (
-              <>
-                {renderInput(
-                  "Local de Origem",
-                  startLocation,
-                  setStartLocation,
-                  "location-on",
-                  errors.startLocation
-                )}
-                {renderInput(
-                  "Local de Destino",
-                  endLocation,
-                  setEndLocation,
-                  "location-off",
-                  errors.endLocation
-                )}
-                {renderInput(
-                  "Distância (km)",
-                  distance,
-                  setDistance,
-                  "straighten",
-                  errors.distance,
-                  "numeric"
-                )}
-                {renderInput(
-                  "Duração Estimada (min)",
-                  estimatedDuration,
-                  setEstimatedDuration,
-                  "timer",
-                  errors.estimatedDuration,
-                  "numeric"
-                )}
+          {loadingError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorMessage}>{loadingError}</Text>
+              <CustomButton
+                title="Tentar Novamente"
+                onPress={() => {
+                  setLoadingError("");
+                  setIsLoadingData(true);
+                  Promise.all([loadDrivers(), loadVehicles()]).finally(() =>
+                    setIsLoadingData(false)
+                  );
+                }}
+                type="secondary"
+              />
+            </View>
+          ) : (
+            <ScrollView style={styles.scrollContent}>
+              {isLoading || isLoadingData ? (
+                <ActivityIndicator size="large" color="#0066CC" />
+              ) : (
+                <>
+                  {renderInput(
+                    "Local de Origem",
+                    startLocation,
+                    setStartLocation,
+                    "location-on",
+                    errors.startLocation
+                  )}
+                  {renderInput(
+                    "Local de Destino",
+                    endLocation,
+                    setEndLocation,
+                    "location-off",
+                    errors.endLocation
+                  )}
+                  {renderInput(
+                    "Distância (km)",
+                    distance,
+                    setDistance,
+                    "straighten",
+                    errors.distance,
+                    "numeric"
+                  )}
+                  {renderInput(
+                    "Duração Estimada (min)",
+                    estimatedDuration,
+                    setEstimatedDuration,
+                    "timer",
+                    errors.estimatedDuration,
+                    "numeric"
+                  )}
 
-                <View style={styles.pickerContainer}>
-                  <MaterialIcons
-                    name="person"
-                    size={24}
-                    color="#666"
-                    style={styles.inputIcon}
-                  />
-                  <Picker
-                    selectedValue={selectedDriver}
-                    style={styles.picker}
-                    onValueChange={setSelectedDriver}
-                  >
-                    <Picker.Item label="Selecione um motorista" value="" />
-                    {drivers
-                      .filter((driver) => driver)
-                      .map((driver) => (
+                  <View style={styles.pickerContainer}>
+                    <MaterialIcons
+                      name="person"
+                      size={24}
+                      color="#666"
+                      style={styles.inputIcon}
+                    />
+                    <Picker
+                      selectedValue={selectedDriver}
+                      style={styles.picker}
+                      onValueChange={setSelectedDriver}
+                    >
+                      <Picker.Item label="Selecione um motorista" value="" />
+                      {drivers.map((driver) => (
                         <Picker.Item
                           key={driver.id}
                           label={`${driver.name} - ${driver.licenseNumber}`}
                           value={driver.id}
                         />
                       ))}
-                  </Picker>
-                </View>
-                {errors.driver && (
-                  <Text style={styles.errorText}>{errors.driver}</Text>
-                )}
+                    </Picker>
+                  </View>
+                  {errors.driver && (
+                    <Text style={styles.errorText}>{errors.driver}</Text>
+                  )}
 
-                <View style={styles.pickerContainer}>
-                  <MaterialIcons
-                    name="directions-car"
-                    size={24}
-                    color="#666"
-                    style={styles.inputIcon}
-                  />
-                  <Picker
-                    selectedValue={selectedVehicle}
-                    style={styles.picker}
-                    onValueChange={setSelectedVehicle}
-                  >
-                    <Picker.Item label="Selecione um veículo" value="" />
-                    {vehicles.map((vehicle) => (
-                      <Picker.Item
-                        key={vehicle.id}
-                        label={`${vehicle.brand} ${vehicle.model} - ${vehicle.plate} (${vehicle.year})`}
-                        value={vehicle.id}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-                {errors.vehicle && (
-                  <Text style={styles.errorText}>{errors.vehicle}</Text>
-                )}
+                  <View style={styles.pickerContainer}>
+                    <MaterialIcons
+                      name="directions-car"
+                      size={24}
+                      color="#666"
+                      style={styles.inputIcon}
+                    />
+                    <Picker
+                      selectedValue={selectedVehicle}
+                      style={styles.picker}
+                      onValueChange={setSelectedVehicle}
+                    >
+                      <Picker.Item label="Selecione um veículo" value="" />
+                      {vehicles.map((vehicle) => (
+                        <Picker.Item
+                          key={vehicle.id}
+                          label={`${vehicle.brand} ${vehicle.model} - ${vehicle.plate} (${vehicle.year})`}
+                          value={vehicle.id}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                  {errors.vehicle && (
+                    <Text style={styles.errorText}>{errors.vehicle}</Text>
+                  )}
 
-                <View style={styles.pickerContainer}>
-                  <MaterialIcons
-                    name="info"
-                    size={24}
-                    color="#666"
-                    style={styles.inputIcon}
-                  />
-                  <Picker
-                    selectedValue={status}
-                    style={styles.picker}
-                    onValueChange={setStatus}
-                  >
-                    <Picker.Item label="Pendente" value="Pendente" />
-                    <Picker.Item label="Em Progresso" value="Em Progresso" />
-                    <Picker.Item label="Concluído" value="Concluído" />
-                    <Picker.Item label="Cancelada" value="Cancelada" />
-                  </Picker>
-                </View>
-              </>
-            )}
-          </ScrollView>
+                  <View style={styles.pickerContainer}>
+                    <MaterialIcons
+                      name="info"
+                      size={24}
+                      color="#666"
+                      style={styles.inputIcon}
+                    />
+                    <Picker
+                      selectedValue={status}
+                      style={styles.picker}
+                      onValueChange={setStatus}
+                    >
+                      <Picker.Item label="Pendente" value="Pendente" />
+                      <Picker.Item label="Em Progresso" value="Em Progresso" />
+                      <Picker.Item label="Concluído" value="Concluído" />
+                      <Picker.Item label="Cancelada" value="Cancelada" />
+                    </Picker>
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          )}
 
           <View style={styles.buttonContainer}>
             <CustomButton
@@ -256,7 +317,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
               onPress={handleSave}
               type="primary"
               style={styles.button}
-              disabled={isLoading}
+              disabled={isLoading || isLoadingData || !!loadingError}
             />
           </View>
         </View>
@@ -351,6 +412,15 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  errorMessage: {
+    color: "#dc3545",
+    marginBottom: 15,
+    textAlign: "center",
   },
 });
 

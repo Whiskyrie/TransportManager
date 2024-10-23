@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-const API_URL = 'http://10.0.2.2:3000/'; // Use o IP correto para iOS se necessário
+const API_URL = 'http://192.168.0.8:3000/'; // Use o IP correto para iOS se necessário
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: API_URL,
@@ -47,6 +47,13 @@ export const api = {
     createVehicle: (vehicleData: any) => axiosInstance.post('vehicles', vehicleData),
     updateVehicle: (id: string, vehicleData: any) => axiosInstance.patch(`vehicles/${id}`, vehicleData),
     deleteVehicle: (id: string) => axiosInstance.delete(`vehicles/${id}`),
+
+    // Funções para motoristas
+    getAllDrivers: () => axiosInstance.get('driver'),
+    getDriver: (id: string) => axiosInstance.get(`driver/${id}`),
+    createDriver: (driverData: any) => axiosInstance.post('driver', driverData),
+    updateDriver: (id: string, driverData: any) => axiosInstance.patch(`driver/${id}`, driverData),
+    deleteDriver: (id: string) => axiosInstance.delete(`driver/${id}`),
 };
 
 export const handleApiError = (error: any) => {
