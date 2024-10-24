@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TextInput, StyleSheet } from "react-native";
-import CustomButton from "../Driver/CustomButton";
+import {
+  View,
+  Text,
+  TextInput,
+  Modal,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import CustomButton from "../Common/CustomButton";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "./Types";
 
 interface EditDriverDialogProps {
@@ -8,6 +18,7 @@ interface EditDriverDialogProps {
   onClose: () => void;
   onSave: (editedDriver: Partial<Drivers>) => void;
   driver: Drivers;
+  isLoading?: boolean;
 }
 
 const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
@@ -15,80 +26,184 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
   onClose,
   onSave,
   driver,
+  isLoading = false,
 }) => {
   const [editedDriver, setEditedDriver] = useState<Partial<Drivers>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setEditedDriver(driver);
   }, [driver]);
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!editedDriver.name) newErrors.name = "Nome é obrigatório";
+    if (!editedDriver.licenseNumber)
+      newErrors.licenseNumber = "CNH é obrigatória";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
+    if (!validateForm()) return;
     onSave(editedDriver);
     onClose();
   };
 
+  const renderInput = (
+    placeholder: string,
+    value: string | undefined,
+    onChangeText: (text: string) => void,
+    icon: string,
+    error?: string
+  ) => (
+    <View style={styles.inputContainer}>
+      <MaterialIcons
+        name={icon as keyof typeof MaterialIcons.glyphMap}
+        size={24}
+        color="#666"
+        style={styles.inputIcon}
+      />
+      <TextInput
+        style={[styles.input, error && styles.inputError]}
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        placeholderTextColor="#666"
+      />
+      {error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
+  );
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.container}>
-        <View style={styles.dialog}>
-          <Text style={styles.title}>Editar Motorista</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nome"
-            value={editedDriver.name}
-            onChangeText={(text) =>
-              setEditedDriver({ ...editedDriver, name: text })
-            }
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="CNH"
-            value={editedDriver.licenseNumber}
-            onChangeText={(text) =>
-              setEditedDriver({ ...editedDriver, licenseNumber: text })
-            }
-          />
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={styles.modalContainer}>
+        <View style={styles.dialogContainer}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Editar Motorista</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <MaterialIcons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.scrollContent}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#0066CC" />
+            ) : (
+              <>
+                {renderInput(
+                  "Nome",
+                  editedDriver.name,
+                  (text) => setEditedDriver({ ...editedDriver, name: text }),
+                  "person",
+                  errors.name
+                )}
+                {renderInput(
+                  "CNH",
+                  editedDriver.licenseNumber,
+                  (text) =>
+                    setEditedDriver({ ...editedDriver, licenseNumber: text }),
+                  "assignment",
+                  errors.licenseNumber
+                )}
+              </>
+            )}
+          </ScrollView>
+
           <View style={styles.buttonContainer}>
-            <CustomButton title="Cancelar" onPress={onClose} type="secondary" />
-            <CustomButton title="Salvar" onPress={handleSave} type="primary" />
+            <CustomButton
+              title="Cancelar"
+              onPress={onClose}
+              type="secondary"
+              style={styles.button}
+            />
+            <CustomButton
+              title="Salvar"
+              onPress={handleSave}
+              type="primary"
+              style={styles.button}
+              disabled={isLoading}
+            />
           </View>
         </View>
       </View>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
-  container: {
+  modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  dialog: {
+  dialogContainer: {
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 20,
-    width: "80%",
+    width: "90%",
     maxHeight: "80%",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+    color: "#333",
+  },
+  closeButton: {
+    padding: 5,
+  },
+  scrollContent: {
+    maxHeight: "70%",
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  inputIcon: {
+    position: "absolute",
+    left: 10,
+    top: 12,
+    zIndex: 1,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 12,
+    paddingLeft: 40,
+    fontSize: 16,
+    backgroundColor: "#f8f9fa",
+    color: "#333",
+  },
+  inputError: {
+    borderColor: "#dc3545",
+  },
+  errorText: {
+    color: "#dc3545",
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 10,
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
   },
 });
 

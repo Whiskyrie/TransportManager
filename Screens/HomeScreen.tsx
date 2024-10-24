@@ -82,10 +82,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           description="Gerencie e monitore seus motoristas"
         />
       </View>
-      <TouchableOpacity style={styles.settingsButton}>
-        <Icon name="settings" size={30} color="#007bff" />
-        <Text style={styles.settingsText}>Configurações</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -145,18 +141,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: "center",
   },
-  settingsButton: {
-    position: "absolute",
-    bottom: 30,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  settingsText: {
-    fontSize: 16,
-    color: "#007bff",
-    marginLeft: 5,
-    fontWeight: "bold",
-  },
+  // settingsButton: {
+  //   position: "absolute",
+  //   bottom: 30,
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  // },
+  // settingsText: {
+  //   fontSize: 16,
+  //   color: "#007bff",
+  //   marginLeft: 5,
+  //   fontWeight: "bold",
+  // },
 });
 
 export default HomeScreen;

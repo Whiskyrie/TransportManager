@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import CustomButton from "./CustomButton";
+import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "../Driver/Types";
 import { Vehicles } from "../Vehicle/Types";

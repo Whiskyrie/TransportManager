@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import AppHeader from "../Components/Driver/AppHeader";
-import CustomButton from "../Components/Driver/CustomButton";
+import AppHeader from "../Components/Common/AppHeader";
+import CustomButton from "../Components/Common/CustomButton";
 import VehicleFilter from "../Components/Vehicle/VehicleFilter";
 import VehicleList from "../Components/Vehicle/VehicleList";
 import VehicleDetails from "../Components/Vehicle/VehicleDetails";

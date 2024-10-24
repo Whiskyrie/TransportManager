@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import AppHeader from "../Components/Driver/AppHeader";
-import CustomButton from "../Components/Driver/CustomButton";
+import AppHeader from "../Components/Common/AppHeader";
+import CustomButton from "../Components/Common/CustomButton";
 import DriverFilter from "Components/Driver/DriverFilter";
 import DriverList from "Components/Driver/DriverList";
 import DriverDetails from "Components/Driver/DriverDetails";
 import AddDriverDialog from "Components/Driver/AddDriverDialog";
-import DeleteDriverDialog from "Components/Driver/DeleteRouteDriver";
+import DeleteDriverDialog from "Components/Driver/DeleteDriverDialog";
 import EditDriverDialog from "Components/Driver/EditDriverDialog";
 import { Drivers, DriverStatus } from "../Components/Driver/Types";
 import { api, handleApiError } from "../api";
@@ -66,15 +66,26 @@ const DriverListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
           prevDrivers.filter((driver) => driver.id !== driverToDelete.id)
         );
         setErrorMessage("");
-      } catch (error) {
-        const errorMsg = handleApiError(error);
-        setErrorMessage(`Error deleting driver: ${errorMsg}`);
+        setIsDeleteDialogVisible(false);
+        setDriverToDelete(null);
+      } catch (error: any) {
+        // Tratamento específico para erro 500 (rotas associadas)
+        if (error.response?.status === 500) {
+          setErrorMessage(
+            "Não é possível excluir este motorista pois ele possui rotas associadas. Remova primeiro as rotas associadas."
+          );
+        } else {
+          const errorMsg = handleApiError(error);
+          setErrorMessage(`Error deleting driver: ${errorMsg}`);
+        }
+        // Mantém o modal aberto apenas em caso de erro 500
+        if (error.response?.status !== 500) {
+          setIsDeleteDialogVisible(false);
+          setDriverToDelete(null);
+        }
       }
     }
-    setIsDeleteDialogVisible(false);
-    setDriverToDelete(null);
   };
-
   const handleEditDriver = (driver: Drivers) => {
     setDriverToEdit(driver);
     setIsEditDialogVisible(true);
@@ -155,6 +166,8 @@ const DriverListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
         visible={isDeleteDialogVisible}
         onClose={() => setIsDeleteDialogVisible(false)}
         onConfirm={confirmDeleteDriver}
+        driverId={driverToDelete?.id || ""} // Adicionar essa prop
+        driverName={driverToDelete?.name} // Adicionar essa prop opcional
       />
       {driverToEdit && (
         <EditDriverDialog

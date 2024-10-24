@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import CustomInput from "../Driver/CustomInput";
+import CustomInput from "../Common/CustomInput";
 import { VehicleStatus } from "./Types";
 
 interface VehicleFilterProps {

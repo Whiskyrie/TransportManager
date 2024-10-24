@@ -58,17 +58,33 @@ export const api = {
 
 export const handleApiError = (error: any) => {
     if (error.response) {
-        // O servidor respondeu com um status fora do intervalo 2xx
-        console.error("Erro de resposta do servidor:", error.response.data);
-        console.error("Status do erro:", error.response.status);
-        return `Erro do servidor: ${error.response.status}`;
+        // Tratamento específico para erros comuns
+        switch (error.response.status) {
+            case 400:
+                return "Dados inválidos. Verifique as informações e tente novamente.";
+            case 401:
+                return "Não autorizado. Faça login novamente.";
+            case 403:
+                return "Você não tem permissão para realizar esta ação.";
+            case 404:
+                return "Recurso não encontrado.";
+            case 409:
+                return "Conflito com dados existentes.";
+            case 500:
+                // Verifica se há uma mensagem específica do servidor
+                if (error.response.data?.message) {
+                    return error.response.data.message;
+                }
+                return "Erro interno do servidor. Tente novamente mais tarde.";
+            default:
+                return `Erro do servidor: ${error.response.status}`;
+        }
     } else if (error.request) {
-        // A requisição foi feita mas não houve resposta
-        console.error("Erro de rede - sem resposta:", error.request);
-        return "Erro de rede: não foi possível conectar ao servidor";
+        if (error.code === 'ECONNABORTED') {
+            return "Tempo de conexão esgotado. Verifique sua conexão e tente novamente.";
+        }
+        return "Erro de conexão. Verifique sua internet e tente novamente.";
     } else {
-        // Algo aconteceu na configuração da requisição que gerou um erro
-        console.error("Erro na configuração da requisição:", error.message);
-        return "Erro na configuração da requisição";
+        return "Ocorreu um erro inesperado. Tente novamente.";
     }
 };

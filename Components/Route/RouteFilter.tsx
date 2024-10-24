@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import CustomInput from "./CustomInput";
+import CustomInput from "../Common/CustomInput";
 import { RouteStatus } from "../Route/Types";
 
 interface RouteFilterProps {
