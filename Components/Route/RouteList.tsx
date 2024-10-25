@@ -110,6 +110,19 @@ const RouteList: React.FC<RouteListProps> = ({
                   )}
                 </Text>
               </View>
+              {/* Novos campos de motorista e veículo */}
+              <View style={styles.detailRow}>
+                <Icon name="account-tie" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  Motorista: {item.driver.name})
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Icon name="truck" size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  Veículo: {item.vehicle.model} - {item.vehicle.plate}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
 
@@ -136,13 +149,13 @@ const RouteList: React.FC<RouteListProps> = ({
             onPress={() => onEditRoute(item)}
             style={[styles.actionButton, styles.editButton]}
           >
-            <Icon name="pencil" size={20} color="#FFF" />
+            <Icon name="pencil" size={25} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => onDeleteRoute(item)}
             style={[styles.actionButton, styles.deleteButton]}
           >
-            <Icon name="delete" size={20} color="#FFF" />
+            <Icon name="delete" size={25} color="#FFF" />
           </TouchableOpacity>
         </View>
       </View>
@@ -302,14 +315,15 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: "column",
-    justifyContent: "flex-end",
-    gap: 32,
-    marginBottom: 32,
+    justifyContent: "center",
+    gap: 20,
+    marginBottom: 15,
+    marginTop: 15,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
   },

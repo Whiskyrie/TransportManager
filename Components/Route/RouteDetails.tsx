@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Route } from "../Route/Types";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons"; // Certifique-se de instalar este pacote
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface RouteDetailsProps {
   route: Route;
@@ -61,6 +61,42 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
               <Text style={styles.detailText}>
                 {route.estimatedDuration} min
               </Text>
+            </View>
+
+            {/* Novos campos de motorista */}
+            <View style={styles.sectionTitle}>
+              <Icon name="account-tie" size={24} color="#007bff" />
+              <Text style={styles.sectionTitleText}>
+                Informações do Motorista
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Nome:</Text>
+              <Text style={styles.detailText}>{route.driver.name}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>CNH:</Text>
+              <Text style={styles.detailText}>
+                {route.driver.licenseNumber}
+              </Text>
+            </View>
+            <View style={styles.sectionTitle}>
+              <Icon name="truck" size={24} color="#007bff" />
+              <Text style={styles.sectionTitleText}>
+                Informações do Veículo
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Modelo:</Text>
+              <Text style={styles.detailText}>{route.vehicle.model}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Placa:</Text>
+              <Text style={styles.detailText}>{route.vehicle.plate}</Text>
             </View>
           </ScrollView>
 
@@ -126,6 +162,21 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  sectionTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 15,
+    paddingBottom: 5,
+    borderBottomWidth: 2,
+    borderBottomColor: "#007bff",
+  },
+  sectionTitleText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 10,
+    color: "#007bff",
   },
 });
 
