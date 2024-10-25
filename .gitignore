@@ -29,9 +29,7 @@ yarn-error.*
 *.pem
 
 # local env files
-/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Backend.env
-/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/.env.*
-!/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/.env.example
+Backend/.env.local
 
 # typescript
 *.tsbuildinfo
