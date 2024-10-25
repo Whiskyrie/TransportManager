@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import AppHeader from "../Components/Common/AppHeader";
-import CustomButton from "../Components/Common/CustomButton";
-import VehicleFilter from "../Components/Vehicle/VehicleFilter";
-import VehicleList from "../Components/Vehicle/VehicleList";
-import VehicleDetails from "../Components/Vehicle/VehicleDetails";
-import AddVehicleDialog from "../Components/Vehicle/AddVehicleDialog";
-import DeleteVehicleDialog from "../Components/Vehicle/DeleteRouteVehicle";
-import EditVehicleDialog from "../Components/Vehicle/EditVehicleDialog";
-import { Vehicles, VehicleStatus } from "../Components/Vehicle/Types";
-import { api, handleApiError } from "../api";
+import AppHeader from "../../Components/Common/AppHeader";
+import CustomButton from "../../Components/Common/CustomButton";
+import VehicleFilter from "../../Components/Vehicle/VehicleFilter";
+import VehicleList from "../../Components/Vehicle/VehicleList";
+import VehicleDetails from "../../Components/Vehicle/VehicleDetails";
+import AddVehicleDialog from "../../Components/Vehicle/AddVehicleDialog";
+import DeleteVehicleDialog from "../../Components/Vehicle/DeleteRouteVehicle";
+import EditVehicleDialog from "../../Components/Vehicle/EditVehicleDialog";
+import { Vehicles, VehicleStatus } from "../../Components/Vehicle/Types";
+import { api, handleApiError } from "../../api";
 
 const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   onNavigate,

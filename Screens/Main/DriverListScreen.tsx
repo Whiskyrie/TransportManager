@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import AppHeader from "../Components/Common/AppHeader";
-import CustomButton from "../Components/Common/CustomButton";
+import AppHeader from "../../Components/Common/AppHeader";
+import CustomButton from "../../Components/Common/CustomButton";
 import DriverFilter from "Components/Driver/DriverFilter";
 import DriverList from "Components/Driver/DriverList";
 import DriverDetails from "Components/Driver/DriverDetails";
 import AddDriverDialog from "Components/Driver/AddDriverDialog";
 import DeleteDriverDialog from "Components/Driver/DeleteDriverDialog";
 import EditDriverDialog from "Components/Driver/EditDriverDialog";
-import { Drivers, DriverStatus } from "../Components/Driver/Types";
-import { api, handleApiError } from "../api";
+import { Drivers, DriverStatus } from "../../Components/Driver/Types";
+import { api, handleApiError } from "../../api";
 
 const DriverListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   onNavigate,

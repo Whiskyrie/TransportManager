@@ -24,7 +24,7 @@ import { DatabaseController } from './database.controller';
                 database: configService.get('DB_NAME'),
                 entities: [Route, Driver, Vehicle, User],
                 synchronize: configService.get('NODE_ENV') === 'development',
-                logging: configService.get('NODE_ENV') === 'development',
+                logging: false,
             }),
             inject: [ConfigService],
         }),

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import OnboardingScreen from "./Screens/OnboardingScreen";
-import SplashScreen from "./Screens/SplashScreen";
-import RouteListScreen from "./Screens/RouteListScreen";
-import HomeScreen from "./Screens/HomeScreen";
-import VehicleListScreen from "./Screens/VehicleListScreen";
-import DriverListScreen from "./Screens/DriverListScreen";
+import OnboardingScreen from "./Screens/Authentication/OnboardingScreen";
+import SplashScreen from "./Screens/Splash/SplashScreen";
+import RouteListScreen from "./Screens/Main/RouteListScreen";
+import HomeScreen from "./Screens/Main/HomeScreen";
+import VehicleListScreen from "./Screens/Main/VehicleListScreen";
+import DriverListScreen from "./Screens/Main/DriverListScreen";
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState("onboarding");
