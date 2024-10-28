@@ -1,7 +1,7 @@
 // File: types.ts
 
-import { Drivers } from "Components/Driver/Types";
-import { Vehicles } from "Components/Vehicle/Types";
+import { Drivers } from "Types/driverTypes";
+import { Vehicles } from "Types/vehicleTypes";
 
 export type RouteStatus = 'Em Progresso' | 'Pendente' | 'Concluído' | 'Cancelada';
 export interface RouteLocation {

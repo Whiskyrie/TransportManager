@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Vehicles } from "./Types";
+import { Vehicles } from "../../Types/vehicleTypes";
 
 interface VehicleListProps {
   vehicles: Vehicles[];
@@ -19,8 +19,8 @@ interface VehicleListProps {
   onRefresh: () => void;
   ListHeaderComponent?: React.ReactElement;
   contentContainerStyle?: ViewStyle;
-  onDeleteVehicle: (vehicle: Vehicles) => void;
-  onEditVehicle: (vehicle: Vehicles) => void;
+  onDeleteVehicle: ((vehicle: Vehicles) => void) | null;
+  onEditVehicle: ((vehicle: Vehicles) => void) | null;
 }
 
 const VehicleList: React.FC<VehicleListProps> = ({
@@ -36,11 +36,14 @@ const VehicleList: React.FC<VehicleListProps> = ({
   const renderVehicleItem = ({ item }: { item: Vehicles }) => (
     <View style={styles.itemContainer}>
       <View style={styles.iconContainer}>
-        <Icon name="car" size={32} color="#4A90E2" />
+        <Icon name="car" size={32} color="#1a2b2b" />
       </View>
       <TouchableOpacity
         onPress={() => onSelectVehicle(item)}
-        style={styles.vehicleInfoContainer}
+        style={[
+          styles.vehicleInfoContainer,
+          !onEditVehicle && !onDeleteVehicle && styles.vehicleInfoFullWidth,
+        ]}
         activeOpacity={0.7}
       >
         <View style={styles.vehicleInfo}>
@@ -55,7 +58,7 @@ const VehicleList: React.FC<VehicleListProps> = ({
               <Icon
                 name={getStatusIcon(item.status)}
                 size={12}
-                color="white"
+                color="#f6f5f0"
                 style={styles.statusIcon}
               />
               <Text style={styles.statusText}>{item.status}</Text>
@@ -63,30 +66,36 @@ const VehicleList: React.FC<VehicleListProps> = ({
           </View>
           <View style={styles.vehicleDetails}>
             <View style={styles.detailRow}>
-              <Icon name="car-info" size={16} color="#666" />
+              <Icon name="car-info" size={16} color="#a51912" />
               <Text style={styles.detailText}>Modelo: {item.model}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Icon name="factory" size={16} color="#666" />
+              <Icon name="factory" size={16} color="#a51912" />
               <Text style={styles.detailText}>Marca: {item.brand}</Text>
             </View>
           </View>
         </View>
       </TouchableOpacity>
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          onPress={() => onEditVehicle(item)}
-          style={[styles.actionButton, styles.editButton]}
-        >
-          <Icon name="pencil" size={20} color="#FFF" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onDeleteVehicle(item)}
-          style={[styles.actionButton, styles.deleteButton]}
-        >
-          <Icon name="delete" size={20} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+      {(onEditVehicle || onDeleteVehicle) && (
+        <View style={styles.actionButtons}>
+          {onEditVehicle && (
+            <TouchableOpacity
+              onPress={() => onEditVehicle(item)}
+              style={[styles.actionButton, styles.editButton]}
+            >
+              <Icon name="pencil" size={20} color="#FFF" />
+            </TouchableOpacity>
+          )}
+          {onDeleteVehicle && (
+            <TouchableOpacity
+              onPress={() => onDeleteVehicle(item)}
+              style={[styles.actionButton, styles.deleteButton]}
+            >
+              <Icon name="delete" size={20} color="#FFF" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </View>
   );
 
@@ -109,7 +118,7 @@ const VehicleList: React.FC<VehicleListProps> = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#4A90E2"]}
+          colors={["#a51912"]}
         />
       }
       ListHeaderComponent={ListHeaderComponent}
@@ -158,7 +167,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 16,
     marginBottom: 16,
     padding: 16,
@@ -177,13 +186,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#f5f2e5",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   vehicleInfoContainer: {
     flex: 1,
+  },
+  vehicleInfoFullWidth: {
+    flex: 1,
+    marginRight: 0, // Remove margem quando não há botões de ação
   },
   vehicleInfo: {
     justifyContent: "space-between",
@@ -197,7 +210,7 @@ const styles = StyleSheet.create({
   plateText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1F2937",
+    color: "#f5f2e5",
   },
   statusBadge: {
     flexDirection: "row",
@@ -210,7 +223,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   statusText: {
-    color: "white",
+    color: "#f5f2e5",
     fontSize: 12,
     fontWeight: "600",
   },
@@ -224,7 +237,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     marginLeft: 8,
-    color: "#4B5563",
+    color: "#f5f2e5",
     fontSize: 14,
   },
   actionButtons: {
@@ -235,7 +248,7 @@ const styles = StyleSheet.create({
   actionButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 4,
@@ -255,12 +268,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#374151",
+    color: "#f5f2e5",
     marginTop: 16,
   },
   emptySubText: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "#f5f2e5",
     textAlign: "center",
     marginTop: 8,
     paddingHorizontal: 32,

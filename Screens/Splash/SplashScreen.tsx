@@ -1,29 +1,30 @@
-import React from "react";
-import {
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, Image, StyleSheet, Dimensions } from "react-native";
 
 interface SplashScreenProps {
   onFinish: () => void;
+  duration?: number;
 }
 
-const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+const SplashScreen: React.FC<SplashScreenProps> = ({
+  onFinish,
+  duration = 10000,
+}) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onFinish();
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [onFinish, duration]);
+
   return (
     <View style={styles.container}>
       <Image
         source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
         style={styles.logo}
+        resizeMode="contain"
       />
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={onFinish}>
-          <Text style={styles.buttonText}>Iniciar</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -35,31 +36,14 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#1a2b2b",
   },
   logo: {
-    width: Dimensions.get("window").width * 0.6,
-    height: undefined,
+    width: Dimensions.get("window").width * 0.825,
+    height: Dimensions.get("window").width * 0.825,
     aspectRatio: 1,
     marginBottom: 50,
     marginRight: 15,
-  },
-  buttonContainer: {
-    width: "100%",
-    position: "absolute",
-    bottom: 30,
-    paddingHorizontal: 12,
-  },
-  button: {
-    backgroundColor: "#007bff",
-    paddingVertical: 12,
-    borderRadius: 20,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
   },
 });
 

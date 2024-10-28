@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomInput from "../Common/CustomInput";
-import { VehicleStatus } from "./Types";
+import { VehicleStatus } from "../../Types/vehicleTypes";
 
 interface VehicleFilterProps {
   searchQuery: string;
@@ -24,17 +24,6 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
       onChangeText={setSearchQuery}
       placeholder="Digite a placa, modelo ou marca"
     />
-    <Picker
-      selectedValue={statusFilter}
-      onValueChange={(itemValue) =>
-        setStatusFilter(itemValue as VehicleStatus | "All")
-      }
-    >
-      <Picker.Item label="Todos" value="All" />
-      <Picker.Item label="Disponível" value="Disponível" />
-      <Picker.Item label="Indisponível" value="Indisponível" />
-      <Picker.Item label="Em manutenção" value="Em manutenção" />
-    </Picker>
   </View>
 );
 

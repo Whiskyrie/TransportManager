@@ -13,10 +13,11 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Drivers } from "../Driver/Types";
-import { Vehicles } from "../Vehicle/Types";
-import { Route, RouteStatus } from "./Types";
-import { api, handleApiError } from "api"; // Ajuste o caminho conforme sua estrutura
+import { Drivers } from "../../Types/driverTypes";
+import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { Route, RouteStatus } from "../../Types/routeTypes";
+import { api, handleApiError } from "Services/api";
+import LocationAutocomplete from "./LocationAutoComplete";
 
 interface AddRouteDialogProps {
   visible: boolean;
@@ -40,13 +41,11 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Estados para os dados e loading
   const [drivers, setDrivers] = useState<Drivers[]>([]);
   const [vehicles, setVehicles] = useState<Vehicles[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [loadingError, setLoadingError] = useState<string>("");
 
-  // Função para carregar os motoristas
   const loadDrivers = async () => {
     try {
       const response = await api.getAllDrivers();
@@ -58,19 +57,20 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     }
   };
 
-  // Função para carregar os veículos
   const loadVehicles = async () => {
     try {
       const response = await api.getAllVehicles();
-      setVehicles(response.data);
+      // Filtra apenas veículos disponíveis
+      const availableVehicles = response.data.filter(
+        (vehicle: Vehicles) => vehicle.status === "Disponível"
+      );
+      setVehicles(availableVehicles);
     } catch (error) {
       const errorMessage = handleApiError(error);
       setLoadingError(errorMessage);
       Alert.alert("Erro", "Falha ao carregar veículos: " + errorMessage);
     }
   };
-
-  // Efeito para carregar os dados quando o modal for aberto
   useEffect(() => {
     if (visible) {
       setIsLoadingData(true);
@@ -98,6 +98,17 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetForm = () => {
+    setStartLocation("");
+    setEndLocation("");
+    setDistance("");
+    setEstimatedDuration("");
+    setStatus("Pendente");
+    setSelectedDriver("");
+    setSelectedVehicle("");
+    setErrors({});
+  };
+
   const handleSave = async () => {
     if (!validateForm()) return;
 
@@ -110,6 +121,13 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     }
 
     try {
+      const updatedVehicle: Partial<Vehicles> = {
+        ...selectedVehicleObj,
+        status: "Indisponível",
+      };
+
+      await api.updateVehicle(selectedVehicle, updatedVehicle);
+
       const newRoute: Partial<Route> = {
         startLocation,
         endLocation,
@@ -117,27 +135,20 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         estimatedDuration: parseFloat(estimatedDuration),
         status,
         driver: selectedDriverObj,
-        vehicle: selectedVehicleObj,
+        vehicle: {
+          ...selectedVehicleObj,
+          status: "Indisponível",
+        },
       };
 
       await api.createRoute(newRoute);
       onSave(newRoute);
       resetForm();
+      onClose(); // Adicionado para fechar o diálogo após salvar com sucesso
     } catch (error) {
       const errorMessage = handleApiError(error);
       Alert.alert("Erro", "Falha ao salvar rota: " + errorMessage);
     }
-  };
-
-  const resetForm = () => {
-    setStartLocation("");
-    setEndLocation("");
-    setDistance("");
-    setEstimatedDuration("");
-    setStatus("Pendente");
-    setSelectedDriver("");
-    setSelectedVehicle("");
-    setErrors({});
   };
 
   const renderInput = (
@@ -152,7 +163,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
       <MaterialIcons
         name={icon as keyof typeof MaterialIcons.glyphMap}
         size={24}
-        color="#666"
+        color="#f5f2e5"
         style={styles.inputIcon}
       />
       <TextInput
@@ -161,7 +172,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor="#666"
+        placeholderTextColor="#a0a0a0"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -174,7 +185,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Nova Rota</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+              <MaterialIcons name="close" size={24} color="#f5f2e5" />
             </TouchableOpacity>
           </View>
 
@@ -196,23 +207,25 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
           ) : (
             <ScrollView style={styles.scrollContent}>
               {isLoading || isLoadingData ? (
-                <ActivityIndicator size="large" color="#0066CC" />
+                <ActivityIndicator size="large" color="#f5f2e5" />
               ) : (
                 <>
-                  {renderInput(
-                    "Local de Origem",
-                    startLocation,
-                    setStartLocation,
-                    "location-on",
-                    errors.startLocation
-                  )}
-                  {renderInput(
-                    "Local de Destino",
-                    endLocation,
-                    setEndLocation,
-                    "location-off",
-                    errors.endLocation
-                  )}
+                  <LocationAutocomplete
+                    value={startLocation}
+                    onLocationSelect={setStartLocation}
+                    placeholder="Local de Origem"
+                    icon="location-on"
+                    error={errors.startLocation}
+                  />
+
+                  <LocationAutocomplete
+                    value={endLocation}
+                    onLocationSelect={setEndLocation}
+                    placeholder="Local de Destino"
+                    icon="location-off"
+                    error={errors.endLocation}
+                  />
+
                   {renderInput(
                     "Distância (km)",
                     distance,
@@ -234,20 +247,26 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                     <MaterialIcons
                       name="person"
                       size={24}
-                      color="#666"
+                      color="#f5f2e5"
                       style={styles.inputIcon}
                     />
                     <Picker
                       selectedValue={selectedDriver}
                       style={styles.picker}
+                      dropdownIconColor="#f5f2e5"
                       onValueChange={setSelectedDriver}
                     >
-                      <Picker.Item label="Selecione um motorista" value="" />
+                      <Picker.Item
+                        label="Selecione um motorista"
+                        value=""
+                        color="#1a2b2b"
+                      />
                       {drivers.map((driver) => (
                         <Picker.Item
                           key={driver.id}
                           label={`${driver.name} - ${driver.licenseNumber}`}
                           value={driver.id}
+                          color="#1a2b2b"
                         />
                       ))}
                     </Picker>
@@ -260,20 +279,26 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                     <MaterialIcons
                       name="directions-car"
                       size={24}
-                      color="#666"
+                      color="#f5f2e5"
                       style={styles.inputIcon}
                     />
                     <Picker
                       selectedValue={selectedVehicle}
                       style={styles.picker}
+                      dropdownIconColor="#f5f2e5"
                       onValueChange={setSelectedVehicle}
                     >
-                      <Picker.Item label="Selecione um veículo" value="" />
+                      <Picker.Item
+                        label="Selecione um veículo"
+                        value=""
+                        color="#1a2b2b"
+                      />
                       {vehicles.map((vehicle) => (
                         <Picker.Item
                           key={vehicle.id}
                           label={`${vehicle.brand} ${vehicle.model} - ${vehicle.plate} (${vehicle.year})`}
                           value={vehicle.id}
+                          color="#1a2b2b"
                         />
                       ))}
                     </Picker>
@@ -286,18 +311,35 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                     <MaterialIcons
                       name="info"
                       size={24}
-                      color="#666"
+                      color="#f5f2e5"
                       style={styles.inputIcon}
                     />
                     <Picker
                       selectedValue={status}
                       style={styles.picker}
+                      dropdownIconColor="#f5f2e5"
                       onValueChange={setStatus}
                     >
-                      <Picker.Item label="Pendente" value="Pendente" />
-                      <Picker.Item label="Em Progresso" value="Em Progresso" />
-                      <Picker.Item label="Concluído" value="Concluído" />
-                      <Picker.Item label="Cancelada" value="Cancelada" />
+                      <Picker.Item
+                        label="Pendente"
+                        value="Pendente"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Em Progresso"
+                        value="Em Progresso"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Concluído"
+                        value="Concluído"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Cancelada"
+                        value="Cancelada"
+                        color="#1a2b2b"
+                      />
                     </Picker>
                   </View>
                 </>
@@ -334,7 +376,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 15,
     padding: 20,
     width: "90%",
@@ -342,8 +384,8 @@ const styles = StyleSheet.create({
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 1.25,
+    shadowRadius: 4.85,
   },
   header: {
     flexDirection: "row",
@@ -354,7 +396,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     padding: 5,
@@ -365,6 +407,11 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 15,
   },
+  locationInput: {
+    backgroundColor: "#243636",
+    borderColor: "#243636",
+    color: "#f5f2e5",
+  },
   inputIcon: {
     position: "absolute",
     left: 10,
@@ -373,13 +420,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     padding: 12,
     paddingLeft: 40,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#333",
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
   },
   inputError: {
     borderColor: "#dc3545",
@@ -392,10 +439,10 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     marginBottom: 15,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#243636",
     flexDirection: "row",
     alignItems: "center",
   },
@@ -403,6 +450,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     marginLeft: 30,
+    color: "#f5f2e5",
   },
   buttonContainer: {
     flexDirection: "row",

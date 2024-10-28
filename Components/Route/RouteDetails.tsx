@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Route } from "../Route/Types";
+import { Route } from "../../Types/routeTypes";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface RouteDetailsProps {
@@ -24,19 +24,19 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
             <Text style={styles.title}>Detalhes da Rota</Text>
 
             <View style={styles.detailRow}>
-              <Icon name="flag-checkered" size={24} color="#007bff" />
+              <Icon name="flag-checkered" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Status:</Text>
               <Text style={styles.detailText}>{route.status}</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Icon name="map-marker-distance" size={24} color="#007bff" />
+              <Icon name="map-marker-distance" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Distância:</Text>
               <Text style={styles.detailText}>{route.distance} km</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Icon name="map-marker" size={24} color="#007bff" />
+              <Icon name="map-marker" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Início:</Text>
               <Text style={styles.detailText}>
                 {typeof route.startLocation === "string"
@@ -46,7 +46,7 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
             </View>
 
             <View style={styles.detailRow}>
-              <Icon name="map-marker-check" size={24} color="#007bff" />
+              <Icon name="map-marker-check" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Destino:</Text>
               <Text style={styles.detailText}>
                 {typeof route.endLocation === "string"
@@ -56,7 +56,7 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
             </View>
 
             <View style={styles.detailRow}>
-              <Icon name="clock-outline" size={24} color="#007bff" />
+              <Icon name="clock-outline" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Duração Estimada:</Text>
               <Text style={styles.detailText}>
                 {route.estimatedDuration} min
@@ -65,7 +65,7 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
 
             {/* Novos campos de motorista */}
             <View style={styles.sectionTitle}>
-              <Icon name="account-tie" size={24} color="#007bff" />
+              <Icon name="account-tie" size={24} color="#a51912" />
               <Text style={styles.sectionTitleText}>
                 Informações do Motorista
               </Text>
@@ -83,7 +83,7 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
               </Text>
             </View>
             <View style={styles.sectionTitle}>
-              <Icon name="truck" size={24} color="#007bff" />
+              <Icon name="truck" size={24} color="#a51912" />
               <Text style={styles.sectionTitleText}>
                 Informações do Veículo
               </Text>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 20,
     padding: 20,
     width: "90%",
@@ -129,14 +129,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: "#333",
+    color: "#f5f2e5",
   },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#f5f2e5",
     paddingBottom: 10,
   },
   detailLabel: {
@@ -144,22 +144,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 10,
     flex: 1,
-    color: "#555",
+    color: "#f5f2e5",
   },
   detailText: {
     fontSize: 16,
     flex: 2,
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     marginTop: 20,
     padding: 15,
-    backgroundColor: "#007bff",
+    backgroundColor: "#a51912",
     borderRadius: 10,
     alignItems: "center",
   },
   closeButtonText: {
-    color: "white",
+    color: "#f5f2e5",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -170,13 +170,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingBottom: 5,
     borderBottomWidth: 2,
-    borderBottomColor: "#007bff",
+    borderBottomColor: "#f5f2e5",
   },
   sectionTitleText: {
     fontSize: 18,
     fontWeight: "bold",
     marginLeft: 10,
-    color: "#007bff",
+    color: "#f5f2e5",
   },
 });
 

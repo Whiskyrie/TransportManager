@@ -1,5 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+// Definindo o tipo VehicleStatus
+export type VehicleStatus = 'Disponível' | 'Indisponível' | 'Em manutenção';
+
 @Entity()
 export class Vehicle {
     @PrimaryGeneratedColumn('uuid')
@@ -16,5 +19,11 @@ export class Vehicle {
 
     @Column()
     plate: string;
-}
 
+    @Column({
+        type: 'enum',
+        enum: ['Disponível', 'Indisponível', 'Em manutenção'],
+        default: 'Disponível'
+    })
+    status: VehicleStatus;
+}

@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Drivers } from "./Types";
+import { Drivers } from "../../Types/driverTypes";
 
 interface DriverListProps {
   drivers: Drivers[];
@@ -19,8 +19,8 @@ interface DriverListProps {
   onRefresh: () => void;
   ListHeaderComponent?: React.ReactElement;
   contentContainerStyle?: ViewStyle;
-  onDeleteDriver: (driver: Drivers) => void;
-  onEditDriver: (driver: Drivers) => void;
+  onDeleteDriver: ((driver: Drivers) => void) | null;
+  onEditDriver: ((driver: Drivers) => void) | null;
 }
 
 const DriverList: React.FC<DriverListProps> = ({
@@ -36,11 +36,14 @@ const DriverList: React.FC<DriverListProps> = ({
   const renderDriverItem = ({ item }: { item: Drivers }) => (
     <View style={styles.itemContainer}>
       <View style={styles.iconContainer}>
-        <Icon name="account" size={32} color="#4A90E2" />
+        <Icon name="account" size={28} color="#1a2b2b" />
       </View>
       <TouchableOpacity
         onPress={() => onSelectDriver(item)}
-        style={styles.driverInfoContainer}
+        style={[
+          styles.driverInfoContainer,
+          !onEditDriver && !onDeleteDriver && styles.driverInfoFullWidth,
+        ]}
         activeOpacity={0.7}
       >
         <View style={styles.driverInfo}>
@@ -49,26 +52,33 @@ const DriverList: React.FC<DriverListProps> = ({
           </View>
           <View style={styles.driverDetails}>
             <View style={styles.detailRow}>
-              <Icon name="card-account-details" size={16} color="#666" />
+              <Icon name="card-account-details" size={16} color="#a51912" />
               <Text style={styles.detailText}>CNH: {item.licenseNumber}</Text>
             </View>
           </View>
         </View>
       </TouchableOpacity>
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          onPress={() => onEditDriver(item)}
-          style={[styles.actionButton, styles.editButton]}
-        >
-          <Icon name="pencil" size={20} color="#FFF" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onDeleteDriver(item)}
-          style={[styles.actionButton, styles.deleteButton]}
-        >
-          <Icon name="delete" size={20} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+      {/* Renderiza os botões de ação apenas se as permissões existirem */}
+      {(onEditDriver || onDeleteDriver) && (
+        <View style={styles.actionButtons}>
+          {onEditDriver && (
+            <TouchableOpacity
+              onPress={() => onEditDriver(item)}
+              style={[styles.actionButton, styles.editButton]}
+            >
+              <Icon name="pencil" size={20} color="#FFF" />
+            </TouchableOpacity>
+          )}
+          {onDeleteDriver && (
+            <TouchableOpacity
+              onPress={() => onDeleteDriver(item)}
+              style={[styles.actionButton, styles.deleteButton]}
+            >
+              <Icon name="delete" size={20} color="#FFF" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </View>
   );
 
@@ -93,7 +103,7 @@ const DriverList: React.FC<DriverListProps> = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#4A90E2"]}
+          colors={["#a51912"]}
         />
       }
       ListHeaderComponent={ListHeaderComponent}
@@ -108,32 +118,6 @@ const DriverList: React.FC<DriverListProps> = ({
   );
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Disponível":
-      return "#34D399";
-    case "Indisponível":
-      return "#EF4444";
-    case "Em viagem":
-      return "#F59E0B";
-    default:
-      return "#6B7280";
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "Disponível":
-      return "check-circle";
-    case "Indisponível":
-      return "close-circle";
-    case "Em viagem":
-      return "car-connected";
-    default:
-      return "help-circle";
-  }
-};
-
 const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
@@ -142,32 +126,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 16,
     marginBottom: 16,
     padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: "#000000",
     shadowOffset: {
-      width: 0,
-      height: 2,
+      width: 4,
+      height: 8,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4.85,
+    elevation: 12,
   },
   iconContainer: {
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
     borderRadius: 25,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#f1f1f1",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   driverInfoContainer: {
     flex: 1,
+  },
+  driverInfoFullWidth: {
+    flex: 1,
+    marginRight: 0, // Remove margem quando não há botões de ação
   },
   driverInfo: {
     justifyContent: "space-between",
@@ -179,24 +167,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   nameText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#1F2937",
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusIcon: {
-    marginRight: 4,
-  },
-  statusText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
+    color: "#f5f2e5",
   },
   driverDetails: {
     marginTop: 4,
@@ -208,7 +181,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     marginLeft: 8,
-    color: "#4B5563",
+    color: "#f5f2e5",
     fontSize: 14,
   },
   actionButtons: {
@@ -239,12 +212,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#374151",
+    color: "#f5f2e5",
     marginTop: 16,
   },
   emptySubText: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "#f5f2e5",
     textAlign: "center",
     marginTop: 8,
     paddingHorizontal: 32,

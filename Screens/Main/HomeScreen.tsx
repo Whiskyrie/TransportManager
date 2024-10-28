@@ -1,3 +1,4 @@
+import { User } from "Types/authTypes";
 import React, { useRef } from "react";
 import {
   View,
@@ -7,6 +8,7 @@ import {
   Dimensions,
   Animated,
   ScrollView,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
@@ -14,9 +16,15 @@ const { width } = Dimensions.get("window");
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void;
+  onLogout: () => Promise<void>;
+  user: User;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({
+  onNavigate,
+  onLogout,
+  user,
+}) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -31,6 +39,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
       toValue: 1,
       useNativeDriver: true,
     }).start();
+  };
+
+  const handleLogoutPress = () => {
+    Alert.alert(
+      "Confirmar Logout",
+      "Tem certeza que deseja sair da sua conta?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Sim, sair",
+          onPress: onLogout,
+          style: "destructive",
+        },
+      ]
+    );
   };
 
   const Card = ({
@@ -59,40 +85,51 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Bem-vindo ao RubiRide!</Text>
-      <Text style={styles.subtitle}>Escolha uma opção para começar:</Text>
-      <View style={styles.cardsContainer}>
-        <Card
-          icon="directions"
-          label="Rotas"
-          screen="routeList"
-          description="Planeje e visualize suas rotas de viagem"
-        />
-        <Card
-          icon="directions-car"
-          label="Veículos"
-          screen="vehicleList"
-          description="Verifique e gerencie seus veículos"
-        />
-        <Card
-          icon="person"
-          label="Motoristas"
-          screen="driverList" // Atualizado para corresponder à nova rota
-          description="Gerencie e monitore seus motoristas"
-        />
-      </View>
-    </ScrollView>
+    <View style={styles.mainContainer}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Bem-vindo ao RubiRide!</Text>
+        <Text style={styles.subtitle}>Escolha uma opção para começar:</Text>
+        <View style={styles.cardsContainer}>
+          <Card
+            icon="directions"
+            label="Rotas"
+            screen="routeList"
+            description="Planeje e visualize suas rotas de viagem"
+          />
+          <Card
+            icon="directions-car"
+            label="Veículos"
+            screen="vehicleList"
+            description="Verifique e gerencie seus veículos"
+          />
+          <Card
+            icon="person"
+            label="Motoristas"
+            screen="driverList"
+            description="Gerencie e monitore seus motoristas"
+          />
+        </View>
+      </ScrollView>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
+        <Icon name="logout" size={24} color="#dc3545" />
+        <Text style={styles.logoutText}>Sair da Conta</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
   container: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
     padding: 20,
+    paddingBottom: 80, // Add padding to avoid content being hidden by logout button
   },
   title: {
     fontSize: 28,
@@ -141,18 +178,30 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: "center",
   },
-  // settingsButton: {
-  //   position: "absolute",
-  //   bottom: 30,
-  //   flexDirection: "row",
-  //   alignItems: "center",
-  // },
-  // settingsText: {
-  //   fontSize: 16,
-  //   color: "#007bff",
-  //   marginLeft: 5,
-  //   fontWeight: "bold",
-  // },
+  logoutButton: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#e9ecef",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  logoutText: {
+    fontSize: 16,
+    color: "#dc3545",
+    marginLeft: 8,
+    fontWeight: "bold",
+  },
 });
 
 export default HomeScreen;

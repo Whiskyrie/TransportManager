@@ -1,8 +1,8 @@
 import React from "react";
-import { View } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomInput from "../Common/CustomInput";
-import { RouteStatus } from "../Route/Types";
+import { RouteStatus } from "../../Types/routeTypes";
 
 interface RouteFilterProps {
   searchQuery: string;
@@ -17,25 +17,85 @@ const RouteFilter: React.FC<RouteFilterProps> = ({
   statusFilter,
   setStatusFilter,
 }) => (
-  <View>
+  <View style={styles.container}>
     <CustomInput
+      style={styles.input}
       label="Procurar Rota"
       value={searchQuery}
       onChangeText={setSearchQuery}
       placeholder="Buscar por cidade de origem ou destino"
     />
-    <Picker
-      selectedValue={statusFilter}
-      onValueChange={(itemValue) =>
-        setStatusFilter(itemValue as RouteStatus | "All")
-      }
-    >
-      <Picker.Item label="Todas" value="All" />
-      <Picker.Item label="Em Progresso" value="Em Progresso" />
-      <Picker.Item label="Pendente" value="Pendente" />
-      <Picker.Item label="Concluído" value="Concluído" />
-    </Picker>
+    <View style={styles.pickerContainer}>
+      <Picker
+        selectedValue={statusFilter}
+        onValueChange={(itemValue) =>
+          setStatusFilter(itemValue as RouteStatus | "All")
+        }
+        style={styles.picker}
+        dropdownIconColor="#f5f2e5"
+        mode="dropdown"
+      >
+        <Picker.Item label="Todas" value="All" style={styles.pickerItem} />
+        <Picker.Item
+          label="Em Progresso"
+          value="Em Progresso"
+          style={styles.pickerItem}
+        />
+        <Picker.Item
+          label="Pendente"
+          value="Pendente"
+          style={styles.pickerItem}
+        />
+        <Picker.Item
+          label="Concluído"
+          value="Concluído"
+          style={styles.pickerItem}
+        />
+      </Picker>
+    </View>
   </View>
 );
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+  input: {
+    borderRadius: 8,
+    borderColor: "#1a2b2b",
+  },
+  pickerContainer: {
+    marginTop: 10,
+    backgroundColor: "#1a2b2b",
+    borderRadius: 5,
+    overflow: "hidden",
+    ...Platform.select({
+      android: {
+        elevation: 0,
+      },
+      ios: {
+        shadowColor: "transparent",
+      },
+    }),
+  },
+  picker: {
+    backgroundColor: "#1a2b2b",
+    color: "#f5f2e5",
+    height: 50,
+    ...Platform.select({
+      android: {
+        borderWidth: 0,
+      },
+      ios: {
+        borderWidth: 0,
+      },
+    }),
+  },
+  pickerItem: {
+    backgroundColor: "#1a2b2b",
+    color: "#f5f2e5",
+    fontSize: 16,
+  },
+});
 
 export default RouteFilter;

@@ -8,11 +8,14 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Route, RouteLocation } from "./Types";
+import { Route, RouteLocation, RouteStatus } from "../../Types/routeTypes";
+import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { api, handleApiError } from "Services/api";
 
 interface EditRouteDialogProps {
   visible: boolean;
@@ -58,10 +61,48 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const updateVehicleStatus = async (
+    vehicleId: string,
+    routeStatus: RouteStatus
+  ) => {
+    let newStatus: VehicleStatus = "Disponível";
+
+    if (routeStatus === "Pendente" || routeStatus === "Em Progresso") {
+      newStatus = "Indisponível";
+    } else if (routeStatus === "Concluído" || routeStatus === "Cancelada") {
+      newStatus = "Disponível";
+    }
+
+    try {
+      await api.updateVehicle(vehicleId, { status: newStatus });
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      Alert.alert(
+        "Erro",
+        "Falha ao atualizar status do veículo: " + errorMessage
+      );
+    }
+  };
+
+  const handleSave = async () => {
     if (!validateForm()) return;
-    onSave(editedRoute);
-    onClose();
+
+    try {
+      // Se o status da rota mudou, atualiza o status do veículo
+      if (editedRoute.status !== route.status && editedRoute.vehicle?.id) {
+        await updateVehicleStatus(
+          editedRoute.vehicle.id,
+          editedRoute.status as RouteStatus
+        );
+      }
+
+      await api.updateRoute(route.id, editedRoute);
+      onSave(editedRoute);
+      onClose();
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      Alert.alert("Erro", "Falha ao atualizar rota: " + errorMessage);
+    }
   };
 
   const renderInput = (
@@ -76,7 +117,7 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
       <MaterialIcons
         name={icon as keyof typeof MaterialIcons.glyphMap}
         size={24}
-        color="#666"
+        color="#f5f2e5"
         style={styles.inputIcon}
       />
       <TextInput
@@ -89,7 +130,7 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
         value={value}
         onChangeText={onChangeText}
         editable={editable}
-        placeholderTextColor="#666"
+        placeholderTextColor="#f5f2e5"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -102,7 +143,7 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Editar Rota</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+              <MaterialIcons name="close" size={24} color="#f5f2e5" />
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.scrollContent}>
@@ -160,7 +201,7 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
                   <MaterialIcons
                     name="local-shipping"
                     size={24}
-                    color="#666"
+                    color="#f5f2e5"
                     style={styles.pickerIcon}
                   />
                   <View
@@ -171,13 +212,29 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
                       onValueChange={(itemValue) =>
                         setEditedRoute({ ...editedRoute, status: itemValue })
                       }
+                      dropdownIconColor="#f5f2e5"
                       style={styles.pickerInput}
                     >
-                      <Picker.Item label="Selecione um status" value="" />
-                      <Picker.Item label="Pendente" value="Pendente" />
-                      <Picker.Item label="Em Progresso" value="Em Progresso" />
-                      <Picker.Item label="Concluído" value="Concluído" />
-                      <Picker.Item label="Cancelada" value="Cancelada" />
+                      <Picker.Item
+                        label="Pendente"
+                        value="Pendente"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Em Progresso"
+                        value="Em Progresso"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Concluído"
+                        value="Concluído"
+                        color="#1a2b2b"
+                      />
+                      <Picker.Item
+                        label="Cancelada"
+                        value="Cancelada"
+                        color="#1a2b2b"
+                      />
                     </Picker>
                   </View>
                   {errors.status && (
@@ -216,7 +273,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 15,
     padding: 20,
     width: "90%",
@@ -236,7 +293,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     padding: 5,
@@ -255,20 +312,20 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     padding: 12,
     paddingLeft: 40,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#333",
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
   },
   inputError: {
     borderColor: "#dc3545",
   },
   disabledInput: {
     backgroundColor: "#e9ecef",
-    color: "#666",
+    color: "#f5f2e5",
   },
   errorText: {
     color: "#dc3545",
@@ -288,9 +345,9 @@ const styles = StyleSheet.create({
   },
   picker: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#243636",
     paddingLeft: 30,
   },
   pickerError: {
@@ -298,6 +355,7 @@ const styles = StyleSheet.create({
   },
   pickerInput: {
     height: 50,
+    color: "#f5f2e5",
   },
   buttonContainer: {
     flexDirection: "row",

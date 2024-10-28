@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { truncateText } from "../../Utils/helper";
-import { Route, RouteLocation } from "../Route/Types";
+import { Route, RouteLocation } from "../../Types/routeTypes";
 
 interface RouteListProps {
   routes: Route[];
@@ -20,8 +20,8 @@ interface RouteListProps {
   onRefresh: () => void;
   ListHeaderComponent?: React.ReactElement;
   contentContainerStyle?: ViewStyle;
-  onDeleteRoute: (route: Route) => void;
-  onEditRoute: (route: Route) => void;
+  onDeleteRoute?: ((route: Route) => void) | null;
+  onEditRoute?: ((route: Route) => void) | null;
 }
 
 const RouteList: React.FC<RouteListProps> = ({
@@ -58,15 +58,20 @@ const RouteList: React.FC<RouteListProps> = ({
 
     return (
       <View style={styles.itemContainer}>
-        <View style={styles.mainContent}>
+        <View
+          style={[
+            styles.mainContent,
+            !onEditRoute && !onDeleteRoute && styles.mainContentFullWidth,
+          ]}
+        >
           <View style={styles.headerSection}>
             <View style={styles.routeIconContainer}>
-              <Icon name="truck-delivery" size={24} color="#4A90E2" />
+              <Icon name="truck-delivery" size={24} color="#1a2b2b" />
             </View>
             <View style={styles.routeMainInfo}>
               <View style={styles.routeCodeContainer}>
                 <Text style={styles.routeCode}>{startCity}</Text>
-                <Icon name="arrow-right" size={16} color="#265fa1" />
+                <Icon name="arrow-right" size={16} color="#539a9a" />
                 <Text style={styles.routeCode}>{endCity}</Text>
               </View>
             </View>
@@ -79,19 +84,19 @@ const RouteList: React.FC<RouteListProps> = ({
           >
             <View style={styles.routeDetails}>
               <View style={styles.detailRow}>
-                <Icon name="map-marker-distance" size={16} color="#666" />
+                <Icon name="map-marker-distance" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Distância: {item.distance} km
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="clock-outline" size={16} color="#666" />
+                <Icon name="clock-outline" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Duração: {item.estimatedDuration} min
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="ray-start" size={16} color="#666" />
+                <Icon name="ray-start" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   De:{" "}
                   {truncateText(
@@ -101,7 +106,7 @@ const RouteList: React.FC<RouteListProps> = ({
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="ray-end" size={16} color="#666" />
+                <Icon name="ray-end" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Para:{" "}
                   {truncateText(
@@ -110,15 +115,14 @@ const RouteList: React.FC<RouteListProps> = ({
                   )}
                 </Text>
               </View>
-              {/* Novos campos de motorista e veículo */}
               <View style={styles.detailRow}>
-                <Icon name="account-tie" size={16} color="#666" />
+                <Icon name="account-tie" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
-                  Motorista: {item.driver.name})
+                  Motorista: {item.driver.name}
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="truck" size={16} color="#666" />
+                <Icon name="truck" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Veículo: {item.vehicle.model} - {item.vehicle.plate}
                 </Text>
@@ -144,20 +148,26 @@ const RouteList: React.FC<RouteListProps> = ({
           </View>
         </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            onPress={() => onEditRoute(item)}
-            style={[styles.actionButton, styles.editButton]}
-          >
-            <Icon name="pencil" size={25} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => onDeleteRoute(item)}
-            style={[styles.actionButton, styles.deleteButton]}
-          >
-            <Icon name="delete" size={25} color="#FFF" />
-          </TouchableOpacity>
-        </View>
+        {(onEditRoute || onDeleteRoute) && (
+          <View style={styles.actionButtons}>
+            {onEditRoute && (
+              <TouchableOpacity
+                onPress={() => onEditRoute(item)}
+                style={[styles.actionButton, styles.editButton]}
+              >
+                <Icon name="pencil" size={20} color="#FFF" />
+              </TouchableOpacity>
+            )}
+            {onDeleteRoute && (
+              <TouchableOpacity
+                onPress={() => onDeleteRoute(item)}
+                style={[styles.actionButton, styles.deleteButton]}
+              >
+                <Icon name="delete" size={20} color="#FFF" />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
     );
   };
@@ -171,7 +181,7 @@ const RouteList: React.FC<RouteListProps> = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#4A90E2"]}
+          colors={["#a51912"]}
         />
       }
       ListHeaderComponent={ListHeaderComponent}
@@ -214,9 +224,9 @@ const getStatusColor = (status: string) => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "Em Progresso":
-      return "progress-clock";
+      return "clock-time-five";
     case "Pendente":
-      return "clock-outline";
+      return "clock-alert";
     case "Concluído":
       return "check-circle";
     case "Cancelada":
@@ -234,22 +244,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 16,
     marginBottom: 16,
     padding: 16,
     flexDirection: "row",
     shadowColor: "#000",
     shadowOffset: {
-      width: 0,
-      height: 2,
+      width: 2,
+      height: 2.425,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.225,
+    shadowRadius: 5.25,
+    elevation: 8,
   },
   mainContent: {
     flex: 1,
+    marginRight: 16,
+  },
+  mainContentFullWidth: {
+    flex: 1,
+    marginRight: 0,
   },
   headerSection: {
     flexDirection: "row",
@@ -260,7 +275,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#c5def7",
+    backgroundColor: "#f1f1f1",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
@@ -279,7 +294,7 @@ const styles = StyleSheet.create({
   routeCode: {
     fontSize: 16.225,
     fontWeight: "700",
-    color: "#191723",
+    color: "#f5f2e5",
   },
   footerSection: {
     marginTop: 12,
@@ -296,7 +311,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   statusText: {
-    color: "white",
+    color: "#171717",
     fontSize: 12.225,
     fontWeight: "600",
   },
@@ -310,7 +325,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     marginLeft: 8,
-    color: "#4B5563",
+    color: "#f5f2e5",
     fontSize: 14,
   },
   actionButtons: {
@@ -321,9 +336,9 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   actionButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -342,12 +357,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#374151",
+    color: "#f5f2e5",
     marginTop: 16,
   },
   emptySubText: {
     fontSize: 16,
-    color: "#6B7280",
+    color: "#f5f2e5",
     textAlign: "center",
     marginTop: 8,
     paddingHorizontal: 32,

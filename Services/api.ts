@@ -1,0 +1,144 @@
+import axios, { AxiosInstance } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LoginData, AuthResponse, RegisterData, } from 'Types/authTypes';
+
+const API_URL = 'http://10.0.2.2:3000/';
+
+const createAxiosInstance = (): AxiosInstance => {
+    const instance = axios.create({
+        baseURL: API_URL,
+        timeout: 10000,
+    });
+
+    instance.interceptors.request.use(
+        async (config) => {
+            const token = await AsyncStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            console.log('Starting Request', JSON.stringify(config, null, 2));
+            return config;
+        },
+        (error) => {
+            console.log('Request Error:', error);
+            return Promise.reject(error);
+        }
+    );
+
+    instance.interceptors.response.use(
+        (response) => {
+            console.log('Response:', JSON.stringify(response.data, null, 2));
+            return response;
+        },
+        async (error) => {
+            console.log('Response Error:', error);
+
+            // Handle 401 errors (unauthorized)
+            if (error.response?.status === 401) {
+                await AsyncStorage.removeItem('token');
+                await AsyncStorage.removeItem('user');
+                // You might want to trigger a navigation to login screen here
+                // or emit an event that App.tsx can listen to
+            }
+
+            return Promise.reject(error);
+        }
+    );
+
+    return instance;
+};
+
+const axiosInstance = createAxiosInstance();
+
+export const api = {
+    // Auth endpoints
+    login: (data: LoginData) =>
+        axiosInstance.post<AuthResponse>('auth/login', data),
+
+    register: (data: RegisterData) =>
+        axiosInstance.post<AuthResponse>('auth/register', data),
+
+    // Routes endpoints with proper typing
+    getAllRoutes: () =>
+        axiosInstance.get('routes'),
+
+    getRoute: (id: string) =>
+        axiosInstance.get(`routes/${id}`),
+
+    createRoute: (routeData: any) =>
+        axiosInstance.post('routes', routeData),
+
+    updateRoute: (id: string, routeData: any) =>
+        axiosInstance.patch(`routes/${id}`, routeData),
+
+    deleteRoute: (id: string) =>
+        axiosInstance.delete(`routes/${id}`),
+
+    startRoute: (id: string) =>
+        axiosInstance.post(`routes/${id}/start`),
+
+    completeRoute: (id: string) =>
+        axiosInstance.post(`routes/${id}/complete`),
+
+    cancelRoute: (id: string) =>
+        axiosInstance.post(`routes/${id}/cancel`),
+
+    // Vehicles endpoints
+    getAllVehicles: () =>
+        axiosInstance.get('vehicles'),
+
+    getVehicle: (id: string) =>
+        axiosInstance.get(`vehicles/${id}`),
+
+    createVehicle: (vehicleData: any) =>
+        axiosInstance.post('vehicles', vehicleData),
+
+    updateVehicle: (id: string, vehicleData: any) =>
+        axiosInstance.patch(`vehicles/${id}`, vehicleData),
+
+    deleteVehicle: (id: string) =>
+        axiosInstance.delete(`vehicles/${id}`),
+
+    // Drivers endpoints
+    getAllDrivers: () =>
+        axiosInstance.get('driver'),
+
+    getDriver: (id: string) =>
+        axiosInstance.get(`driver/${id}`),
+
+    createDriver: (driverData: any) =>
+        axiosInstance.post('driver', driverData),
+
+    updateDriver: (id: string, driverData: any) =>
+        axiosInstance.patch(`driver/${id}`, driverData),
+
+    deleteDriver: (id: string) =>
+        axiosInstance.delete(`driver/${id}`)
+};
+
+export const handleApiError = (error: any): string => {
+    if (error.response) {
+        const status = error.response.status;
+        const serverMessage = error.response.data?.message;
+
+        const errorMessages: Record<number, string> = {
+            400: "Dados inválidos. Verifique as informações e tente novamente.",
+            401: "Sessão expirada. Por favor, faça login novamente.",
+            403: "Você não tem permissão para realizar esta ação.",
+            404: "Recurso não encontrado.",
+            409: "Conflito com dados existentes.",
+            500: serverMessage || "Erro interno do servidor. Tente novamente mais tarde."
+        };
+
+        return errorMessages[status] || `Erro do servidor: ${status}`;
+    }
+
+    if (error.request) {
+        if (error.code === 'ECONNABORTED') {
+            return "Tempo de conexão esgotado. Verifique sua conexão e tente novamente.";
+        }
+        return "Erro de conexão. Verifique sua internet e tente novamente.";
+    }
+
+    return "Ocorreu um erro inesperado. Tente novamente.";
+};
