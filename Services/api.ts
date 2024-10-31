@@ -1,12 +1,12 @@
 import axios, { AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginData, AuthResponse, RegisterData, } from 'Types/authTypes';
+import { config } from "Config/config";
 
-const API_URL = 'http://10.0.2.2:3000/';
 
 const createAxiosInstance = (): AxiosInstance => {
     const instance = axios.create({
-        baseURL: API_URL,
+        baseURL: config.API_BASE_URL,
         timeout: 10000,
     });
 
@@ -50,6 +50,18 @@ const createAxiosInstance = (): AxiosInstance => {
 
 const axiosInstance = createAxiosInstance();
 
+export const getImageUrl = (filename: string | null): string | null => {
+    if (!filename) return null;
+
+    // If the filename is already a full URL, return it as is
+    if (filename.startsWith('http')) {
+        return filename;
+    }
+
+    // Construct the full URL
+    return `${config.API_BASE_URL}${config.PROFILE_PICTURES_PATH}/${filename}`;
+};
+
 export const api = {
     // Auth endpoints
     login: (data: LoginData) =>
@@ -57,6 +69,24 @@ export const api = {
 
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
+
+    getProfilePicture: (userId: string) =>
+        axiosInstance.get(`${config.PROFILE_PICTURES_PATH}/${userId}`),
+
+    // Helper method to get the full image URL
+    getProfilePictureUrl: (filename: string): string =>
+        getImageUrl(filename) || '',
+
+    // Profile endpoints
+    uploadProfilePicture: (formData: FormData) =>
+        axiosInstance.post('upload/profile-picture', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }),
+
+    deleteProfilePicture: () =>
+        axiosInstance.delete('upload/profile-picture'),
 
     // Routes endpoints with proper typing
     getAllRoutes: () =>

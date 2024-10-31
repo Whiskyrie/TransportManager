@@ -4,12 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-
+import { theme, sharedStyles } from "./style";
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
   onNavigateToRegister: () => void;
@@ -25,36 +24,40 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Please fill in all fields");
+      setError("Por favor, preencha todos os campos");
       return;
     }
 
     try {
-      onLogin(email, password);
+      await onLogin(email, password);
     } catch (err) {
-      setError("Invalid credentials");
+      setError("Credenciais inválidas");
     }
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={sharedStyles.container}
     >
-      <View style={styles.content}>
+      <View style={sharedStyles.content}>
         <Image
           source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
-          style={styles.logo}
+          style={sharedStyles.logo}
           resizeMode="contain"
         />
 
-        <Text style={styles.title}>Bem Vindo de Volta!</Text>
+        <Text style={sharedStyles.title}>Bem-vindo de volta!</Text>
+        <Text style={sharedStyles.subtitle}>
+          Entre com suas credenciais para continuar
+        </Text>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
 
         <TextInput
-          style={styles.input}
+          style={sharedStyles.input}
           placeholder="Email"
+          placeholderTextColor={`${theme.colors.text}80`}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -62,86 +65,29 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         />
 
         <TextInput
-          style={styles.input}
-          placeholder="Password"
+          style={sharedStyles.input}
+          placeholder="Senha"
+          placeholderTextColor={`${theme.colors.text}80`}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>Login</Text>
+        <TouchableOpacity
+          style={sharedStyles.primaryButton}
+          onPress={handleLogin}
+        >
+          <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={onNavigateToRegister}>
-          <Text style={styles.registerText}>
-            Não possuí uma conta ainda?{" "}
-            <Text style={styles.registerLink}>Registre-se</Text>
+          <Text style={sharedStyles.linkText}>
+            Não possui uma conta ainda?{" "}
+            <Text style={sharedStyles.linkTextHighlight}>Registre-se</Text>
           </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  logo: {
-    width: 150,
-    height: 150,
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  loginButton: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  loginButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  registerText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  registerLink: {
-    color: "#007AFF",
-    fontWeight: "bold",
-  },
-  error: {
-    color: "red",
-    marginBottom: 15,
-  },
-});
-
 export default LoginScreen;

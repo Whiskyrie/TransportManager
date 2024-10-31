@@ -11,6 +11,8 @@ import {
   ScrollView,
 } from "react-native";
 
+import { theme, sharedStyles } from "./style";
+
 interface RegisterScreenProps {
   onRegister: (
     name: string,
@@ -34,160 +36,106 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword || !phoneNumber) {
-      setError("Please fill in all fields");
+      setError("Por favor, preencha todos os campos");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("As senhas não coincidem");
       return;
     }
 
     try {
       await onRegister(name, email, password, phoneNumber);
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      setError("Falha no registro. Por favor, tente novamente.");
     }
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={sharedStyles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Image
-            source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+      <ScrollView
+        contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Image
+          source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
+          style={[sharedStyles.logo, { marginTop: theme.spacing.xl }]}
+          resizeMode="contain"
+        />
 
-          <Text style={styles.title}>Criar uma Conta</Text>
+        <Text style={sharedStyles.title}>Criar uma conta</Text>
+        <Text style={sharedStyles.subtitle}>
+          Preencha seus dados para começar
+        </Text>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Nome completo"
+          placeholderTextColor={`${theme.colors.text}80`}
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="words"
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Email"
+          placeholderTextColor={`${theme.colors.text}80`}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            keyboardType="phone-pad"
-          />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Telefone"
+          placeholderTextColor={`${theme.colors.text}80`}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Senha"
+          placeholderTextColor={`${theme.colors.text}80`}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
+        <TextInput
+          style={sharedStyles.input}
+          placeholder="Confirmar senha"
+          placeholderTextColor={`${theme.colors.text}80`}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
 
-          <TouchableOpacity
-            style={styles.registerButton}
-            onPress={handleRegister}
-          >
-            <Text style={styles.registerButtonText}>Register</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={sharedStyles.primaryButton}
+          onPress={handleRegister}
+        >
+          <Text style={sharedStyles.primaryButtonText}>Registrar</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={onNavigateToLogin}>
-            <Text style={styles.loginText}>
-              Já tem uma conta? <Text style={styles.loginLink}>Login</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={onNavigateToLogin}>
+          <Text style={sharedStyles.linkText}>
+            Já tem uma conta?{" "}
+            <Text style={sharedStyles.linkTextHighlight}>Entrar</Text>
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  registerButton: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  loginText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  loginLink: {
-    color: "#007AFF",
-    fontWeight: "bold",
-  },
-  error: {
-    color: "red",
-    marginBottom: 15,
-  },
-});
 
 export default RegisterScreen;
