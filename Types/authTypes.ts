@@ -17,6 +17,9 @@ export interface User {
     email: string;
     isAdmin: boolean;
     phoneNumber: string;
+    profilePicture?: string;
+    createdAt?: string;
+    lastLogin?: string;
 }
 
 export interface AuthResponse {

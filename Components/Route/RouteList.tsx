@@ -239,6 +239,7 @@ const getStatusIcon = (status: string) => {
 const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
+    width: "100%",
   },
   emptyListContainer: {
     flex: 1,

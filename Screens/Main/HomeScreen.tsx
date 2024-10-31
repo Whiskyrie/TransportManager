@@ -77,7 +77,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <Icon name={icon} size={60} color="#007bff" />
+        <Icon name={icon} size={60} color="#a51912" />
         <Text style={styles.cardText}>{label}</Text>
         <Text style={styles.cardDescription}>{description}</Text>
       </TouchableOpacity>
@@ -87,6 +87,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <View style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => onNavigate("profile")}
+          >
+            <Icon name="person" size={30} color="#a51912" />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.title}>Bem-vindo ao RubiRide!</Text>
         <Text style={styles.subtitle}>Escolha uma opção para começar:</Text>
         <View style={styles.cardsContainer}>
@@ -122,25 +130,44 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1a2b2b",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 12,
+    backgroundColor: "#1e2525",
+    borderBottomWidth: 1,
+    borderRadius: 40,
+    borderBottomColor: "#1a2b2b",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#f5f2e5",
+  },
+  profileButton: {
+    padding: 8,
   },
   container: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    paddingBottom: 80, // Add padding to avoid content being hidden by logout button
+    paddingBottom: 80,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
     marginBottom: 10,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 18,
-    color: "#555",
+    color: "#f5f2e5",
+    opacity: 0.8,
     marginBottom: 20,
     textAlign: "center",
   },
@@ -150,7 +177,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "#1e2525",
     borderRadius: 12,
     padding: 20,
     justifyContent: "center",
@@ -158,23 +185,26 @@ const styles = StyleSheet.create({
     width: width * 0.8,
     margin: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.125,
-    shadowOffset: { width: 0, height: 2.225 },
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#1a2b2b",
   },
   cardContent: {
     alignItems: "center",
   },
   cardText: {
     fontSize: 16,
-    color: "#007bff",
+    color: "#f5f2e5",
     marginTop: 10,
     fontWeight: "bold",
   },
   cardDescription: {
     fontSize: 12,
-    color: "#555",
+    color: "#f5f2e5",
+    opacity: 0.8,
     marginTop: 5,
     textAlign: "center",
   },
@@ -183,22 +213,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#fff",
+    backgroundColor: "#1e2525",
     padding: 15,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     borderTopWidth: 1,
-    borderTopColor: "#e9ecef",
+    borderTopColor: "#1a2b2b",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
   },
   logoutText: {
     fontSize: 16,
-    color: "#dc3545",
+    color: "#ff4545",
     marginLeft: 8,
     fontWeight: "bold",
   },

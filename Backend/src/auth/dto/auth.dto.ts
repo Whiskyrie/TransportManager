@@ -35,5 +35,9 @@ export class AuthResponse {
         isAdmin: boolean;
         phoneNumber?: string;
         profilePicture?: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        lastLogin?: Date;
     };
 }

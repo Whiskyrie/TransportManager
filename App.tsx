@@ -18,6 +18,7 @@ import HomeScreen from "./Screens/Main/HomeScreen";
 import VehicleListScreen from "./Screens/Main/VehicleListScreen";
 import DriverListScreen from "./Screens/Main/DriverListScreen";
 import { api, handleApiError } from "Services/api";
+import ProfilePageScreen from "./Screens/Profile/ProfilePageScreen";
 import { User } from "./Types/authTypes";
 import { LogBox } from "react-native";
 
@@ -168,6 +169,10 @@ const App: React.FC = () => {
   const handleNavigation = (screen: string) => {
     setCurrentScreen(screen);
   };
+  const handleUpdateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+  };
 
   const LoadingOverlay = () => (
     <View style={styles.loadingOverlay}>
@@ -223,6 +228,13 @@ const App: React.FC = () => {
       )}
       {currentScreen === "driverList" && (
         <DriverListScreen onNavigate={handleNavigation} user={user} />
+      )}
+      {currentScreen === "profile" && (
+        <ProfilePageScreen
+          onNavigate={handleNavigation}
+          user={user}
+          onUpdateUser={handleUpdateUser}
+        />
       )}
       {isLoading && <LoadingOverlay />}
     </GestureHandlerRootView>
