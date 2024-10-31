@@ -1,4 +1,4 @@
-import { VehicleStatus } from "Components/Vehicle/Types";
+import { VehicleStatus } from "Types/vehicleTypes";
 import BaseModel, { IBaseModel } from "./BaseModel";
 
 export interface IVehicle extends IBaseModel {

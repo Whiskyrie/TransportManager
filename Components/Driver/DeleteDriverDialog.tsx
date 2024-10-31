@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { api, handleApiError } from "api";
+import { api, handleApiError } from "Services/api";
 
 interface DeleteDriverDialogProps {
   visible: boolean;
@@ -58,46 +58,22 @@ const DeleteDriverDialog: React.FC<DeleteDriverDialogProps> = ({
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.container}>
         <View style={styles.dialog}>
-          <View style={styles.header}>
-            <MaterialIcons name="warning" size={32} color="#dc3545" />
-            <Text style={styles.title}>Confirmar exclusão</Text>
-          </View>
-
+          <Text style={styles.title}>Confirmar exclusão</Text>
           <Text style={styles.message}>
-            {driverName
-              ? `Tem certeza que deseja excluir o motorista ${driverName}?`
-              : "Tem certeza que deseja excluir este motorista?"}
+            Tem certeza que deseja excluir esta rota?
           </Text>
-
-          <Text style={styles.warning}>Esta ação não poderá ser desfeita.</Text>
-
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
-              disabled={isLoading}
             >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
+              <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               style={[styles.button, styles.confirmButton]}
-              onPress={handleDelete}
-              disabled={isLoading}
+              onPress={onConfirm}
             >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <>
-                  <MaterialIcons
-                    name="delete"
-                    size={20}
-                    color="white"
-                    style={styles.buttonIcon}
-                  />
-                  <Text style={styles.buttonText}>Excluir</Text>
-                </>
-              )}
+              <Text style={styles.buttonText}>Confirmar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -114,73 +90,49 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialog: {
-    backgroundColor: "white",
-    borderRadius: 15,
+    backgroundColor: "#1a2b2b",
+    borderRadius: 10,
     padding: 20,
-    width: "85%",
+    width: "80%",
+    maxHeight: "80%",
+    alignItems: "center",
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-    gap: 10,
+    shadowOpacity: 1.25,
+    shadowRadius: 4.85,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#dc3545",
+    marginBottom: 10,
+    color: "#f5f2e5",
   },
   message: {
     fontSize: 16,
-    marginBottom: 10,
-    color: "#333",
-    lineHeight: 22,
-  },
-  warning: {
-    fontSize: 14,
-    color: "#666",
     marginBottom: 20,
-    fontStyle: "italic",
+    textAlign: "center",
+    color: "#f5f2e5",
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 10,
+    justifyContent: "space-around",
+    width: "100%",
   },
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 100,
-  },
-  buttonIcon: {
-    marginRight: 5,
+    borderRadius: 5,
   },
   cancelButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#666",
+    backgroundColor: "#ccc",
   },
   confirmButton: {
     backgroundColor: "#dc3545",
   },
-  cancelButtonText: {
-    color: "#666",
-    fontWeight: "500",
-    fontSize: 16,
-  },
   buttonText: {
     color: "white",
-    fontWeight: "500",
-    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

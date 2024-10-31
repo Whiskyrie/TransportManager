@@ -8,12 +8,14 @@ import VehicleDetails from "../../Components/Vehicle/VehicleDetails";
 import AddVehicleDialog from "../../Components/Vehicle/AddVehicleDialog";
 import DeleteVehicleDialog from "../../Components/Vehicle/DeleteRouteVehicle";
 import EditVehicleDialog from "../../Components/Vehicle/EditVehicleDialog";
-import { Vehicles, VehicleStatus } from "../../Components/Vehicle/Types";
-import { api, handleApiError } from "../../api";
+import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { api, handleApiError } from "Services/api";
+import { usePermissions, User } from "../../Types/authTypes";
 
-const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
-  onNavigate,
-}) => {
+const VehicleListScreen: React.FC<{
+  onNavigate: (screen: string) => void;
+  user: User | null;
+}> = ({ onNavigate, user }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<VehicleStatus | "All">(
     "All"
@@ -27,6 +29,7 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicles | null>(null);
   const [vehicleToEdit, setVehicleToEdit] = useState<Vehicles | null>(null);
+  const { canEdit, canDelete, canAdd } = usePermissions(user);
 
   const fetchVehicles = async () => {
     try {
@@ -125,11 +128,13 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
       />
-      <CustomButton
-        title="Novo Veículo"
-        onPress={() => setIsAddDialogVisible(true)}
-        type="primary"
-      />
+      {canAdd && (
+        <CustomButton
+          title="Novo Veículo"
+          onPress={() => setIsAddDialogVisible(true)}
+          type="primary"
+        />
+      )}
       {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
     </>
   );
@@ -144,8 +149,8 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
         onRefresh={onRefresh}
         ListHeaderComponent={renderHeader()}
         contentContainerStyle={styles.listContent}
-        onDeleteVehicle={handleDeleteVehicle}
-        onEditVehicle={handleEditVehicle}
+        onDeleteVehicle={canDelete ? handleDeleteVehicle : null}
+        onEditVehicle={canEdit ? handleEditVehicle : null}
       />
       {selectedVehicle && (
         <VehicleDetails
@@ -153,17 +158,21 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
           onClose={() => setSelectedVehicle(null)}
         />
       )}
-      <AddVehicleDialog
-        visible={isAddDialogVisible}
-        onClose={() => setIsAddDialogVisible(false)}
-        onSave={handleAddVehicle}
-      />
-      <DeleteVehicleDialog
-        visible={isDeleteDialogVisible}
-        onClose={() => setIsDeleteDialogVisible(false)}
-        onConfirm={confirmDeleteVehicle}
-      />
-      {vehicleToEdit && (
+      {canAdd && (
+        <AddVehicleDialog
+          visible={isAddDialogVisible}
+          onClose={() => setIsAddDialogVisible(false)}
+          onSave={handleAddVehicle}
+        />
+      )}
+      {canDelete && vehicleToDelete && (
+        <DeleteVehicleDialog
+          visible={isDeleteDialogVisible}
+          onClose={() => setIsDeleteDialogVisible(false)}
+          onConfirm={confirmDeleteVehicle}
+        />
+      )}
+      {canEdit && vehicleToEdit && (
         <EditVehicleDialog
           visible={isEditDialogVisible}
           onClose={() => setIsEditDialogVisible(false)}
@@ -178,7 +187,7 @@ const VehicleListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#182727",
     width: "100%",
   },
   listContent: {

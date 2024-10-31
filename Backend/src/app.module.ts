@@ -5,6 +5,7 @@ import { RoutesModule } from './routes/routes.module';
 import { DriverModule } from './driver/driver.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { AuthModule } from './auth/auth.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
     DriverModule,
     VehicleModule,
     AuthModule,
+    UploadModule,
   ],
 })
 export class AppModule { }

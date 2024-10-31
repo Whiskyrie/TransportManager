@@ -37,3 +37,4 @@ export class User {
     @Column({ nullable: true })
     lastLogin: Date;
 }
+

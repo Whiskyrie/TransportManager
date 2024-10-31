@@ -1,17 +1,41 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Route } from "../../Types/routeTypes";
+import { Vehicles } from "../../Types/vehicleTypes";
 
 interface DeleteRouteDialogProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (route: Route) => Promise<void>;
+  route: Route;
+  onUpdateVehicle: (
+    vehicleId: string,
+    updates: Partial<Vehicles>
+  ) => Promise<void>;
 }
 
 const DeleteRouteDialog: React.FC<DeleteRouteDialogProps> = ({
   visible,
   onClose,
   onConfirm,
+  route,
+  onUpdateVehicle,
 }) => {
+  const handleConfirm = async () => {
+    try {
+      // Primeiro, atualize o status do veículo para "Disponível"
+      await onUpdateVehicle(route.vehicle.id, { status: "Disponível" });
+
+      // Depois, delete a rota
+      await onConfirm(route);
+
+      onClose();
+    } catch (error) {
+      console.error("Erro ao deletar rota e atualizar veículo:", error);
+      // Aqui você pode adicionar uma lógica para mostrar um erro ao usuário
+    }
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.container}>
@@ -19,6 +43,10 @@ const DeleteRouteDialog: React.FC<DeleteRouteDialogProps> = ({
           <Text style={styles.title}>Confirmar exclusão</Text>
           <Text style={styles.message}>
             Tem certeza que deseja excluir esta rota?
+          </Text>
+          <Text style={styles.subMessage}>
+            O veículo {route.vehicle.model} ({route.vehicle.plate}) será marcado
+            como disponível.
           </Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -29,7 +57,7 @@ const DeleteRouteDialog: React.FC<DeleteRouteDialogProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.confirmButton]}
-              onPress={onConfirm}
+              onPress={handleConfirm}
             >
               <Text style={styles.buttonText}>Confirmar</Text>
             </TouchableOpacity>
@@ -39,7 +67,6 @@ const DeleteRouteDialog: React.FC<DeleteRouteDialogProps> = ({
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -48,21 +75,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialog: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 10,
     padding: 20,
     width: "80%",
+    maxHeight: "80%",
     alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1.25,
+    shadowRadius: 4.85,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#f5f2e5",
   },
   message: {
     fontSize: 16,
     marginBottom: 20,
     textAlign: "center",
+    color: "#f5f2e5",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -83,6 +118,13 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  subMessage: {
+    fontSize: 14,
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#f5f2e5",
+    opacity: 0.8,
   },
 });
 

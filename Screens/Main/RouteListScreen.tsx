@@ -8,14 +8,11 @@ import RouteDetails from "../../Components/Route/RouteDetails";
 import AddRouteDialog from "../../Components/Route/AddRouteDialog";
 import DeleteRouteDialog from "../../Components/Route/DeleteRouteDialog";
 import EditRouteDialog from "../../Components/Route/EditRouteDialog";
-import {
-  Route,
-  RouteStatus,
-  RouteLocation,
-} from "../../Components/Route/Types";
-import { api, handleApiError } from "../../api";
-import { Vehicles } from "Components/Vehicle/Types";
-import { Drivers } from "Components/Driver/Types";
+import { Route, RouteStatus, RouteLocation } from "../../Types/routeTypes";
+import { api, handleApiError } from "Services/api";
+import { Vehicles } from "Types/vehicleTypes";
+import { Drivers } from "Types/driverTypes";
+import { usePermissions, User } from "../../Types/authTypes";
 
 const formatRoutes = (routes: Route[]): Route[] => {
   return routes.map((route): Route => {
@@ -67,9 +64,10 @@ const formatRoutes = (routes: Route[]): Route[] => {
   });
 };
 
-const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
-  onNavigate,
-}) => {
+const RoutesListScreen: React.FC<{
+  onNavigate: (screen: string) => void;
+  user: User | null;
+}> = ({ onNavigate, user }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RouteStatus | "All">("All");
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -81,6 +79,7 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [routeToDelete, setRouteToDelete] = useState<Route | null>(null);
   const [routeToEdit, setRouteToEdit] = useState<Route | null>(null);
+  const { canEdit, canDelete, canAdd } = usePermissions(user);
 
   const fetchRoutes = async () => {
     try {
@@ -113,27 +112,62 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
       setErrorMessage(`Error adding route: ${errorMsg}`);
     }
   };
+  const handleUpdateVehicle = async (
+    vehicleId: string,
+    updates: Partial<Vehicles>
+  ) => {
+    if (!vehicleId) {
+      throw new Error("ID do veículo não fornecido");
+    }
+    try {
+      await api.updateVehicle(vehicleId, updates);
+    } catch (error) {
+      const errorMsg = handleApiError(error);
+      setErrorMessage(`Error updating vehicle: ${errorMsg}`);
+      throw error;
+    }
+  };
 
   const handleDeleteRoute = (route: Route) => {
+    if (!route) {
+      console.warn("Tentativa de deletar uma rota inválida");
+      return;
+    }
+    if (!route.vehicle) {
+      console.warn("Rota sem veículo associado");
+      return;
+    }
     setRouteToDelete(route);
     setIsDeleteDialogVisible(true);
   };
 
   const confirmDeleteRoute = async () => {
-    if (routeToDelete) {
-      try {
-        await api.deleteRoute(routeToDelete.id);
-        setRoutes((prevRoutes) =>
-          prevRoutes.filter((route) => route.id !== routeToDelete.id)
-        );
-        setErrorMessage("");
-      } catch (error) {
-        const errorMsg = handleApiError(error);
-        setErrorMessage(`Error deleting route: ${errorMsg}`);
-      }
+    if (!routeToDelete) {
+      console.warn("Nenhuma rota selecionada para deletar");
+      setIsDeleteDialogVisible(false);
+      return;
     }
-    setIsDeleteDialogVisible(false);
-    setRouteToDelete(null);
+
+    try {
+      // Se tiver um veículo associado, atualize seu status
+      if (routeToDelete.vehicle && routeToDelete.vehicle.id) {
+        await handleUpdateVehicle(routeToDelete.vehicle.id, {
+          status: "Disponível",
+        });
+      }
+
+      await api.deleteRoute(routeToDelete.id);
+      setRoutes((prevRoutes) =>
+        prevRoutes.filter((route) => route.id !== routeToDelete.id)
+      );
+      setErrorMessage("");
+    } catch (error) {
+      const errorMsg = handleApiError(error);
+      setErrorMessage(`Error deleting route: ${errorMsg}`);
+    } finally {
+      setIsDeleteDialogVisible(false);
+      setRouteToDelete(null);
+    }
   };
 
   const handleEditRoute = (route: Route) => {
@@ -188,6 +222,24 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
     setRefreshing(true);
     fetchRoutes().finally(() => setRefreshing(false));
   }, []);
+  const renderDeleteDialog = () => {
+    if (!canDelete || !isDeleteDialogVisible || !routeToDelete?.vehicle) {
+      return null;
+    }
+
+    return (
+      <DeleteRouteDialog
+        visible={isDeleteDialogVisible}
+        onClose={() => {
+          setIsDeleteDialogVisible(false);
+          setRouteToDelete(null);
+        }}
+        onConfirm={confirmDeleteRoute}
+        route={routeToDelete}
+        onUpdateVehicle={handleUpdateVehicle}
+      />
+    );
+  };
 
   const renderHeader = () => (
     <>
@@ -197,11 +249,13 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
       />
-      <CustomButton
-        title="Nova Rota"
-        onPress={() => setIsAddDialogVisible(true)}
-        type="primary"
-      />
+      {canAdd && (
+        <CustomButton
+          title="Nova Rota"
+          onPress={() => setIsAddDialogVisible(true)}
+          type="primary"
+        />
+      )}
       {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
     </>
   );
@@ -216,8 +270,8 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
         onRefresh={onRefresh}
         ListHeaderComponent={renderHeader()}
         contentContainerStyle={styles.listContent}
-        onDeleteRoute={handleDeleteRoute}
-        onEditRoute={handleEditRoute}
+        onDeleteRoute={canDelete ? handleDeleteRoute : null}
+        onEditRoute={canEdit ? handleEditRoute : null}
       />
       {selectedRoute && (
         <RouteDetails
@@ -225,17 +279,16 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
           onClose={() => setSelectedRoute(null)}
         />
       )}
-      <AddRouteDialog
-        visible={isAddDialogVisible}
-        onClose={() => setIsAddDialogVisible(false)}
-        onSave={handleAddRoute}
-      />
-      <DeleteRouteDialog
-        visible={isDeleteDialogVisible}
-        onClose={() => setIsDeleteDialogVisible(false)}
-        onConfirm={confirmDeleteRoute}
-      />
-      {routeToEdit && (
+      {canAdd && (
+        <AddRouteDialog
+          visible={isAddDialogVisible}
+          onClose={() => setIsAddDialogVisible(false)}
+          onSave={handleAddRoute}
+        />
+      )}
+      {renderDeleteDialog()}
+
+      {canEdit && routeToEdit && (
         <EditRouteDialog
           visible={isEditDialogVisible}
           onClose={() => setIsEditDialogVisible(false)}
@@ -250,29 +303,14 @@ const RoutesListScreen: React.FC<{ onNavigate: (screen: string) => void }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#182727",
     width: "100%",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "white",
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "#007bff",
-    marginLeft: 8,
-  },
-  header: {
-    padding: 16,
-    backgroundColor: "white",
   },
   listContent: {
     paddingHorizontal: 16,
   },
   errorMessage: {
-    color: "red",
+    color: "#5d0000",
     textAlign: "center",
     marginVertical: 10,
   },

@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Vehicles } from "./Types";
+import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
 
 interface AddVehicleDialogProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (vehicle: Partial<Vehicles>) => void;
+  onSave: (vehicle: Omit<Vehicles, "id">) => void; // Modificado para garantir todos os campos exceto id
   isLoading?: boolean;
 }
 
@@ -47,14 +47,29 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   const handleSave = () => {
     if (!validateForm()) return;
 
-    const newVehicle: Partial<Vehicles> = {
+    // Modificado para incluir todos os campos obrigatórios exceto id
+    const newVehicle: Omit<Vehicles, "id"> = {
       model,
       brand,
       year: parseInt(year),
       plate,
+      status: "Disponível" as VehicleStatus,
     };
+
+    // Log para debug
+    console.log("Novo veículo sendo criado:", newVehicle);
+
     onSave(newVehicle);
+    clearForm();
     onClose();
+  };
+
+  const clearForm = () => {
+    setModel("");
+    setBrand("");
+    setYear("");
+    setPlate("");
+    setErrors({});
   };
 
   const renderInput = (
@@ -69,7 +84,7 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
       <MaterialIcons
         name={icon as keyof typeof MaterialIcons.glyphMap}
         size={24}
-        color="#666"
+        color="#f5f2e5"
         style={styles.inputIcon}
       />
       <TextInput
@@ -78,7 +93,7 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor="#666"
+        placeholderTextColor="#f5f2e5"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -91,7 +106,7 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Novo Veículo</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+              <MaterialIcons name="close" size={24} color="#f5f2e5" />
             </TouchableOpacity>
           </View>
 
@@ -142,7 +157,6 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   );
 };
 
-// Shared styles for all dialogs
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -151,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 15,
     padding: 20,
     width: "90%",
@@ -171,7 +185,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     padding: 5,
@@ -190,13 +204,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     padding: 12,
     paddingLeft: 40,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#333",
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
   },
   inputError: {
     borderColor: "#dc3545",

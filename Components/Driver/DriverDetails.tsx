@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Drivers } from "./Types";
+import { Drivers } from "../../Types/driverTypes";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface DriverDetailsProps {
@@ -25,13 +25,13 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose }) => {
             <Text style={styles.title}>Detalhes do Motorista</Text>
 
             <View style={styles.detailRow}>
-              <Icon name="account" size={24} color="#007bff" />
+              <Icon name="account" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Nome:</Text>
               <Text style={styles.detailText}>{driver.name}</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Icon name="card-account-details" size={24} color="#007bff" />
+              <Icon name="card-account-details" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>CNH:</Text>
               <Text style={styles.detailText}>{driver.licenseNumber}</Text>
             </View>
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 20,
     padding: 20,
     width: "80%",
@@ -66,14 +66,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: "#333",
+    color: "#f5f2e5",
   },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#f5f2e5",
     paddingBottom: 10,
   },
   detailLabel: {
@@ -81,22 +81,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 10,
     flex: 1,
-    color: "#555",
+    color: "#f5f2e5",
   },
   detailText: {
     fontSize: 16,
     flex: 2,
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     marginTop: 20,
     padding: 15,
-    backgroundColor: "#007bff",
+    backgroundColor: "#a51912",
     borderRadius: 10,
     alignItems: "center",
   },
   closeButtonText: {
-    color: "white",
+    color: "#f5f2e5",
     fontSize: 18,
     fontWeight: "bold",
   },

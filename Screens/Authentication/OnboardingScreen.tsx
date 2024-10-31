@@ -1,24 +1,18 @@
 import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import {
   PanGestureHandler,
   State,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
-
-const { width } = Dimensions.get("window");
+import { theme, sharedStyles } from "./style";
 
 interface OnboardingSlideProps {
   title: string;
   description: string;
   icon: string;
+  onFinish: () => void;
 }
 
 const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
@@ -27,11 +21,19 @@ const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
   icon,
 }) => (
   <View style={styles.slideContainer}>
-    <Icon name={icon} size={80} color="#007bff" style={styles.icon} />
-    <Text style={styles.slideTitle}>{title}</Text>
-    <Text style={styles.slideDescription}>{description}</Text>
+    <Icon
+      name={icon}
+      size={100}
+      color={theme.colors.primary}
+      style={styles.icon}
+    />
+    <Text style={[sharedStyles.title, styles.slideTitle]}>{title}</Text>
+    <Text style={[sharedStyles.subtitle, styles.slideDescription]}>
+      {description}
+    </Text>
   </View>
 );
+("");
 
 interface OnboardingScreenProps {
   onFinish: () => void;
@@ -90,22 +92,23 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={sharedStyles.container}>
       <PanGestureHandler
         ref={panRef}
         onHandlerStateChange={onGestureEvent}
         activeOffsetX={[-20, 20]}
       >
         <View style={styles.content}>
-          <OnboardingSlide
-            title={slides[currentSlide].title}
-            description={slides[currentSlide].description}
-            icon={slides[currentSlide].icon}
-          />
+          <OnboardingSlide {...slides[currentSlide]} onFinish={onFinish} />
+
           <View style={styles.navigationContainer}>
             <TouchableOpacity
               onPress={handlePrevSlide}
               disabled={currentSlide === 0}
+              style={[
+                styles.navigationButton,
+                currentSlide === 0 && styles.disabledButton,
+              ]}
             >
               <Text
                 style={[
@@ -116,34 +119,34 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
                 Anterior
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleNextSlide}>
+
+            <View style={styles.paginationContainer}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    index === currentSlide && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+
+            <TouchableOpacity
+              onPress={handleNextSlide}
+              style={styles.navigationButton}
+            >
               <Text style={styles.navigationText}>
-                {currentSlide === slides.length - 1 ? "Finalizar" : "Próximo"}
+                {currentSlide === slides.length - 1 ? "Começar" : "Próximo"}
               </Text>
             </TouchableOpacity>
-          </View>
-          <View style={styles.paginationContainer}>
-            {slides.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.paginationDot,
-                  index === currentSlide && styles.paginationDotActive,
-                ]}
-              />
-            ))}
           </View>
         </View>
       </PanGestureHandler>
     </GestureHandlerRootView>
   );
 };
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
   content: {
     flex: 1,
     width: "100%",
@@ -155,50 +158,54 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   icon: {
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
   },
   slideTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+    marginBottom: theme.spacing.l,
   },
   slideDescription: {
-    fontSize: 18,
-    textAlign: "center",
-    color: "#555",
+    marginBottom: 0,
   },
   navigationContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "80%",
-    position: "absolute",
-    bottom: 60,
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
+  },
+  navigationButton: {
+    padding: theme.spacing.m,
   },
   navigationText: {
-    fontSize: 18,
-    color: "#007bff",
+    fontSize: 16,
+    color: theme.colors.primary,
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   disabledText: {
-    color: "#ccc",
+    color: theme.colors.inactive,
   },
   paginationContainer: {
     flexDirection: "row",
-    position: "absolute",
-    bottom: 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
   paginationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#ccc",
-    marginHorizontal: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.inactive,
+    marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: "#007bff",
+    backgroundColor: theme.colors.primary,
+    width: 24,
   },
 });
 

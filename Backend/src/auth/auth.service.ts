@@ -43,6 +43,10 @@ export class AuthService {
                 isAdmin: user.isAdmin,
                 phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
+                lastLogin: user.lastLogin,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                isActive: user.isActive,
             },
         };
     }
@@ -77,6 +81,10 @@ export class AuthService {
                 isAdmin: user.isAdmin,
                 phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
+                lastLogin: user.lastLogin,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                isActive: user.isActive,
             },
         };
     }

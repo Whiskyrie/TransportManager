@@ -9,9 +9,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Vehicles } from "./Types";
+import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
 
 interface EditVehicleDialogProps {
   visible: boolean;
@@ -43,6 +44,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
     if (!editedVehicle.brand) newErrors.brand = "Marca é obrigatória";
     if (!editedVehicle.year) newErrors.year = "Ano é obrigatório";
     if (!editedVehicle.plate) newErrors.plate = "Placa é obrigatória";
+    if (!editedVehicle.status) newErrors.status = "Status é obrigatório";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -66,7 +68,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
       <MaterialIcons
         name={icon as keyof typeof MaterialIcons.glyphMap}
         size={24}
-        color="#666"
+        color="#f5f2e5"
         style={styles.inputIcon}
       />
       <TextInput
@@ -75,9 +77,38 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
         value={value?.toString()}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor="#666"
+        placeholderTextColor="#f5f2e5"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
+  );
+
+  const renderStatusPicker = () => (
+    <View style={styles.inputContainer}>
+      <MaterialIcons
+        name="local-parking"
+        size={24}
+        color="#f5f2e5"
+        style={styles.inputIcon}
+      />
+      <View style={[styles.input, styles.pickerContainer]}>
+        <Picker
+          selectedValue={editedVehicle.status}
+          onValueChange={(itemValue) =>
+            setEditedVehicle({
+              ...editedVehicle,
+              status: itemValue as VehicleStatus,
+            })
+          }
+          style={styles.picker}
+          dropdownIconColor="#f5f2e5"
+        >
+          <Picker.Item label="Disponível" value="Disponível" />
+          <Picker.Item label="Indisponível" value="Indisponível" />
+          <Picker.Item label="Em manutenção" value="Em manutenção" />
+        </Picker>
+      </View>
+      {errors.status && <Text style={styles.errorText}>{errors.status}</Text>}
     </View>
   );
 
@@ -88,7 +119,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Editar Veículo</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+              <MaterialIcons name="close" size={24} color="#f5f2e5" />
             </TouchableOpacity>
           </View>
 
@@ -130,6 +161,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
                   "label",
                   errors.plate
                 )}
+                {renderStatusPicker()}
               </>
             )}
           </ScrollView>
@@ -154,7 +186,6 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -163,7 +194,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 15,
     padding: 20,
     width: "90%",
@@ -183,7 +214,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     padding: 5,
@@ -202,13 +233,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     padding: 12,
     paddingLeft: 40,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#333",
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
   },
   inputError: {
     borderColor: "#dc3545",
@@ -228,6 +259,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
+  pickerContainer: {
+    padding: 0,
+    paddingLeft: 40,
+  },
+  picker: {
+    color: "#f5f2e5",
+    width: "100%",
+    height: 50,
+  },
 });
-
 export default EditVehicleDialog;

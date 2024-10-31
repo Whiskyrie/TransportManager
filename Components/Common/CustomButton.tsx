@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   primary: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#661511",
   },
   secondary: {
     backgroundColor: "#F0F0F0",
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   primaryText: {
-    color: "#FFFFFF",
+    color: "#f5f2e5",
   },
   secondaryText: {
     color: "#333333",

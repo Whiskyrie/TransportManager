@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Drivers } from "./Types";
+import { Drivers } from "../../Types/driverTypes";
 
 interface EditDriverDialogProps {
   visible: boolean;
@@ -63,7 +63,7 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
       <MaterialIcons
         name={icon as keyof typeof MaterialIcons.glyphMap}
         size={24}
-        color="#666"
+        color="#f5f2e5"
         style={styles.inputIcon}
       />
       <TextInput
@@ -71,7 +71,7 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
-        placeholderTextColor="#666"
+        placeholderTextColor="#f5f2e5"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -84,7 +84,7 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Editar Motorista</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+              <MaterialIcons name="close" size={24} color="#f5f2e5" />
             </TouchableOpacity>
           </View>
 
@@ -140,16 +140,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dialogContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#1a2b2b",
     borderRadius: 15,
     padding: 20,
     width: "90%",
     maxHeight: "80%",
-    elevation: 5,
+    elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.75,
+    shadowRadius: 4.25,
   },
   header: {
     flexDirection: "row",
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: "#f5f2e5",
   },
   closeButton: {
     padding: 5,
@@ -179,13 +179,13 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#243636",
     borderRadius: 10,
     padding: 12,
     paddingLeft: 40,
     fontSize: 16,
-    backgroundColor: "#f8f9fa",
-    color: "#333",
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
   },
   inputError: {
     borderColor: "#dc3545",
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 8,
   },
   button: {
     flex: 1,
