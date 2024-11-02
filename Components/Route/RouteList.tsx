@@ -44,7 +44,7 @@ const RouteList: React.FC<RouteListProps> = ({
     const addressParts = location.address.split(",");
     const city =
       addressParts.length > 0 ? addressParts[0].trim() : location.address;
-    return truncateText(city, 15);
+    return truncateText(city, 50);
   };
 
   const renderRouteItem = ({ item }: { item: Route }) => {
@@ -84,6 +84,12 @@ const RouteList: React.FC<RouteListProps> = ({
           >
             <View style={styles.routeDetails}>
               <View style={styles.detailRow}>
+                <Icon name="identifier" size={16} color="#a51912" />
+                <Text style={styles.detailText}>
+                  ID: #{item.id.slice(0, 8).toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
                 <Icon name="map-marker-distance" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Distância: {item.distance} km
@@ -92,26 +98,27 @@ const RouteList: React.FC<RouteListProps> = ({
               <View style={styles.detailRow}>
                 <Icon name="clock-outline" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
-                  Duração: {item.estimatedDuration} min
+                  Duração: {Math.floor(item.estimatedDuration / 60)}h{" "}
+                  {item.estimatedDuration % 60}m
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="ray-start" size={16} color="#a51912" />
+                <Icon name="map-marker-radius" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   De:{" "}
                   {truncateText(
                     (item.startLocation as RouteLocation).address,
-                    30
+                    50
                   )}
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Icon name="ray-end" size={16} color="#a51912" />
+                <Icon name="map-marker-check" size={16} color="#a51912" />
                 <Text style={styles.detailText}>
                   Para:{" "}
                   {truncateText(
                     (item.endLocation as RouteLocation).address,
-                    30
+                    50
                   )}
                 </Text>
               </View>
@@ -209,13 +216,13 @@ const RouteList: React.FC<RouteListProps> = ({
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Em Progresso":
-      return "#F59E0B";
+      return "#e66c25";
     case "Pendente":
-      return "#4A90E2";
+      return "#2d7ad2";
     case "Concluído":
-      return "#34D399";
+      return "#19aa0c";
     case "Cancelada":
-      return "#EF4444";
+      return "#ca0d0d";
     default:
       return "#6B7280";
   }
@@ -237,6 +244,17 @@ const getStatusIcon = (status: string) => {
 };
 
 const styles = StyleSheet.create({
+  routeIdContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  routeId: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#f5f2e5",
+    marginLeft: 4,
+  },
   listContainer: {
     padding: 16,
     width: "100%",
