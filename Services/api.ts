@@ -70,6 +70,26 @@ export const api = {
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
 
+    logout: async () => {
+        try {
+            // Pegue o token antes de removê-lo
+            const token = await AsyncStorage.getItem('token');
+
+            if (token) {
+                // Faça a requisição com o token diretamente no header
+                await axiosInstance.post('auth/logout', null, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+            }
+        } catch (error) {
+            console.warn("Erro ao notificar servidor sobre logout:", error);
+        } finally {
+            // Sempre limpe o storage local
+            await AsyncStorage.multiRemove(['token', 'user']);
+        }
+    },
     getProfilePicture: (userId: string) =>
         axiosInstance.get(`${config.PROFILE_PICTURES_PATH}/${userId}`),
 

@@ -19,7 +19,17 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Get('profile')
-    async getProfile(@Request() req) {
+    async getProfile(@Request() req: any) {
         return req.user;
+    }
+    @UseGuards(JwtAuthGuard)
+    @Post('logout')
+    async logout(@Request() req: any) {
+        try {
+            return await this.authService.logout(req.user.id);
+        } catch {
+            // Mesmo que dê erro, consideramos o logout bem-sucedido
+            return { success: true };
+        }
     }
 }

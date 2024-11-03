@@ -28,6 +28,13 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
               <Text style={styles.detailLabel}>Status:</Text>
               <Text style={styles.detailText}>{route.status}</Text>
             </View>
+            <View style={styles.detailRow}>
+              <Icon name="identifier" size={24} color="#a51912" />
+              <Text style={styles.detailLabel}>ID:</Text>
+              <Text style={styles.detailText}>
+                #{route.id.slice(0, 8).toUpperCase()}
+              </Text>
+            </View>
 
             <View style={styles.detailRow}>
               <Icon name="map-marker-distance" size={24} color="#a51912" />
@@ -59,7 +66,8 @@ const RouteDetails: React.FC<RouteDetailsProps> = ({ route, onClose }) => {
               <Icon name="clock-outline" size={24} color="#a51912" />
               <Text style={styles.detailLabel}>Duração Estimada:</Text>
               <Text style={styles.detailText}>
-                {route.estimatedDuration} min
+                {Math.floor(route.estimatedDuration / 60)}h{" "}
+                {route.estimatedDuration % 60}m
               </Text>
             </View>
 

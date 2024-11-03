@@ -89,6 +89,22 @@ export class AuthService {
         };
     }
 
+    async logout(userId: string): Promise<any> {
+        try {
+            const user = await this.userRepository.findOne({ where: { id: userId } });
+
+            if (user) {
+                user.lastLogin = new Date();
+                await this.userRepository.save(user);
+            }
+
+            return { success: true };
+        } catch {
+            // Mesmo que ocorra um erro, retornamos sucesso
+            // já que o importante é o cliente limpar seu token
+            return { success: true };
+        }
+    }
     private generateToken(user: User): string {
         const payload = {
             sub: user.id,
