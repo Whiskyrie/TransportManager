@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+
 import { theme, sharedStyles } from "./style";
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
@@ -29,7 +30,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }
 
     try {
-      await onLogin(email, password);
+      onLogin(email, password);
     } catch (err) {
       setError("Credenciais inválidas");
     }

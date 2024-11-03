@@ -14,7 +14,7 @@ import SplashScreen from "./Screens/Splash/SplashScreen";
 import LoginScreen from "./Screens/Authentication/LoginScreen";
 import RegisterScreen from "./Screens/Authentication/RegisterScreen";
 import RouteListScreen from "./Screens/Main/RouteListScreen";
-import HomeScreen from "./Screens/Main/HomeScreen";
+import HomeScreen from "./Screens/Main/Home/HomeScreen";
 import VehicleListScreen from "./Screens/Main/VehicleListScreen";
 import DriverListScreen from "./Screens/Main/DriverListScreen";
 import { api, handleApiError } from "Services/api";
