@@ -14,6 +14,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { Route } from "Types/routeTypes";
 import { api, handleApiError } from "Services/api";
 import { formatRoutes } from "./HomeScreenFunctions";
+import MapView from "Screens/Maps/MapView";
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void;
@@ -224,6 +225,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
 
           <ScrollView style={styles.scrollView}>
+            {recentRoutes.length > 0 && (
+              <MapView
+                routes={recentRoutes}
+                onMarkerPress={(routeId) =>
+                  onNavigate(`routeDetails/${routeId}`)
+                }
+              />
+            )}
             <View style={styles.menuGrid}>
               <MenuItem
                 icon="directions"
@@ -283,7 +292,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </>
       ) : (
-        // Add loading state or null state
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#a51912" />
         </View>

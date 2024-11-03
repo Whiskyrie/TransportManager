@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+        width: '100%',
     },
     header: {
         flexDirection: "row",
@@ -41,9 +42,11 @@ export const styles = StyleSheet.create({
         fontWeight: "semibold",
     },
     menuGrid: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        padding: 20,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        padding: 16,
+        paddingTop: 8,  // Reduzido devido ao mapa acima
     },
     menuItem: {
         alignItems: "center",
@@ -69,7 +72,7 @@ export const styles = StyleSheet.create({
         marginTop: 4,
     },
     recentSection: {
-        padding: 20,
+        padding: 16,
     },
     sectionHeader: {
         flexDirection: "row",
@@ -267,8 +270,9 @@ export const styles = StyleSheet.create({
     },
     loadingContainer: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: "#1a2b2b",
     },
 });
