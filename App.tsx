@@ -140,19 +140,22 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      await Promise.all([
-        AsyncStorage.removeItem("token"),
-        AsyncStorage.removeItem("user"),
-      ]);
+      await api.logout();
+
+      // First clear the user state
       setUser(null);
+
+      // Then navigate
       setCurrentScreen("login");
     } catch (error) {
-      console.error("Error logging out:", error);
+      console.error("Erro durante logout:", error);
+      // Even if there's an error, we should still clear the state and redirect
+      setUser(null);
+      setCurrentScreen("login");
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleOnboardingFinish = async () => {
     try {
       setIsLoading(true);

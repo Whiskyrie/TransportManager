@@ -7,6 +7,8 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Route, RouteLocation } from "Types/routeTypes";
@@ -71,13 +73,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onLogout,
   user,
 }) => {
-  const [currentScreen, setCurrentScreen] = useState<string>("home");
   const [recentRoutes, setRecentRoutes] = useState<Route[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    if (!user) {
+      onLogout();
+      return;
+    }
     fetchRecentRoutes();
-  }, []);
+  }, [user]);
 
   const fetchRecentRoutes = async () => {
     try {
@@ -85,7 +90,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       const formattedRoutes = Array.isArray(response.data)
         ? formatRoutes(response.data)
         : [];
-      // Get only the 3 most recent routes
       setRecentRoutes(formattedRoutes.slice(0, 3));
       setErrorMessage("");
     } catch (error) {
@@ -93,11 +97,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       setErrorMessage(errorMsg);
       setRecentRoutes([]);
     }
-  };
-
-  const handleNavigate = (screen: string) => {
-    setCurrentScreen(screen);
-    onNavigate(screen);
   };
 
   const handleLogoutPress = () => {
@@ -111,10 +110,41 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         },
         {
           text: "Sim, sair",
-          onPress: onLogout,
+          onPress: () => {
+            // Removed async/await since onLogout handles everything
+            onLogout().catch((error) => {
+              // We don't need to show any error since logout will happen anyway
+              console.warn("Erro não crítico durante logout:", error);
+            });
+          },
           style: "destructive",
         },
       ]
+    );
+  };
+
+  const ProfilePhoto = () => {
+    const imageUrl = user.profilePicture
+      ? api.getProfilePictureUrl(user.profilePicture)
+      : null;
+
+    return (
+      <TouchableOpacity
+        style={styles.profilePhotoContainer}
+        onPress={() => onNavigate("profile")}
+      >
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl, cache: "reload" }}
+            style={styles.profilePhoto}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.profilePhotoPlaceholder}>
+            <Icon name="person" size={20} color="#f5f2e5" />
+          </View>
+        )}
+      </TouchableOpacity>
     );
   };
 
@@ -154,7 +184,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     return (
       <TouchableOpacity
         style={styles.routeItem}
-        onPress={() => handleNavigate("routeList")}
+        onPress={() => onNavigate("routeList")}
       >
         <View style={styles.routeHeader}>
           <View style={styles.routeIconContainer}>
@@ -168,9 +198,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <View
             style={[
               styles.statusBadge,
-              {
-                backgroundColor: getStatusColor(route.status),
-              },
+              { backgroundColor: getStatusColor(route.status) },
             ]}
           >
             <Text style={styles.statusText}>{route.status}</Text>
@@ -228,98 +256,85 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <View style={styles.userInfo}>
-            <TouchableOpacity
-              style={styles.avatarContainer}
-              onPress={() => handleNavigate("profile")}
-            >
-              <Icon name="person" size={30} color="#f5f2e5" />
-            </TouchableOpacity>
-            <View style={styles.userTextContainer}>
-              <Text style={styles.userName}>{user.name}</Text>
-              <Text style={styles.userRole}>
-                {user.isAdmin ? "Administrador" : "Usuário"}
-              </Text>
+      {user ? (
+        <>
+          <View style={styles.topBar}>
+            <View style={styles.userInfo}>
+              <ProfilePhoto />
+              <View style={styles.userTextContainer}>
+                <Text style={styles.userName}>{user.name}</Text>
+                <Text style={styles.userRole}>
+                  {user.isAdmin ? "Administrador" : "Usuário"}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-        <View style={styles.menuGrid}>
-          <MenuItem
-            icon="directions"
-            label="Rotas"
-            onPress={() => handleNavigate("routeList")}
-          />
-          <MenuItem
-            icon="directions-car"
-            label="Veículos"
-            onPress={() => handleNavigate("vehicleList")}
-          />
-          <MenuItem
-            icon="person"
-            label="Motoristas"
-            onPress={() => handleNavigate("driverList")}
-          />
-        </View>
 
-        <View style={styles.recentSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Rotas Recentes</Text>
-            <TouchableOpacity onPress={() => handleNavigate("routeList")}>
-              <Text style={styles.seeAllButton}>Ver Todas</Text>
+          <ScrollView style={styles.scrollView}>
+            <View style={styles.menuGrid}>
+              <MenuItem
+                icon="directions"
+                label="Rotas"
+                onPress={() => onNavigate("routeList")}
+              />
+              <MenuItem
+                icon="directions-car"
+                label="Veículos"
+                onPress={() => onNavigate("vehicleList")}
+              />
+              <MenuItem
+                icon="person"
+                label="Motoristas"
+                onPress={() => onNavigate("driverList")}
+              />
+            </View>
+
+            <View style={styles.recentSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Rotas Recentes</Text>
+                <TouchableOpacity onPress={() => onNavigate("routeList")}>
+                  <Text style={styles.seeAllButton}>Ver Todas</Text>
+                </TouchableOpacity>
+              </View>
+
+              {errorMessage ? (
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
+              ) : (
+                recentRoutes.map((route) => (
+                  <RouteItem key={route.id} route={route} />
+                ))
+              )}
+            </View>
+          </ScrollView>
+
+          <View style={styles.bottomNav}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => onNavigate("home")}
+            >
+              <View style={styles.navIconContainer}>
+                <Icon name="home" size={24} color="#f5f2e5" />
+              </View>
+              <Text style={styles.navText}>Início</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={handleLogoutPress}
+            >
+              <View style={styles.navIconContainer}>
+                <Icon name="logout" size={24} color="#f5f2e5" />
+              </View>
+              <Text style={styles.navText}>Sair</Text>
             </TouchableOpacity>
           </View>
-
-          {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : (
-            recentRoutes.map((route) => (
-              <RouteItem key={route.id} route={route} />
-            ))
-          )}
+        </>
+      ) : (
+        // Add loading state or null state
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#a51912" />
         </View>
-      </ScrollView>
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={[
-            styles.bottomNavItem,
-            currentScreen === "home" ? styles.bottomNavItemActive : null,
-          ]}
-          onPress={() => handleNavigate("home")}
-        >
-          <Icon
-            name="home"
-            size={24}
-            color={currentScreen === "home" ? "#a51912" : "#f5f2e5"}
-          />
-          <Text
-            style={[
-              styles.bottomNavText,
-              currentScreen === "home" && styles.bottomNavTextActive,
-            ]}
-          >
-            Home
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.bottomNavItem}
-          onPress={() => handleNavigate("profile")}
-        >
-          <Icon name="person" size={24} color="#f5f2e5" />
-          <Text style={styles.bottomNavText}>Perfil</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.bottomNavItem}
-          onPress={handleLogoutPress}
-        >
-          <Icon name="logout" size={24} color="#f5f2e5" />
-          <Text style={styles.bottomNavText}>Sair</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </View>
   );
 };
@@ -355,44 +370,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "condensed",
     color: "#f5f2e5",
   },
   userRole: {
     fontSize: 14,
     color: "#a51912",
-    fontWeight: "500",
-  },
-  mapContainer: {
-    margin: 20,
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  mapPlaceholder: {
-    height: 200,
-    backgroundColor: "#1e2525",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  mapText: {
-    color: "#f5f2e5",
-    marginTop: 10,
-    fontSize: 16,
-  },
-  mapButton: {
-    backgroundColor: "#a51912",
-    padding: 16,
-    alignItems: "center",
-  },
-  mapButtonText: {
-    color: "#f5f2e5",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "semibold",
   },
   menuGrid: {
     flexDirection: "row",
@@ -406,7 +390,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     backgroundColor: "#1e2525",
-    borderRadius: 40,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
@@ -446,11 +430,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    elevation: 3,
+    elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 8.85,
   },
   routeHeader: {
     flexDirection: "row",
@@ -561,6 +545,69 @@ const styles = StyleSheet.create({
     color: "#5d0000",
     textAlign: "center",
     marginVertical: 10,
+  },
+
+  topBar: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    backgroundColor: "#1e2525",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  profilePhotoContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "#182727",
+  },
+  profilePhoto: {
+    width: "100%",
+    height: "100%",
+  },
+  profilePhotoPlaceholder: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#182727",
+  },
+  navButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  navIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#182727",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: "rgba(165, 25, 18, 0.3)",
+  },
+  navText: {
+    color: "#f5f2e5",
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1a2b2b",
   },
 });
 

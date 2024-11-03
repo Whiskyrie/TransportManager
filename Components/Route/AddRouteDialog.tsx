@@ -14,10 +14,11 @@ import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "../../Types/driverTypes";
-import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { Vehicles } from "../../Types/vehicleTypes";
 import { Route, RouteStatus } from "../../Types/routeTypes";
 import { api, handleApiError } from "Services/api";
 import LocationAutocomplete from "./LocationAutoComplete";
+import calculateRouteDetailsWithRateLimit from "Services/distanceCalculatorAPI";
 
 interface AddRouteDialogProps {
   visible: boolean;
@@ -82,6 +83,28 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     }
   }, [visible]);
 
+  useEffect(() => {
+    const updateRouteDetails = async () => {
+      if (startLocation && endLocation) {
+        try {
+          const details = await calculateRouteDetailsWithRateLimit(
+            startLocation,
+            endLocation
+          );
+          setDistance(details.distance.toString());
+          setEstimatedDuration(details.duration.toString());
+        } catch (error) {
+          Alert.alert(
+            "Erro",
+            "Não foi possível calcular a distância e duração da rota"
+          );
+        }
+      }
+    };
+
+    updateRouteDetails();
+  }, [startLocation, endLocation]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -141,23 +164,20 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         },
       };
 
-      await api.createRoute(newRoute);
       onSave(newRoute);
       resetForm();
-      onClose(); // Adicionado para fechar o diálogo após salvar com sucesso
+      onClose();
     } catch (error) {
       const errorMessage = handleApiError(error);
       Alert.alert("Erro", "Falha ao salvar rota: " + errorMessage);
     }
   };
 
-  const renderInput = (
-    placeholder: string,
+  const renderReadOnlyInput = (
+    label: string,
     value: string,
-    onChangeText: (text: string) => void,
     icon: string,
-    error?: string,
-    keyboardType: "default" | "numeric" = "default"
+    error?: string
   ) => (
     <View style={styles.inputContainer}>
       <MaterialIcons
@@ -168,10 +188,9 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
       />
       <TextInput
         style={[styles.input, error && styles.inputError]}
-        placeholder={placeholder}
+        placeholder={label}
         value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
+        editable={false}
         placeholderTextColor="#a0a0a0"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -226,21 +245,19 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                     error={errors.endLocation}
                   />
 
-                  {renderInput(
+                  {renderReadOnlyInput(
                     "Distância (km)",
-                    distance,
-                    setDistance,
+                    distance ? `${distance} km` : "Calculando...",
                     "straighten",
-                    errors.distance,
-                    "numeric"
+                    errors.distance
                   )}
-                  {renderInput(
+                  {renderReadOnlyInput(
                     "Duração Estimada (min)",
-                    estimatedDuration,
-                    setEstimatedDuration,
+                    estimatedDuration
+                      ? `${estimatedDuration} min`
+                      : "Calculando...",
                     "timer",
-                    errors.estimatedDuration,
-                    "numeric"
+                    errors.estimatedDuration
                   )}
 
                   <View style={styles.pickerContainer}>
