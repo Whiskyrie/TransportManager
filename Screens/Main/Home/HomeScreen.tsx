@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  StyleSheet,
   ScrollView,
   Alert,
   Image,
@@ -11,16 +12,62 @@ import {
 } from "react-native";
 import { styles } from "./HomeScreenStyle";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { Route } from "Types/routeTypes";
+import { Route, RouteLocation } from "Types/routeTypes";
 import { api, handleApiError } from "Services/api";
-import { formatRoutes } from "./HomeScreenFunctions";
-import MapView from "Screens/Maps/MapView";
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void;
   onLogout: () => Promise<void>;
   user: User;
 }
+
+const formatRoutes = (routes: Route[]): Route[] => {
+  return routes.map((route): Route => {
+    let startLocation: RouteLocation = { address: "" };
+    let endLocation: RouteLocation = { address: "" };
+
+    if (!route.id) {
+      console.warn("Rota inválida encontrada:", route);
+      return route;
+    }
+
+    if (typeof route.startLocation === "string") {
+      try {
+        startLocation = JSON.parse(route.startLocation);
+      } catch (e) {
+        startLocation = {
+          address: route.startLocation,
+        };
+      }
+    } else if (route.startLocation && typeof route.startLocation === "object") {
+      startLocation = {
+        address: route.startLocation.address || "",
+      };
+    }
+
+    if (typeof route.endLocation === "string") {
+      try {
+        endLocation = JSON.parse(route.endLocation);
+      } catch (e) {
+        endLocation = { address: route.endLocation };
+      }
+    } else if (route.endLocation && typeof route.endLocation === "object") {
+      endLocation = {
+        address: route.endLocation.address || "",
+      };
+    }
+
+    return {
+      ...route,
+      id: route.id,
+      distance: route.distance || 0,
+      estimatedDuration: route.estimatedDuration || 0,
+      status: route.status || "Pendente",
+      startLocation: startLocation,
+      endLocation: endLocation,
+    };
+  });
+};
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigate,
@@ -225,14 +272,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
 
           <ScrollView style={styles.scrollView}>
-            {recentRoutes.length > 0 && (
-              <MapView
-                routes={recentRoutes}
-                onMarkerPress={(routeId) =>
-                  onNavigate(`routeDetails/${routeId}`)
-                }
-              />
-            )}
             <View style={styles.menuGrid}>
               <MenuItem
                 icon="directions"
@@ -292,6 +331,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </View>
         </>
       ) : (
+        // Add loading state or null state
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#a51912" />
         </View>
