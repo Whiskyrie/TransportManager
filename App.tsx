@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  StyleSheet,
-  Alert,
-  Animated,
-  Dimensions,
-  ActivityIndicator,
-  View,
-} from "react-native";
+import { StyleSheet, Alert, Animated, Dimensions, ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import OnboardingScreen from "./Screens/Authentication/OnboardingScreen";
@@ -21,6 +14,7 @@ import { api, handleApiError } from "Services/api";
 import ProfilePageScreen from "./Screens/Profile/ProfilePageScreen";
 import { User } from "./Types/authTypes";
 import { LogBox } from "react-native";
+import ResetPasswordScreen from "./Screens/Authentication/ResetPasswordScreen"; // Importa a tela de redefinir senha
 
 const { width, height } = Dimensions.get("window");
 
@@ -156,6 +150,7 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   const handleOnboardingFinish = async () => {
     try {
       setIsLoading(true);
@@ -172,6 +167,7 @@ const App: React.FC = () => {
   const handleNavigation = (screen: string) => {
     setCurrentScreen(screen);
   };
+
   const handleUpdateUser = (updatedUser: User) => {
     setUser(updatedUser);
     AsyncStorage.setItem("user", JSON.stringify(updatedUser));
@@ -205,6 +201,7 @@ const App: React.FC = () => {
         <LoginScreen
           onLogin={handleLogin}
           onNavigateToRegister={() => setCurrentScreen("register")}
+          onNavigateToResetPassword={() => setCurrentScreen("resetPassword")} // Adiciona a navegação para a tela de redefinir senha
         />
       )}
       {currentScreen === "register" && (
@@ -212,6 +209,13 @@ const App: React.FC = () => {
           onRegister={handleRegister}
           onNavigateToLogin={() => setCurrentScreen("login")}
         />
+      )}
+      {currentScreen === "resetPassword" && (
+        <ResetPasswordScreen
+          onNavigateToLogin={() => setCurrentScreen("login")} // Navegação de volta para o login
+          onResetPassword={function (email: string): void {
+            throw new Error("Function not implemented.");
+          } }        />
       )}
       {currentScreen === "onboarding" && (
         <OnboardingScreen onFinish={handleOnboardingFinish} />
@@ -223,22 +227,6 @@ const App: React.FC = () => {
           user={user}
         />
       )}
-      {currentScreen === "routeList" && (
-        <RouteListScreen onNavigate={handleNavigation} user={user} />
-      )}
-      {currentScreen === "vehicleList" && (
-        <VehicleListScreen onNavigate={handleNavigation} user={user} />
-      )}
-      {currentScreen === "driverList" && (
-        <DriverListScreen onNavigate={handleNavigation} user={user} />
-      )}
-      {currentScreen === "profile" && (
-        <ProfilePageScreen
-          onNavigate={handleNavigation}
-          user={user}
-          onUpdateUser={handleUpdateUser}
-        />
-      )}
       {isLoading && <LoadingOverlay />}
     </GestureHandlerRootView>
   );
@@ -247,11 +235,6 @@ const App: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  animatedContainer: {
-    position: "absolute",
-    width: width,
-    height: height,
   },
   loadingOverlay: {
     position: "absolute",

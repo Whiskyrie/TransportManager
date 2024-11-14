@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { RegisterDto, LoginDto, AuthResponse } from './dto/auth.dto';
+import { sendPasswordResetEmail } from '../common/emailService'; // Importando a função de envio de e-mail
 
 @Injectable()
 export class AuthService {
@@ -14,13 +15,14 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) { }
 
+    // Função para registrar um novo usuário
     async register(registerDto: RegisterDto): Promise<AuthResponse> {
         const existingUser = await this.userRepository.findOne({
             where: { email: registerDto.email },
         });
 
         if (existingUser) {
-            throw new ConflictException('Email already registered');
+            throw new ConflictException('Email já registrado');
         }
 
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
@@ -51,22 +53,23 @@ export class AuthService {
         };
     }
 
+    // Função de login
     async login(loginDto: LoginDto): Promise<AuthResponse> {
         const user = await this.userRepository.findOne({
             where: { email: loginDto.email },
         });
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Credenciais inválidas');
         }
 
         const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Credenciais inválidas');
         }
 
-        // Atualizar último login
+        // Atualiza o último login
         user.lastLogin = new Date();
         await this.userRepository.save(user);
 
@@ -89,6 +92,7 @@ export class AuthService {
         };
     }
 
+    // Função de logout
     async logout(userId: string): Promise<any> {
         try {
             const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -100,11 +104,57 @@ export class AuthService {
 
             return { success: true };
         } catch {
-            // Mesmo que ocorra um erro, retornamos sucesso
-            // já que o importante é o cliente limpar seu token
             return { success: true };
         }
     }
+
+    // Função para solicitar a recuperação de senha
+    async requestPasswordReset(email: string): Promise<void> {
+        const user = await this.userRepository.findOne({ where: { email } });
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado');
+        }
+
+        // Gera o token para redefinição de senha
+        const token = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
+
+        // Envia o e-mail de recuperação com o token
+        await sendPasswordResetEmail(user.email, token);
+    }
+
+    // Função para redefinir a senha
+    async resetPassword(token: string, newPassword: string): Promise<void> {
+        try {
+            const decoded = this.jwtService.verify(token); // Verifica o token
+
+            const user = await this.userRepository.findOne({ where: { id: decoded.id } });
+
+            if (!user) {
+                throw new NotFoundException('Usuário não encontrado');
+            }
+
+            // Criptografa a nova senha
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            // Atualiza a senha do usuário no banco de dados
+            user.password = hashedPassword;
+            await this.userRepository.save(user);
+        } catch (error) {
+            throw new UnauthorizedException('Token inválido ou expirado');
+        }
+    }
+
+    async validateUser(id: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where: { id } });
+    
+        if (!user) {
+          throw new UnauthorizedException('Usuário não encontrado');
+        }
+    
+        return user;
+      }
+    // Função para gerar o token JWT
     private generateToken(user: User): string {
         const payload = {
             sub: user.id,
@@ -113,9 +163,5 @@ export class AuthService {
         };
 
         return this.jwtService.sign(payload);
-    }
-
-    async validateUser(id: string): Promise<User> {
-        return this.userRepository.findOne({ where: { id } });
     }
 }

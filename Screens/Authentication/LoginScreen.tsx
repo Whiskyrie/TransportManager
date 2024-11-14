@@ -8,16 +8,18 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-
 import { theme, sharedStyles } from "./style";
+
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
   onNavigateToRegister: () => void;
+  onNavigateToResetPassword: () => void;  // Função para navegação para redefinir senha
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   onNavigateToRegister,
+  onNavigateToResetPassword,  // Recebe a função de navegação
 }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +49,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
           style={sharedStyles.logo}
           resizeMode="contain"
         />
-
         <Text style={sharedStyles.title}>Bem-vindo de volta!</Text>
         <Text style={sharedStyles.subtitle}>
           Entre com suas credenciais para continuar
@@ -81,6 +82,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
           <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
         </TouchableOpacity>
 
+        {/* Link para "Esqueceu a senha?" */}
+        <TouchableOpacity onPress={onNavigateToResetPassword}>
+          <Text style={sharedStyles.linkText}>
+            Esqueceu a senha?{" "}
+            <Text style={sharedStyles.linkTextHighlight}>Clique aqui</Text>
+          </Text>
+        </TouchableOpacity>
+
+        {/* Link para a página de registro */}
         <TouchableOpacity onPress={onNavigateToRegister}>
           <Text style={sharedStyles.linkText}>
             Não possui uma conta ainda?{" "}
@@ -91,4 +101,5 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     </KeyboardAvoidingView>
   );
 };
+
 export default LoginScreen;
