@@ -173,6 +173,23 @@ const App: React.FC = () => {
     AsyncStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
+  const handleResetPassword = async (email: string) => {
+    try {
+      setIsLoading(true);
+      // Aqui você pode implementar o envio do e-mail para a API de redefinição de senha
+      const response = await api.sendResetPasswordLink(email);
+      console.log(response.data); // Verificando a resposta da API
+      Alert.alert('Sucesso', 'Link de redefinição de senha enviado!'); // Notificar o usuário
+      setCurrentScreen("login"); // Navegar de volta para o login
+    } catch (error) {
+      console.error('Erro ao solicitar redefinição de senha:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao tentar redefinir a senha. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  
   const LoadingOverlay = () => (
     <View style={styles.loadingOverlay}>
       <ActivityIndicator size="large" color="#0000ff" />
@@ -213,9 +230,8 @@ const App: React.FC = () => {
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
           onNavigateToLogin={() => setCurrentScreen("login")} // Navegação de volta para o login
-          onResetPassword={function (email: string): void {
-            throw new Error("Function not implemented.");
-          } }        />
+          onResetPassword={handleResetPassword} 
+               />
       )}
       {currentScreen === "onboarding" && (
         <OnboardingScreen onFinish={handleOnboardingFinish} />
@@ -230,6 +246,9 @@ const App: React.FC = () => {
       {isLoading && <LoadingOverlay />}
     </GestureHandlerRootView>
   );
+
+
+
 };
 
 const styles = StyleSheet.create({

@@ -120,14 +120,16 @@ export class AuthService {
         const token = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
 
         // Envia o e-mail de recuperação com o token
-        await sendPasswordResetEmail(user.email, token);
+        await sendPasswordResetEmail(user.email); // Função que já envia o link com o token
     }
 
     // Função para redefinir a senha
     async resetPassword(token: string, newPassword: string): Promise<void> {
         try {
-            const decoded = this.jwtService.verify(token); // Verifica o token
+            // Verifica o token
+            const decoded = this.jwtService.verify(token);
 
+            // Encontra o usuário com base no id extraído do token
             const user = await this.userRepository.findOne({ where: { id: decoded.id } });
 
             if (!user) {

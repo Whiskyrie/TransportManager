@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginData, AuthResponse, RegisterData, } from 'Types/authTypes';
+import { LoginData, AuthResponse, RegisterData } from 'Types/authTypes';
 import { config } from "Config/config";
 
 
@@ -69,6 +69,13 @@ export const api = {
 
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
+
+    resetPassword: (token: string, newPassword: string) =>
+        axiosInstance.post('auth/reset-password', { token, newPassword }),
+
+    // Função para enviar o link de redefinição de senha
+    sendResetPasswordLink: (email: string) =>
+        axiosInstance.post('auth/send-reset-password-link', { email }),
 
     logout: async () => {
         try {
