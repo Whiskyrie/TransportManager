@@ -26,6 +26,21 @@ export class LoginDto {
     password: string;
 }
 
+export class RequestPasswordResetDto {
+    @IsEmail()
+    email: string;
+}
+
+export class ResetPasswordDto {
+    @IsNotEmpty()
+    @IsString()
+    token: string;
+
+    @IsNotEmpty()
+    @IsString()
+    newPassword: string;
+}
+
 export class AuthResponse {
     token: string;
     user: {
@@ -40,21 +55,4 @@ export class AuthResponse {
         isActive: boolean;
         lastLogin?: Date;
     };
-}
-
-// Novo DTO para solicitação de redefinição de senha
-export class RequestPasswordResetDto {
-    @IsEmail()
-    email: string;
-}
-
-// Novo DTO para redefinição de senha
-export class ResetPasswordDto {
-    @IsNotEmpty()
-    @IsString()
-    token: string;
-
-    @IsNotEmpty()
-    @IsString()
-    newPassword: string;
 }

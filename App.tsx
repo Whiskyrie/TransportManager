@@ -227,6 +227,25 @@ const App: React.FC = () => {
           onNavigateToLogin={() => setCurrentScreen("login")}
         />
       )}
+      {currentScreen === "routeList" && (
+      <RouteListScreen
+        onNavigate={handleNavigation}
+        user={user}
+      />
+      )}
+      {currentScreen === "vehicleList" && (
+      <VehicleListScreen
+        onNavigate={handleNavigation}
+        user={user}
+      />
+      )}
+      {currentScreen === "driverList" && (
+      <DriverListScreen
+        onNavigate={handleNavigation}
+        user={user}
+      />
+      )}
+
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
           onNavigateToLogin={() => setCurrentScreen("login")} // Navegação de volta para o login
