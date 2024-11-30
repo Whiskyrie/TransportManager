@@ -15,6 +15,7 @@ import ProfilePageScreen from "./Screens/Profile/ProfilePageScreen";
 import { User } from "./Types/authTypes";
 import { LogBox } from "react-native";
 import ResetPasswordScreen from "./Screens/Authentication/ResetPasswordScreen"; // Importa a tela de redefinir senha
+import NewPasswordScreen from "Screens/Authentication/NewPasswordScreen";
 
 const { width, height } = Dimensions.get("window");
 
@@ -26,6 +27,7 @@ const App: React.FC = () => {
   const [isFirstTime, setIsFirstTime] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null); // Estado para o token de redefinição
   const scaleValue = useRef(new Animated.Value(1)).current;
   const opacityValue = useRef(new Animated.Value(1)).current;
 
@@ -188,6 +190,25 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const handleNewPassword = async (newPassword: string) => {
+    if (!resetToken) {
+      Alert.alert("Erro", "Token de redefinição inválido.");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await api.resetPassword({ token: resetToken, newPassword });
+      Alert.alert("Sucesso", "Senha redefinida com sucesso!");
+      setCurrentScreen("login");
+    } catch (error) {
+      console.error("Erro ao redefinir senha:", error);
+      Alert.alert("Erro", "Não foi possível redefinir a senha. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   
   
   const LoadingOverlay = () => (
@@ -245,6 +266,13 @@ const App: React.FC = () => {
         user={user}
       />
       )}
+      
+      {currentScreen === "newPassword" && (
+  <NewPasswordScreen
+    onSetNewPassword={handleNewPassword}
+    onNavigateToLogin={() => setCurrentScreen("login")}
+  />
+)}
 
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
@@ -265,9 +293,6 @@ const App: React.FC = () => {
       {isLoading && <LoadingOverlay />}
     </GestureHandlerRootView>
   );
-
-
-
 };
 
 const styles = StyleSheet.create({
