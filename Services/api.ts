@@ -1,8 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginData, AuthResponse, RegisterData } from 'Types/authTypes';
-import { config } from "Config/config";
-
+import { config } from 'Config/config';
 
 const createAxiosInstance = (): AxiosInstance => {
     const instance = axios.create({
@@ -37,8 +36,7 @@ const createAxiosInstance = (): AxiosInstance => {
             if (error.response?.status === 401) {
                 await AsyncStorage.removeItem('token');
                 await AsyncStorage.removeItem('user');
-                // You might want to trigger a navigation to login screen here
-                // or emit an event that App.tsx can listen to
+                // Optionally trigger navigation to login screen here
             }
 
             return Promise.reject(error);
@@ -70,25 +68,32 @@ export const api = {
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
 
-    resetPassword: ({ token, newPassword }: { token: string; newPassword: string }) => {
-        return axiosInstance.post('auth/reset-password', { token, newPassword }, {
+    resetPassword: ({ code, newPassword }: { code: string; newPassword: string }) => {
+        return axiosInstance.post('auth/reset-password', { code, newPassword }, {
             headers: {
-                Authorization: undefined, // Remove explicitamente o cabeçalho de autorização
+                Authorization: undefined, // Explicitly remove the Authorization header
             },
         });
     },
 
-    // Função para enviar o link de redefinição de senha
-    sendResetPasswordLink: (email: string) =>
-        axiosInstance.post('auth/send-reset-password-link', { email }),
+    // Function to send reset password code to the user's email
+    sendResetPasswordCode: (email: string) => {
+        return axiosInstance.post('auth/send-reset-password-code', { email }, {
+            headers: {
+                Authorization: undefined, // Ensure no token is attached here
+            },
+        });
+    },
 
+    // Function to verify reset password code
+     verifyResetPasswordCode: ({ email, code }: { email: string; code: string }) =>
+    axiosInstance.post('auth/verify-reset-code', { email, code }), 
+           
     logout: async () => {
         try {
-            // Pegue o token antes de removê-lo
             const token = await AsyncStorage.getItem('token');
 
             if (token) {
-                // Faça a requisição com o token diretamente no header
                 await axiosInstance.post('auth/logout', null, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -98,18 +103,15 @@ export const api = {
         } catch (error) {
             console.warn("Erro ao notificar servidor sobre logout:", error);
         } finally {
-            // Sempre limpe o storage local
             await AsyncStorage.multiRemove(['token', 'user']);
         }
     },
     getProfilePicture: (userId: string) =>
         axiosInstance.get(`${config.PROFILE_PICTURES_PATH}/${userId}`),
 
-    // Helper method to get the full image URL
     getProfilePictureUrl: (filename: string): string =>
         getImageUrl(filename) || '',
 
-    // Profile endpoints
     uploadProfilePicture: (formData: FormData) =>
         axiosInstance.post('upload/profile-picture', formData, {
             headers: {
@@ -120,7 +122,7 @@ export const api = {
     deleteProfilePicture: () =>
         axiosInstance.delete('upload/profile-picture'),
 
-    // Routes endpoints with proper typing
+    // Routes endpoints
     getAllRoutes: () =>
         axiosInstance.get('routes'),
 

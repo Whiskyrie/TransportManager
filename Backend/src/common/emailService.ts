@@ -1,39 +1,29 @@
 import * as nodemailer from 'nodemailer';
-import * as jwt from 'jsonwebtoken'; // Biblioteca para gerar o token de redefinição
 
-// Configuração do transporte de e-mail (usando Gmail como exemplo)
 const transporter = nodemailer.createTransport({
-  service: 'Gmail', // Pode ser outro serviço, como Mailgun ou SendGrid
+  service: 'Gmail',
   auth: {
-    user: process.env.EMAIL_USER, // E-mail do remetente (variáveis de ambiente)
-    pass: process.env.EMAIL_PASS, // Senha do e-mail do remetente
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
-// Função para enviar e-mail de recuperação de senha
-export const sendPasswordResetEmail = async (to: string) => {
-  // Gerar o token de redefinição de senha
-  const token = jwt.sign({ email: to }, process.env.JWT_SECRET_KEY || 'secreta', {
-    expiresIn: '1h', // Expiração do token de 1 hora
-  });
+export const emailService = {
+  
+  async sendResetPasswordEmail(email: string, resetCode: string): Promise<void> {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Código de Redefinição de Senha',
+      text: `Seu código de redefinição de senha é: ${resetCode}\n\nEste código é válido por 10 minutos.`,
+    };
 
-  // Criar o link de redefinição de senha com o token
-  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
-
-  // Configurar as opções do e-mail
-  const mailOptions = {
-    from: process.env.EMAIL_USER, // Remetente
-    to, // Destinatário
-    subject: 'Redefinição de Senha',
-    text: `Clique no link abaixo para redefinir sua senha:\n\n${resetLink}`,
-  };
-
-  try {
-    // Enviar o e-mail
-    await transporter.sendMail(mailOptions);
-    console.log(`E-mail de redefinição enviado para: ${to}`);
-  } catch (error) {
-    console.error('Erro ao enviar e-mail:', error);
-    throw new Error('Erro ao enviar e-mail de recuperação');
-  }
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`E-mail de redefinição enviado para: ${email}`);
+    } catch (error) {
+      console.error('Erro ao enviar e-mail:', error);
+      throw new Error('Erro ao enviar e-mail de recuperação');
+    }
+  },
 };

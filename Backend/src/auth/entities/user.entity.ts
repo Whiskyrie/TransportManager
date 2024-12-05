@@ -36,5 +36,11 @@ export class User {
 
     @Column({ nullable: true })
     lastLogin: Date;
+
+    @Column({ nullable: true })
+    resetPasswordCode: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetPasswordExpires: Date;
 }
 

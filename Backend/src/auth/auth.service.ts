@@ -1,11 +1,12 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
-import { RegisterDto, LoginDto, AuthResponse } from './dto/auth.dto';
-import { sendPasswordResetEmail } from '../common/emailService'; // Importando a função de envio de e-mail
+import { RegisterDto, LoginDto, AuthResponse, ResetPasswordDto } from './dto/auth.dto';
+import { emailService } from '../common/emailService'; // Importando a função de envio de e-mail
+
 
 @Injectable()
 export class AuthService {
@@ -34,10 +35,7 @@ export class AuthService {
 
         await this.userRepository.save(user);
 
-        const token = this.generateToken(user);
-
         return {
-            token,
             user: {
                 id: user.id,
                 name: user.name,
@@ -73,10 +71,8 @@ export class AuthService {
         user.lastLogin = new Date();
         await this.userRepository.save(user);
 
-        const token = this.generateToken(user);
 
         return {
-            token,
             user: {
                 id: user.id,
                 name: user.name,
@@ -108,62 +104,83 @@ export class AuthService {
         }
     }
 
-    // Função para solicitar a recuperação de senha
     async requestPasswordReset(email: string): Promise<void> {
         const user = await this.userRepository.findOne({ where: { email } });
+    
+        if (!user) {
+          throw new NotFoundException('Usuário não encontrado');
+        }
+    
+        // Gera um código de 6 dígitos para redefinição de senha
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+        // Salva o código e sua expiração no banco de dados (exemplo: 10 minutos)
+        user.resetPasswordCode = resetCode;
+        user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos a partir de agora
+        await this.userRepository.save(user);
+    
+        // Envia o e-mail de recuperação com o código
+        await emailService.sendResetPasswordEmail(user.email, resetCode);
+      }
+    
+    // auth.service.ts
+async resetPassword(resetCode: string, newPassword: string): Promise<void> {
+    try {
+        // Encontra o usuário que possui o código de redefinição correspondente
+        const user = await this.userRepository.findOne({ where: { resetPasswordCode: resetCode } });
 
         if (!user) {
-            throw new NotFoundException('Usuário não encontrado');
+            throw new UnauthorizedException('Código de redefinição inválido.');
         }
 
-        // Gera o token para redefinição de senha
-        const token = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
-
-        // Envia o e-mail de recuperação com o token
-        await sendPasswordResetEmail(user.email); // Função que já envia o link com o token
-    }
-
-    // Função para redefinir a senha
-    async resetPassword(token: string, newPassword: string): Promise<void> {
-        try {
-            // Verifica o token
-            const decoded = this.jwtService.verify(token);
-
-            // Encontra o usuário com base no id extraído do token
-            const user = await this.userRepository.findOne({ where: { id: decoded.id } });
-
-            if (!user) {
-                throw new NotFoundException('Usuário não encontrado');
-            }
-
-            // Criptografa a nova senha
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-            // Atualiza a senha do usuário no banco de dados
-            user.password = hashedPassword;
-            await this.userRepository.save(user);
-        } catch (error) {
-            throw new UnauthorizedException('Token inválido ou expirado');
+        // Verifica se o código não expirou
+        if (new Date() > new Date(user.resetPasswordExpires)) {
+            throw new UnauthorizedException('Código de redefinição expirado.');
         }
+
+        // Criptografa a nova senha
+        const saltRounds = 10; // Configure isso em um arquivo de configuração, se necessário
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Atualiza a senha do usuário no banco de dados
+        user.password = hashedPassword;
+        user.resetPasswordCode = null; // Limpa o código de redefinição após a mudança de senha
+        user.resetPasswordExpires = null; // Limpa a data de expiração do código
+        await this.userRepository.save(user);
+
+    } catch (error) {
+        // Relança o erro para casos não esperados
+        throw error;
+    }
+}
+
+async verifyCodeAndResetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
     }
 
+    // Verifica se o código de redefinição de senha é válido e se não expirou
+    if (user.resetPasswordCode !== code || new Date() > user.resetPasswordExpires) {
+      throw new UnauthorizedException('Código inválido ou expirado');
+    }
+
+    // Criptografa a nova senha e atualiza no banco de dados
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(newPassword, saltRounds);
+    await this.userRepository.save(user);
+  }
+
+
+    // Função para validar um usuário por ID
     async validateUser(id: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
-    
-        if (!user) {
-          throw new UnauthorizedException('Usuário não encontrado');
-        }
-    
-        return user;
-      }
-    // Função para gerar o token JWT
-    private generateToken(user: User): string {
-        const payload = {
-            sub: user.id,
-            email: user.email,
-            isAdmin: user.isAdmin,
-        };
 
-        return this.jwtService.sign(payload);
+        if (!user) {
+            throw new UnauthorizedException('Usuário não encontrado');
+        }
+
+        return user;
     }
 }

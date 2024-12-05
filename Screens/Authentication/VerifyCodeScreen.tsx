@@ -14,36 +14,39 @@ import {
 import { theme, sharedStyles } from "./style";
 import { api } from "Services/api"; // Corrija o caminho de importação de acordo com a estrutura do seu projeto
 
-interface ResetPasswordScreenProps {
-  onNavigateToLogin: () => void;
-  onResetPassword: (email: string) => Promise<void>;
+interface VerifyCodeScreenProps {
+  email: string;
+  onNavigateToNewPassword: () => void; // Função para navegar para a tela de nova senha
   onNavigateBack: () => void;
 
 }
 
-const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToLogin }) => {
-  const [email, setEmail] = useState("");
+const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({ email, onNavigateToNewPassword }) => {
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleResetPassword = async () => {
-    if (!email) {
-      setError("Por favor, informe seu e-mail.");
+  const handleVerifyCode = async () => {
+    if (!code) {
+      setError("Por favor, informe o código de verificação.");
       return;
     }
-  
+
     try {
-      // Chama a função de envio de código de redefinição de senha
-      await api.sendResetPasswordCode(email);
-      setSuccessMessage("Código de redefinição enviado com sucesso. Verifique seu e-mail.");
+      // Chama a API para verificar o código
+      await api.verifyResetPasswordCode({ email, code });
+      setSuccessMessage("Código verificado com sucesso.");
       setError(""); // Limpa qualquer mensagem de erro anterior
+
+      // Navega para a tela de redefinição de senha
+      onNavigateToNewPassword();
     } catch (err: any) {
       if (err && err.response && err.response.data) {
         console.error("Erro da API:", err.response.data);
-        setError("Falha ao enviar o código de redefinição. Tente novamente.");
+        setError("Código inválido ou expirado. Tente novamente.");
       } else {
         console.error("Erro inesperado:", err);
-        setError("Falha ao enviar o código de redefinição. Tente novamente.");
+        setError("Falha na verificação do código. Tente novamente.");
       }
     }
   };
@@ -63,9 +66,9 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToL
           resizeMode="contain"
         />
 
-        <Text style={sharedStyles.title}>Redefinir Senha</Text>
+        <Text style={sharedStyles.title}>Verificar Código</Text>
         <Text style={sharedStyles.subtitle}>
-          Insira seu e-mail para receber um código de redefinição.
+          Insira o código de verificação enviado para seu e-mail.
         </Text>
 
         {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
@@ -73,30 +76,22 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToL
 
         <TextInput
           style={sharedStyles.input}
-          placeholder="Email"
+          placeholder="Código de verificação"
           placeholderTextColor={`${theme.colors.text}80`}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
+          value={code}
+          onChangeText={setCode}
+          keyboardType="numeric"
         />
 
         <TouchableOpacity
           style={sharedStyles.primaryButton}
-          onPress={handleResetPassword}
+          onPress={handleVerifyCode}
         >
-          <Text style={sharedStyles.primaryButtonText}>Enviar código de redefinição</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={onNavigateToLogin}>
-          <Text style={sharedStyles.linkText}>
-            Já tem uma conta?{" "}
-            <Text style={sharedStyles.linkTextHighlight}>Entrar</Text>
-          </Text>
+          <Text style={sharedStyles.primaryButtonText}>Verificar Código</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-export default ResetPasswordScreen;
+export default VerifyCodeScreen;

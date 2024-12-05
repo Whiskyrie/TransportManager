@@ -32,9 +32,11 @@ export class RequestPasswordResetDto {
 }
 
 export class ResetPasswordDto {
+    @IsEmail()
+    email: string; // Adiciona o e-mail para identificação do usuário
     @IsNotEmpty()
     @IsString()
-    token: string;
+    code: string; // Código de redefinição de senha recebido por e-mail
 
     @IsNotEmpty()
     @IsString()
@@ -42,7 +44,6 @@ export class ResetPasswordDto {
 }
 
 export class AuthResponse {
-    token: string;
     user: {
         id: string;
         name: string;
