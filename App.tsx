@@ -82,6 +82,12 @@ const App: React.FC = () => {
     }
   };
 
+  // Atualize a navegação do reset password para passar o token para NewPasswordScreen
+  const handleResetPasswordNavigation = (token: string) => {
+    setResetToken(token); // Atualiza o estado do token de redefinição
+    setCurrentScreen("newPassword"); // Navega para a tela de nova senha
+  };
+
   const handleLogin = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -181,6 +187,8 @@ const App: React.FC = () => {
       // Aqui você pode implementar o envio do e-mail para a API de redefinição de senha
       const response = await api.sendResetPasswordLink(email);
       console.log(response.data); // Verificando a resposta da API
+      const token = response.data.token; // Supondo que a API retorna o token
+      setResetToken(token); // Atualiza o token no estado
       Alert.alert('Sucesso', 'Link de redefinição de senha enviado!'); // Notificar o usuário
       setCurrentScreen("login"); // Navegar de volta para o login
     } catch (error) {
@@ -268,17 +276,21 @@ const App: React.FC = () => {
       )}
       
       {currentScreen === "newPassword" && (
-  <NewPasswordScreen
-    onSetNewPassword={handleNewPassword}
-    onNavigateToLogin={() => setCurrentScreen("login")}
-  />
-)}
+        <NewPasswordScreen
+          resetToken={resetToken} // Passe o token de redefinição
+          onSetNewPassword={handleNewPassword}
+          onNavigateToLogin={() => setCurrentScreen("login")}
+        />
+      )}
 
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
-          onNavigateToLogin={() => setCurrentScreen("login")} // Navegação de volta para o login
-          onResetPassword={handleResetPassword} 
-               />
+          onNavigateToLogin={() => setCurrentScreen("login")}
+          onResetPassword={(email) => {
+            handleResetPassword(email);
+            handleResetPasswordNavigation("token-from-response"); // Suponha que o token é obtido e passe aqui
+          }}
+        />
       )}
       {currentScreen === "onboarding" && (
         <OnboardingScreen onFinish={handleOnboardingFinish} />

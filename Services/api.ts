@@ -70,8 +70,13 @@ export const api = {
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
 
-    resetPassword: ({ token, newPassword }: { token: string; newPassword: string }) => 
-        axiosInstance.post('auth/reset-password', { token, newPassword }),
+    resetPassword: ({ token, newPassword }: { token: string; newPassword: string }) => {
+        return axiosInstance.post('auth/reset-password', { token, newPassword }, {
+            headers: {
+                Authorization: undefined, // Remove explicitamente o cabeçalho de autorização
+            },
+        });
+    },
 
     // Função para enviar o link de redefinição de senha
     sendResetPasswordLink: (email: string) =>

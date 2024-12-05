@@ -275,4 +275,66 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: "#1a2b2b",
     },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Fundo semitransparente
+      },
+      modalContainer: {
+        width: 300,
+        padding: 20,
+        backgroundColor: "white",
+        borderRadius: 10,
+        alignItems: "center",
+      },
+      modalTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 10,
+        color: "#333",
+      },
+      modalMessage: {
+        fontSize: 16,
+        textAlign: "center",
+        marginBottom: 20,
+        color: "#666",
+      },
+      modalButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+      },
+      modalButton: {
+        flex: 1,
+        marginHorizontal: 5,
+        padding: 10,
+        borderRadius: 5,
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      cancelButton: {
+        backgroundColor: "#ccc",
+      },
+      logoutButton: {
+        backgroundColor: "#a51912",
+      },
+      buttonText: {
+        color: "white",
+        fontSize: 16,
+      },
+      footer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+        backgroundColor: "#1e2525",
+        borderTopWidth: 1,
+        borderTopColor: "#ccc",
+      },
+      logoutText: {
+        marginLeft: 10,
+        color: "#fff",
+        fontSize: 16,
+      },
 });

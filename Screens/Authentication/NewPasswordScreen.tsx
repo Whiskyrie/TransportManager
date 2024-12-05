@@ -14,6 +14,7 @@ import {
 import { theme, sharedStyles } from "./style";
 
 interface NewPasswordScreenProps {
+  resetToken: string | null;
   onSetNewPassword: (newPassword: string, confirmPassword: string) => Promise<void>;
   onNavigateToLogin: () => void;
 }
