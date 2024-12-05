@@ -1,5 +1,5 @@
 export const config = {
-    API_BASE_URL: 'http://10.51.4.169:3000',
+    API_BASE_URL: 'http://10.51.1.109:3000',
     PROFILE_PICTURES_PATH: '/uploads'  // Removed 'Backend' prefix since it should be handled by the server
 };
 
