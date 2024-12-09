@@ -169,6 +169,9 @@ const App: React.FC = () => {
   };
 
   const handleResetPassword = async (email: string) => {
+    
+    console.log("handleResetPassword chamado com email:", email);
+
     try {
       setIsLoading(true);
       // Aqui você pode implementar o envio do código de redefinição de senha para a API
@@ -177,7 +180,7 @@ const App: React.FC = () => {
       const code = response.data.code; // Supondo que a API retorna o código
       setResetCode(code); // Atualiza o código no estado
       Alert.alert('Sucesso', 'Código de redefinição de senha enviado!'); // Notificar o usuário
-      setCurrentScreen("login"); // Navegar de volta para o login
+      setCurrentScreen("verifyCode"); 
     } catch (error) {
       console.error('Erro ao solicitar redefinição de senha:', error);
       Alert.alert('Erro', 'Ocorreu um erro ao tentar redefinir a senha. Tente novamente.');
@@ -268,19 +271,17 @@ const App: React.FC = () => {
         <OnboardingScreen onFinish={handleOnboardingFinish} />
       )}
       {currentScreen === "verifyCode" && (
-     <VerifyCodeScreen
-          email={resetCode} // Passa o email para a tela de verificação de código
-          onNavigateBack={() => setCurrentScreen("resetPassword")} // Navegação de volta para a tela de redefinição
-          onNavigateToNewPassword={function (): void {
-            throw new Error("Function not implemented.");
-          } }      />
+        <VerifyCodeScreen
+          resetCode={resetCode} // Passa o código para a tela
+            onCodeVerified={() => setCurrentScreen("newPassword")} // Navega para a tela de nova senha
+           onNavigateBack={() => setCurrentScreen("resetPassword")} // Volta para a redefinição de senha
+         />
       )}
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
-          onResetPassword={handleResetPassword}
-          onNavigateBack={() => setCurrentScreen("login")} onNavigateToLogin={function (): void {
-            throw new Error("Function not implemented.");
-          } }        />
+          onResetPassword={handleResetPassword} // Envia o código
+          onNavigateToLogin={() => setCurrentScreen("login")} // Volta ao login caso o usuário cancele
+        />
       )}
       {currentScreen === "newPassword" && (
         <NewPasswordScreen

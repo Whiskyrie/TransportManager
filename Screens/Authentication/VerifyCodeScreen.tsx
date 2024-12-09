@@ -11,43 +11,43 @@ import {
   ScrollView,
 } from "react-native";
 
-import { theme, sharedStyles } from "./style";
-import { api } from "Services/api"; // Corrija o caminho de importação de acordo com a estrutura do seu projeto
+import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
 
 interface VerifyCodeScreenProps {
-  email: string;
-  onNavigateToNewPassword: () => void; // Função para navegar para a tela de nova senha
-  onNavigateBack: () => void;
-
+  resetCode: string | null; // Código recebido do servidor
+  onCodeVerified: () => void; // Navega para a tela de nova senha
+  onNavigateBack: () => void; // Volta para a tela anterior
 }
 
-const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({ email, onNavigateToNewPassword }) => {
-  const [code, setCode] = useState("");
+const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
+  resetCode,
+  onCodeVerified,
+  onNavigateBack,
+}) => {
+  const [inputCode, setInputCode] = useState<string[]>(new Array(6).fill("")); // Supondo que o código tenha 6 dígitos
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleVerifyCode = async () => {
-    if (!code) {
-      setError("Por favor, informe o código de verificação.");
-      return;
-    }
+  const handleInputChange = (text: string, index: number) => {
+    const newInputCode = [...inputCode];
+    newInputCode[index] = text;
+    setInputCode(newInputCode);
 
-    try {
-      // Chama a API para verificar o código
-      await api.verifyResetPasswordCode({ email, code });
-      setSuccessMessage("Código verificado com sucesso.");
-      setError(""); // Limpa qualquer mensagem de erro anterior
-
-      // Navega para a tela de redefinição de senha
-      onNavigateToNewPassword();
-    } catch (err: any) {
-      if (err && err.response && err.response.data) {
-        console.error("Erro da API:", err.response.data);
-        setError("Código inválido ou expirado. Tente novamente.");
-      } else {
-        console.error("Erro inesperado:", err);
-        setError("Falha na verificação do código. Tente novamente.");
+    // Avança para o próximo campo automaticamente se o usuário inserir um dígito
+    if (text && index < inputCode.length - 1) {
+      const nextInput = document.querySelector<HTMLInputElement>(`#input-${index + 1}`);
+      if (nextInput) {
+        nextInput.focus();
       }
+    }
+  };
+
+  const handleVerifyCode = () => {
+    const fullCode = inputCode.join("");
+    if (fullCode === resetCode) {
+      setError(""); // Limpa erros anteriores
+      onCodeVerified(); // Navega para a próxima tela
+    } else {
+      setError("O código inserido está incorreto. Tente novamente.");
     }
   };
 
@@ -68,20 +68,26 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({ email, onNavigateTo
 
         <Text style={sharedStyles.title}>Verificar Código</Text>
         <Text style={sharedStyles.subtitle}>
-          Insira o código de verificação enviado para seu e-mail.
+          Insira o código que você recebeu para confirmar sua identidade.
         </Text>
 
         {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
-        {successMessage ? <Text style={[sharedStyles.success, { marginBottom: theme.spacing.m }]}>{successMessage}</Text> : null}
 
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Código de verificação"
-          placeholderTextColor={`${theme.colors.text}80`}
-          value={code}
-          onChangeText={setCode}
-          keyboardType="numeric"
-        />
+        <View style={styles.codeContainer}>
+          {inputCode.map((digit, index) => (
+            <TextInput
+              key={index}
+              id={`input-${index}`}
+              style={styles.codeInput}
+              value={digit}
+              onChangeText={(text) => handleInputChange(text, index)}
+              keyboardType="number-pad"
+              maxLength={1}
+              textAlign="center"
+              autoFocus={index === 0} // Foca no primeiro campo ao carregar a tela
+            />
+          ))}
+        </View>
 
         <TouchableOpacity
           style={sharedStyles.primaryButton}
@@ -89,9 +95,33 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({ email, onNavigateTo
         >
           <Text style={sharedStyles.primaryButtonText}>Verificar Código</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={onNavigateBack}>
+          <Text style={sharedStyles.linkText}>
+            {"<"} Voltar para a tela anterior
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  codeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  codeInput: {
+    height: 50,
+    width: 50,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    textAlign: "center",
+    fontSize: 24,
+    marginHorizontal: 5,
+  },
+});
 
 export default VerifyCodeScreen;

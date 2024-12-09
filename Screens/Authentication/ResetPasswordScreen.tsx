@@ -12,16 +12,14 @@ import {
 } from "react-native";
 
 import { theme, sharedStyles } from "./style";
-import { api } from "Services/api"; // Corrija o caminho de importação de acordo com a estrutura do seu projeto
+import { api } from "Services/api"; // Ajuste o caminho para o correto
 
 interface ResetPasswordScreenProps {
   onNavigateToLogin: () => void;
-  onResetPassword: (email: string) => Promise<void>;
-  onNavigateBack: () => void;
-
+  onResetPassword: (email: string) => Promise<void>; // Função passada como prop
 }
 
-const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToLogin }) => {
+const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToLogin, onResetPassword }) => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -31,20 +29,16 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToL
       setError("Por favor, informe seu e-mail.");
       return;
     }
-  
+
     try {
-      // Chama a função de envio de código de redefinição de senha
-      await api.sendResetPasswordCode(email);
+      // Chama a função de redefinição passada como prop
+      await onResetPassword(email);
       setSuccessMessage("Código de redefinição enviado com sucesso. Verifique seu e-mail.");
       setError(""); // Limpa qualquer mensagem de erro anterior
-    } catch (err: any) {
-      if (err && err.response && err.response.data) {
-        console.error("Erro da API:", err.response.data);
-        setError("Falha ao enviar o código de redefinição. Tente novamente.");
-      } else {
-        console.error("Erro inesperado:", err);
-        setError("Falha ao enviar o código de redefinição. Tente novamente.");
-      }
+    } catch (err) {
+      console.error("Erro inesperado:", err);
+      setError("Falha ao enviar o código de redefinição. Tente novamente.");
+      setSuccessMessage(""); // Limpa mensagens de sucesso anteriores
     }
   };
 
