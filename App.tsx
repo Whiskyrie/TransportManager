@@ -81,11 +81,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleResetPasswordNavigation = (code: string) => {
-    setResetCode(code); // Atualiza o estado do código de redefinição
-    setCurrentScreen("verifyPassword"); // Navega para a tela de nova senha
-  };
-
   const handleLogin = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -131,8 +126,8 @@ const App: React.FC = () => {
       setIsLoading(true);
       await api.logout();
 
-      // First clear the user state
       setUser(null);
+
 
       // Then navigate
       setCurrentScreen("login");
@@ -168,27 +163,37 @@ const App: React.FC = () => {
     AsyncStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
-  const handleResetPassword = async (email: string) => {
+  const handleResetPassword = async (email: string): Promise<{ code: string }> => {
+      console.log("handleResetPassword chamado com email:", email);
     
-    console.log("handleResetPassword chamado com email:", email);
-
-    try {
-      setIsLoading(true);
-      // Aqui você pode implementar o envio do código de redefinição de senha para a API
-      const response = await api.sendResetPasswordCode(email);
-      console.log(response.data); // Verificando a resposta da API
-      const code = response.data.code; // Supondo que a API retorna o código
-      setResetCode(code); // Atualiza o código no estado
-      Alert.alert('Sucesso', 'Código de redefinição de senha enviado!'); // Notificar o usuário
-      setCurrentScreen("verifyCode"); 
-    } catch (error) {
-      console.error('Erro ao solicitar redefinição de senha:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao tentar redefinir a senha. Tente novamente.');
-    } finally {
-      setIsLoading(false);
-    }
+      try {
+        setIsLoading(true);
+        // Chama a função da API para enviar o código de redefinição de senha
+        const response = await api.sendResetPasswordCode(email);
+        console.log("Resposta completa da API:", response); // Verifique a estrutura completa da resposta da API
+        console.log("Dados da resposta da API:", response.data); // Verifique os dados da resposta da API
+        
+        // Verifique se a resposta contém o código
+        const code = response.data?.code;
+        if (!code) {
+        throw new Error("Código de redefinição não encontrado na resposta da API");
+        }
+        
+        setResetCode(code); // Atualiza o código no estado
+        await AsyncStorage.setItem('resetCode', code); // Salva o código de redefinição no armazenamento local
+        console.log("Código de redefinição armazenado no AsyncStorage:", code);
+        Alert.alert('Sucesso', 'Código de redefinição de senha enviado!'); // Notifica o usuário
+        setCurrentScreen("verifyCode");
+        return { code };
+      } catch (error) {
+        console.error('Erro ao solicitar redefinição de senha:', error);
+        Alert.alert('Erro', 'Ocorreu um erro ao tentar redefinir a senha. Tente novamente.');
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
   };
-
+  
   const handleNewPassword = async (newPassword: string) => {
     if (!resetCode) {
       Alert.alert("Erro", "Código de redefinição inválido.");
@@ -272,8 +277,7 @@ const App: React.FC = () => {
       )}
       {currentScreen === "verifyCode" && (
         <VerifyCodeScreen
-          resetCode={resetCode} // Passa o código para a tela
-            onCodeVerified={() => setCurrentScreen("newPassword")} // Navega para a tela de nova senha
+           onCodeVerified={() => setCurrentScreen("newPassword")} // Navega para a tela de nova senha
            onNavigateBack={() => setCurrentScreen("resetPassword")} // Volta para a redefinição de senha
          />
       )}

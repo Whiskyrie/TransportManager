@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,40 +10,64 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
 
-interface VerifyCodeScreenProps {
-  resetCode: string | null; // Código recebido do servidor
+interface VerifyCodeScreenProps { 
   onCodeVerified: () => void; // Navega para a tela de nova senha
   onNavigateBack: () => void; // Volta para a tela anterior
 }
 
 const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
-  resetCode,
   onCodeVerified,
   onNavigateBack,
 }) => {
   const [inputCode, setInputCode] = useState<string[]>(new Array(6).fill("")); // Supondo que o código tenha 6 dígitos
   const [error, setError] = useState("");
+  const [resetCode, setResetCode] = useState<string | null>(null);
 
-  const handleInputChange = (text: string, index: number) => {
-    const newInputCode = [...inputCode];
-    newInputCode[index] = text;
-    setInputCode(newInputCode);
-
-    // Avança para o próximo campo automaticamente se o usuário inserir um dígito
-    if (text && index < inputCode.length - 1) {
-      const nextInput = document.querySelector<HTMLInputElement>(`#input-${index + 1}`);
-      if (nextInput) {
-        nextInput.focus();
+  useEffect(() => {
+    // Recupera o código armazenado do AsyncStorage quando a tela é carregada
+    const fetchResetCode = async () => {
+      try {
+        const storedCode = await AsyncStorage.getItem('resetCode');
+        if (storedCode) {
+          console.log("Código recuperado do AsyncStorage:", storedCode);
+          setResetCode(storedCode); // Atualiza o estado com o código recuperado
+        } else {
+          console.log("Nenhum código encontrado no AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Erro ao buscar o código de redefinição:", error);
       }
-    }
+    };
+    fetchResetCode();
+  }, []);
+  
+  const handleInputChange = (text: string, index: number) => {
+    // Limita o input para apenas números e 1 caractere
+    const sanitizedText = text.replace(/[^0-9]/g, "").slice(0, 1);
+    setInputCode((prevInputCode) => {
+      const newInputCode = [...prevInputCode];
+      newInputCode[index] = sanitizedText;
+      return newInputCode;
+    });
   };
 
   const handleVerifyCode = () => {
-    const fullCode = inputCode.join("");
-    if (fullCode === resetCode) {
+    if (!resetCode) {
+      setError("Erro interno: código de redefinição não encontrado.");
+      return;
+    }
+    const fullCode = inputCode.join("").trim();
+    console.log("Código digitado:", fullCode);
+    console.log("Código esperado:", resetCode);
+
+    if (fullCode.length !== 6) {
+      setError("O código deve ter 6 dígitos.");
+      return;
+    }
+    if (fullCode === String(resetCode).trim()) {
       setError(""); // Limpa erros anteriores
       onCodeVerified(); // Navega para a próxima tela
     } else {

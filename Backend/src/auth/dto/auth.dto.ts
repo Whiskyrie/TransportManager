@@ -43,6 +43,14 @@ export class ResetPasswordDto {
     newPassword: string;
 }
 
+export class VerifyResetCodeDto {
+    @IsEmail()
+    email: string;
+    
+    @IsNotEmpty()
+    @IsString()
+    code: string;
+}
 export class AuthResponse {
     user: {
         id: string;

@@ -1,6 +1,6 @@
 import { Controller, Post, Body, UseGuards, Get, Request, Query, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, AuthResponse, RequestPasswordResetDto, ResetPasswordDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, AuthResponse, RequestPasswordResetDto, ResetPasswordDto, VerifyResetCodeDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 
 @Controller('auth')
@@ -36,11 +36,23 @@ export class AuthController {
     }
     // Nova rota para solicitar redefinição de senha
     @Post('send-reset-password-code')
-    async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto): Promise<void> {
+    async requestPasswordReset(@Body() requestPasswordResetDto: RequestPasswordResetDto): Promise<{ code: string }> {
     const { email } = requestPasswordResetDto;
-    await this.authService.requestPasswordReset(email); // Ajuste a função no `authService` para enviar o código ao invés de um link
-    }
+    const code = await this.authService.requestPasswordReset(email); // Ajuste a função no `authService` para enviar o código ao invés de um link
+    return { code }; // Retorne o código na resposta
+  }
 
+    // Rota para verificar o código de redefinição de senha
+    @Post('verify-reset-code')
+    async verifyResetCode(@Body() verifyResetCodeDto: VerifyResetCodeDto): Promise<boolean> {
+    const { email, code } = verifyResetCodeDto;
+    const isCodeValid = await this.authService.verifyCode(email, code);
+    
+    if (!isCodeValid) {
+        throw new BadRequestException('Código de redefinição inválido ou expirado.');
+    }
+    return true; // Retorna true se o código for válido
+}
 
     // Nova rota para redefinir a senha
     @Post('reset-password')
@@ -48,5 +60,8 @@ export class AuthController {
     const { email, code, newPassword } = resetPasswordDto;
     await this.authService.verifyCodeAndResetPassword(email, code, newPassword);
   }
+
+  
+
 }
 

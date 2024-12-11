@@ -13,7 +13,7 @@ export const emailService = {
   async sendResetPasswordEmail(email: string, resetCode: string): Promise<void> {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email,
+      to: email,  
       subject: 'Código de Redefinição de Senha',
       text: `Seu código de redefinição de senha é: ${resetCode}\n\nEste código é válido por 10 minutos.`,
     };

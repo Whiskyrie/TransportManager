@@ -70,21 +70,14 @@ export const api = {
 
     resetPassword: ({ code, newPassword }: { code: string; newPassword: string }) => {
         return axiosInstance.post('auth/reset-password', { code, newPassword }, {
-            headers: {
-                Authorization: undefined, // Explicitly remove the Authorization header
-            },
         });
     },
 
     // Function to send reset password code to the user's email
     sendResetPasswordCode: (email: string) => {
         return axiosInstance.post('auth/send-reset-password-code', { email }, {
-            headers: {
-                Authorization: undefined, // Ensure no token is attached here
-            },
         });
     },
-
     // Function to verify reset password code
      verifyResetPasswordCode: ({ email, code }: { email: string; code: string }) =>
     axiosInstance.post('auth/verify-reset-code', { email, code }), 

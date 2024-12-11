@@ -10,13 +10,12 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-
-import { theme, sharedStyles } from "./style";
-import { api } from "Services/api"; // Ajuste o caminho para o correto
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
 
 interface ResetPasswordScreenProps {
   onNavigateToLogin: () => void;
-  onResetPassword: (email: string) => Promise<void>; // Função passada como prop
+  onResetPassword: (email: string) => Promise<{ code: string }>; // Função passada como prop
 }
 
 const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToLogin, onResetPassword }) => {
@@ -29,12 +28,13 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToL
       setError("Por favor, informe seu e-mail.");
       return;
     }
-
     try {
       // Chama a função de redefinição passada como prop
-      await onResetPassword(email);
-      setSuccessMessage("Código de redefinição enviado com sucesso. Verifique seu e-mail.");
-      setError(""); // Limpa qualquer mensagem de erro anterior
+      const response = await onResetPassword(email);
+        await AsyncStorage.setItem('resetCode', response.code); // Salva o código de redefinição no armazenamento local
+        console.log("Código de redefinição armazenado no AsyncStorage:", response.code);
+        setSuccessMessage("Código de redefinição enviado com sucesso. Verifique seu e-mail.");
+        setError(""); // Limpa qualquer mensagem de erro anterior
     } catch (err) {
       console.error("Erro inesperado:", err);
       setError("Falha ao enviar o código de redefinição. Tente novamente.");
@@ -84,8 +84,7 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onNavigateToL
 
         <TouchableOpacity onPress={onNavigateToLogin}>
           <Text style={sharedStyles.linkText}>
-            Já tem uma conta?{" "}
-            <Text style={sharedStyles.linkTextHighlight}>Entrar</Text>
+            {"<"} Voltar para a tela de login
           </Text>
         </TouchableOpacity>
       </ScrollView>
