@@ -17,7 +17,7 @@ export class UploadService {
     ) { }
 
     private getFileUrl(filename: string): string {
-        const baseUrl = this.configService.get<string>('APP_URL', 'http://192.168.0.14:3000');
+        const baseUrl = this.configService.get<string>('APP_URL', 'http://10.51.4.169:3000');
         return `${baseUrl}/uploads/${filename}`;
     }
 
