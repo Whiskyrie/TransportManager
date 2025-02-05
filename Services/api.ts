@@ -68,10 +68,10 @@ export const api = {
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
 
-    resetPassword: ({ code, newPassword }: { code: string; newPassword: string }) => {
-        return axiosInstance.post('auth/reset-password', { code, newPassword }, {
-        });
+    resetPassword: ({ email, newPassword }: { email: string; newPassword: string }) => {
+        return axiosInstance.post('auth/reset-password', { email, newPassword });
     },
+    
 
     // Function to send reset password code to the user's email
     sendResetPasswordCode: (email: string) => {

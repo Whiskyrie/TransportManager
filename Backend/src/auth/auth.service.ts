@@ -10,6 +10,7 @@ import { emailService } from '../common/emailService'; // Importando a função 
 
 @Injectable()
 export class AuthService {
+    logger: any;
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
@@ -106,54 +107,53 @@ export class AuthService {
 
     async requestPasswordReset(email: string): Promise<string> {
         const user = await this.userRepository.findOne({ where: { email } });
-      
+    
         if (!user) {
           throw new NotFoundException('Usuário não encontrado');
         }
+    
         // Gera um código de 6 dígitos para redefinição de senha
         const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
+    
         // Salva o código e sua expiração no banco de dados (exemplo: 10 minutos)
         user.resetPasswordCode = resetCode;
         user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos a partir de agora
+        console.log(`Código de redefinição gerado: ${resetCode}`);
+        console.log(`Data de expiração do código: ${user.resetPasswordExpires}`);
         await this.userRepository.save(user);
+    
         // Envia o e-mail de recuperação com o código
         await emailService.sendResetPasswordEmail(user.email, resetCode);
-      
+    
         return resetCode; // Retorne o código de redefinição
       }
+
+    async resetPassword(email: string, newPassword: string): Promise<void> {
+        console.log(`Iniciando redefinição de senha para o email: ${email}`);
+        
+        // Localiza o usuário pelo email
+        const user = await this.userRepository.findOne({ where: { email } });
     
-    // auth.service.ts
-async resetPassword(resetCode: string, newPassword: string): Promise<void> {
-    try {
-        // Encontra o usuário que possui o código de redefinição correspondente
-        const user = await this.userRepository.findOne({ where: { resetPasswordCode: resetCode } });
-
         if (!user) {
-            throw new UnauthorizedException('Código de redefinição inválido.');
+            console.log(`Usuário não encontrado com o email: ${email}`);
+            throw new BadRequestException('Usuário não encontrado.');
         }
-
-        // Verifica se o código não expirou
-        if (new Date() > new Date(user.resetPasswordExpires)) {
-            throw new UnauthorizedException('Código de redefinição expirado.');
-        }
-
+    
         // Criptografa a nova senha
-        const saltRounds = 10; // Configure isso em um arquivo de configuração, se necessário
+        const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
+    
         // Atualiza a senha do usuário no banco de dados
         user.password = hashedPassword;
-        user.resetPasswordCode = null; // Limpa o código de redefinição após a mudança de senha
-        user.resetPasswordExpires = null; // Limpa a data de expiração do código
+    
+        // Limpa os campos relacionados ao código de redefinição, caso existam
+        user.resetPasswordCode = null;
+        user.resetPasswordExpires = null;
+    
         await this.userRepository.save(user);
-
-    } catch (error) {
-        // Relança o erro para casos não esperados
-        throw error;
+        console.log(`Senha redefinida com sucesso para o usuário: ${email}`);
     }
-}
-
+    
 async verifyCode(email: string, code: string): Promise<boolean> {
     const user = await this.userRepository.findOne({ where: { email } });
 
@@ -173,30 +173,6 @@ async verifyCode(email: string, code: string): Promise<boolean> {
 
     return true; // Retorna true se o código for válido
 }
-
-
-async verifyCodeAndResetPassword(email: string, code: string, newPassword: string): Promise<boolean> {
-    const user = await this.userRepository.findOne({ where: { email } });
-
-    if (!user) {
-        throw new NotFoundException('Usuário não encontrado');
-    }
-
-    // Verifica se o código de redefinição de senha é válido e se não expirou
-    if (user.resetPasswordCode !== code || new Date() > user.resetPasswordExpires) {
-        return false; // Retorna false se o código for inválido ou expirado
-    }
-
-    // Criptografa a nova senha e atualiza no banco de dados
-    const saltRounds = 10;
-    user.password = await bcrypt.hash(newPassword, saltRounds);
-    user.resetPasswordCode = null; // Limpa o código após a redefinição
-    user.resetPasswordExpires = null; // Limpa a data de expiração após a redefinição
-    await this.userRepository.save(user);
-
-    return true; // Retorna true se a senha foi redefinida com sucesso
-}
-
 
     // Função para validar um usuário por ID
     async validateUser(id: string): Promise<User> {

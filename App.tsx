@@ -12,7 +12,6 @@ import VehicleListScreen from "./Screens/Main/VehicleListScreen";
 import DriverListScreen from "./Screens/Main/DriverListScreen";
 import { api, handleApiError } from "Services/api";
 import VerifyCodeScreen from "./Screens/Authentication/VerifyCodeScreen"; // Corrija o caminho se necessário
-import ProfilePageScreen from "./Screens/Profile/ProfilePageScreen";
 import { User } from "./Types/authTypes";
 import { LogBox } from "react-native";
 import ResetPasswordScreen from "./Screens/Authentication/ResetPasswordScreen"; // Importa a tela de redefinir senha
@@ -27,6 +26,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [resetCode, setResetCode] = useState<string | null>(null); // Estado para o código de redefinição
+  const [email, setEmail] = useState<string>('');
   const scaleValue = useRef(new Animated.Value(1)).current;
   const opacityValue = useRef(new Animated.Value(1)).current;
 
@@ -55,7 +55,7 @@ const App: React.FC = () => {
       checkInitialState();
     }, 3000);
   }, []);
-
+  
   const checkInitialState = async () => {
     try {
       setIsLoading(true);
@@ -179,7 +179,8 @@ const App: React.FC = () => {
         throw new Error("Código de redefinição não encontrado na resposta da API");
         }
         
-        setResetCode(code); // Atualiza o código no estado
+        setResetCode(code); // Atualiza o código no estado]
+        setEmail(email); // Atualiza o email no estado
         await AsyncStorage.setItem('resetCode', code); // Salva o código de redefinição no armazenamento local
         console.log("Código de redefinição armazenado no AsyncStorage:", code);
         Alert.alert('Sucesso', 'Código de redefinição de senha enviado!'); // Notifica o usuário
@@ -194,23 +195,20 @@ const App: React.FC = () => {
       }
   };
   
-  const handleNewPassword = async (newPassword: string) => {
-    if (!resetCode) {
-      Alert.alert("Erro", "Código de redefinição inválido.");
-      return;
-    }
+  const handleNewPassword = async (email: string, newPassword: string) => {
     try {
-      setIsLoading(true);
-      await api.resetPassword({ code: resetCode, newPassword });
-      Alert.alert("Sucesso", "Senha redefinida com sucesso!");
-      setCurrentScreen("login");
+      console.log(`Chamando API resetPassword com email: ${email} e newPassword: ${newPassword}`);
+      const response = await api.resetPassword({ email, newPassword });
+      if (response.status === 200) {
+        console.log('Senha redefinida com sucesso');
+        setCurrentScreen('login'); // Navega para a tela de login
+      }
     } catch (error) {
-      console.error("Erro ao redefinir senha:", error);
-      Alert.alert("Erro", "Não foi possível redefinir a senha. Tente novamente.");
-    } finally {
-      setIsLoading(false);
+      console.error('Erro ao redefinir senha:', error);
+      throw error;
     }
   };
+
 
   const LoadingOverlay = () => (
     <View style={styles.loadingOverlay}>
@@ -283,18 +281,18 @@ const App: React.FC = () => {
       )}
       {currentScreen === "resetPassword" && (
         <ResetPasswordScreen
-          onResetPassword={handleResetPassword} // Envia o código
-          onNavigateToLogin={() => setCurrentScreen("login")} // Volta ao login caso o usuário cancele
+        onResetPassword={(email: string) => handleResetPassword(email)} // Passa o email informado
+        onNavigateToLogin={() => setCurrentScreen("login")}
         />
       )}
-      {currentScreen === "newPassword" && (
+     {currentScreen === "newPassword" && (
         <NewPasswordScreen
-          onSetNewPassword={handleNewPassword}
-          code={resetCode} // Passa o código de redefinição para a tela de nova senha
-          onNavigateToLogin={function (): void {
-            throw new Error("Function not implemented.");
-          } }        />
+        onSetNewPassword={handleNewPassword} // Função para redefinir a senha
+        onNavigateToLogin={() => setCurrentScreen("login")} // Navegar para a tela de login
+        email={email} // Passa o email do usuário
+       />
       )}
+
       {isLoading && <LoadingOverlay />}
     </GestureHandlerRootView>
   );
@@ -317,3 +315,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
+}
+

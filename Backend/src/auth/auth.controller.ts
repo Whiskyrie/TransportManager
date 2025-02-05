@@ -55,13 +55,13 @@ export class AuthController {
 }
 
     // Nova rota para redefinir a senha
-    @Post('reset-password')
-    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<void> {
-    const { email, code, newPassword } = resetPasswordDto;
-    await this.authService.verifyCodeAndResetPassword(email, code, newPassword);
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+    const { email, newPassword } = resetPasswordDto;
+    console.log(`Redefinindo senha para o email: ${email}`);
+    await this.authService.resetPassword(email, newPassword);
+    console.log(`Senha redefinida com sucesso para o email: ${email}`);
+    return { message: 'Senha redefinida com sucesso' };
   }
-
-  
-
 }
 

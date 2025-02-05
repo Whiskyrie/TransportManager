@@ -1,11 +1,24 @@
 import * as nodemailer from 'nodemailer';
 
+// Verifique se as variáveis de ambiente estão definidas corretamente
+console.log('EMAIL_USER:', process.env.EMAIL_USER);
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS);
+
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user:'transportmanager.oficial@gmail.com',
+    pass:'ppsy irmy bidg rnoh',
   },
+});
+
+// Verifique a conexão com o servidor de e-mail
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Erro ao conectar ao servidor de e-mail:', error);
+  } else {
+    console.log('Servidor de e-mail conectado:', success);
+  }
 });
 
 export const emailService = {

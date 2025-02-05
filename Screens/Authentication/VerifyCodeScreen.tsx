@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
   const [inputCode, setInputCode] = useState<string[]>(new Array(6).fill("")); // Supondo que o código tenha 6 dígitos
   const [error, setError] = useState("");
   const [resetCode, setResetCode] = useState<string | null>(null);
+  const inputRefs = useRef<TextInput[]>([]);
 
   useEffect(() => {
     // Recupera o código armazenado do AsyncStorage quando a tela é carregada
@@ -52,6 +53,11 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       newInputCode[index] = sanitizedText;
       return newInputCode;
     });
+
+    // Foca na próxima caixa de entrada se o caractere foi inserido
+    if (sanitizedText && index < inputRefs.current.length - 1) {
+      inputRefs.current[index + 1].focus();
+    }
   };
 
   const handleVerifyCode = () => {
@@ -101,7 +107,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
           {inputCode.map((digit, index) => (
             <TextInput
               key={index}
-              id={`input-${index}`}
+              ref={(ref) => (inputRefs.current[index] = ref!)}
               style={styles.codeInput}
               value={digit}
               onChangeText={(text) => handleInputChange(text, index)}
