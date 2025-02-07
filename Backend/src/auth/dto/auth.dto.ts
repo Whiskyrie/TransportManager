@@ -62,4 +62,5 @@ export class AuthResponse {
         isActive: boolean;
         lastLogin?: Date;
     };
+    token?: string;
 }

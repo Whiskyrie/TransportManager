@@ -10,6 +10,7 @@ export const theme = {
         error: "#FF6B6B",
         inactive: "#456565",
         success: "#28a745",
+        
     },
     spacing: {
         s: 8,

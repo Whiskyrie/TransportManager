@@ -144,12 +144,15 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
     }
 
     try {
+      // Atualiza o status do veículo para indisponível
       const updatedVehicle: Partial<Vehicles> = {
         ...selectedVehicleObj,
         status: "Indisponível",
       };
-
       await api.updateVehicle(selectedVehicle, updatedVehicle);
+
+      // Atualiza o status do motorista para indisponível
+      await api.updateDriver(selectedDriver, { status: "Indisponível" });
 
       const newRoute: Partial<Route> = {
         startLocation,
@@ -157,7 +160,10 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         distance: parseFloat(distance),
         estimatedDuration: parseFloat(estimatedDuration),
         status,
-        driver: selectedDriverObj,
+        driver: {
+          ...selectedDriverObj,
+          status: "Indisponível",
+        },
         vehicle: {
           ...selectedVehicleObj,
           status: "Indisponível",

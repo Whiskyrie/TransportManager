@@ -260,112 +260,118 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <View style={styles.container}>
-  {user ? (
-    <>
-      <View style={styles.topBar}>
-        <View style={styles.userInfo}>
-          <ProfilePhoto />
-          <View style={styles.userTextContainer}>
-            <Text style={styles.userName}>{user.name}</Text>
-            <Text style={styles.userRole}>
-              {user.isAdmin ? "Administrador" : "Usuário"}
-            </Text>
+      {user ? (
+        <>
+          <View style={styles.topBar}>
+            <View style={styles.userInfo}>
+              <ProfilePhoto />
+              <View style={styles.userTextContainer}>
+                <Text style={styles.userName}>{user.name}</Text>
+                <Text style={styles.userRole}>
+                  {user.isAdmin ? "Administrador" : "Usuário"}
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.menuGrid}>
-          <MenuItem
-            icon="directions"
-            label="Rotas"
-            onPress={() => onNavigate("routeList")}
-          />
-          <MenuItem
-            icon="directions-car"
-            label="Veículos"
-            onPress={() => onNavigate("vehicleList")}
-          />
-          <MenuItem
-            icon="person"
-            label="Motoristas"
-            onPress={() => onNavigate("driverList")}
-          />
-        </View>
+          <ScrollView style={styles.scrollView}>
+            <View style={styles.menuGrid}>
+              <MenuItem
+                icon="directions"
+                label="Rotas"
+                onPress={() => onNavigate("routeList")}
+              />
+              <MenuItem
+                icon="directions-car"
+                label="Veículos"
+                onPress={() => onNavigate("vehicleList")}
+              />
+              <MenuItem
+                icon="person"
+                label="Motoristas"
+                onPress={() => onNavigate("driverList")}
+              />
+            </View>
 
-        <View style={styles.recentSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Rotas Recentes</Text>
-            <TouchableOpacity onPress={() => onNavigate("routeList")}>
-              <Text style={styles.seeAllButton}>Ver Todas</Text>
+            <View style={styles.recentSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Rotas Recentes</Text>
+                <TouchableOpacity onPress={() => onNavigate("routeList")}>
+                  <Text style={styles.seeAllButton}>Ver Todas</Text>
+                </TouchableOpacity>
+              </View>
+
+              {errorMessage ? (
+                <Text style={styles.errorMessage}>{errorMessage}</Text>
+              ) : (
+                recentRoutes.map((route) => (
+                  <RouteItem key={route.id} route={route} />
+                ))
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Botões no rodapé */}
+          <View style={styles.footer}>
+            {/* Botão "Início" */}
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => onNavigate("home")}
+            >
+              <Icon name="home" size={24} color="#fff" />
+              <Text style={styles.navText}>Início</Text>
+            </TouchableOpacity>
+
+            {/* Botão "Sair" */}
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => setIsModalVisible(true)}
+            >
+              <Icon name="logout" size={24} color="#fff" />
+              <Text style={styles.navText}>Sair</Text>
             </TouchableOpacity>
           </View>
 
-          {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : (
-            recentRoutes.map((route) => (
-              <RouteItem key={route.id} route={route} />
-            ))
-          )}
-        </View>
-      </ScrollView>
+          {/* Modal de Confirmação */}
+          <Modal
+            visible={isModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setIsModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Confirmar Logout</Text>
+                <Text style={styles.modalMessage}>
+                  Tem certeza que deseja sair da sua conta?
+                </Text>
 
-      {/* Botões no rodapé */}
-      <View style={styles.footer}>
-        {/* Botão "Início" */}
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => onNavigate("home")}
-        >
-          <Icon name="home" size={24} color="#fff" />
-          <Text style={styles.navText}>Início</Text>
-        </TouchableOpacity>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setIsModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
 
-        {/* Botão "Sair" */}
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => setIsModalVisible(true)}
-        >
-          <Icon name="logout" size={24} color="#fff" />
-          <Text style={styles.navText}>Sair</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal de Confirmação */}
-      <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Confirmar Logout</Text>
-            <Text style={styles.modalMessage}>
-              Você tem certeza que deseja sair?
-            </Text>
-            <View style={styles.modalButtons}>
-              <Button
-                title="Cancelar"
-                onPress={() => setIsModalVisible(false)}
-              />
-              <Button
-                title="Sair"
-                onPress={() => {
-                  setIsModalVisible(false);
-                  onLogout();
-                }}
-              />
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.confirmButton]}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      onLogout();
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Sair</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
-      </Modal>
-    </>
-  ) : (
-    <ActivityIndicator size="large" color="#000" />
-  )}
-</View>
-);
+          </Modal>
+        </>
+      ) : (
+        <ActivityIndicator size="large" color="#000" />
+      )}
+    </View>
+  );
 };
 export default HomeScreen;

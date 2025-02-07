@@ -83,35 +83,6 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
     </View>
   );
 
-  const renderStatusPicker = () => (
-    <View style={styles.inputContainer}>
-      <MaterialIcons
-        name="local-parking"
-        size={24}
-        color="#f5f2e5"
-        style={styles.inputIcon}
-      />
-      <View style={[styles.input, styles.pickerContainer]}>
-        <Picker
-          selectedValue={editedVehicle.status}
-          onValueChange={(itemValue) =>
-            setEditedVehicle({
-              ...editedVehicle,
-              status: itemValue as VehicleStatus,
-            })
-          }
-          style={styles.picker}
-          dropdownIconColor="#f5f2e5"
-        >
-          <Picker.Item label="Disponível" value="Disponível" />
-          <Picker.Item label="Indisponível" value="Indisponível" />
-          <Picker.Item label="Em manutenção" value="Em manutenção" />
-        </Picker>
-      </View>
-      {errors.status && <Text style={styles.errorText}>{errors.status}</Text>}
-    </View>
-  );
-
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalContainer}>
@@ -161,7 +132,6 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
                   "label",
                   errors.plate
                 )}
-                {renderStatusPicker()}
               </>
             )}
           </ScrollView>
@@ -258,15 +228,6 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 5,
-  },
-  pickerContainer: {
-    padding: 0,
-    paddingLeft: 40,
-  },
-  picker: {
-    color: "#f5f2e5",
-    width: "100%",
-    height: 50,
   },
 });
 export default EditVehicleDialog;

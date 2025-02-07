@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
-import { RegisterDto, LoginDto, AuthResponse, ResetPasswordDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, AuthResponse } from './dto/auth.dto';
 import { emailService } from '../common/emailService'; // Importando a função de envio de e-mail
 
 
@@ -49,6 +49,7 @@ export class AuthService {
                 updatedAt: user.updatedAt,
                 isActive: user.isActive,
             },
+            token: this.jwtService.sign({ id: user.id })
         };
     }
 
@@ -86,6 +87,7 @@ export class AuthService {
                 updatedAt: user.updatedAt,
                 isActive: user.isActive,
             },
+            token: this.jwtService.sign({ id: user.id }),
         };
     }
 

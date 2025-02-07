@@ -13,7 +13,8 @@ export class DriverService {
   ) { }
 
   async create(createDriverDto: CreateDriverDto): Promise<Driver> {
-    const driver = this.driverRepository.create(createDriverDto);
+    const driver = new Driver();
+    Object.assign(driver, createDriverDto);
     return this.driverRepository.save(driver);
   }
 
