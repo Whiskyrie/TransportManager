@@ -17,10 +17,15 @@ export interface User {
     email: string;
     isAdmin: boolean;
     phoneNumber: string;
-    profilePicture?: string;
+    profilePicture: string | null;
     createdAt?: string;
     lastLogin?: string;
 }
+
+export interface UploadResponse {
+    message: string;
+    user: User;
+  }
 
 export interface AuthResponse {
     token: string;

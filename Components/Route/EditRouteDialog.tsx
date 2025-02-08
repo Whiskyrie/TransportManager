@@ -14,7 +14,7 @@ import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Route, RouteLocation, RouteStatus } from "../../Types/routeTypes";
-import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { VehicleStatus } from "../../Types/vehicleTypes";
 import { api, handleApiError } from "Services/api";
 
 interface EditRouteDialogProps {

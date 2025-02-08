@@ -12,6 +12,8 @@ import {
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { useValidation } from "../../Hooks/useValidation";
+import { masks } from "../../Utils/mask";
 
 interface AddVehicleDialogProps {
   visible: boolean;
@@ -32,6 +34,15 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   const [plate, setPlate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const {
+    validatePlate,
+    validateYear,
+    plateValidations,
+    yearValidations,
+    isPlateValid,
+    isYearValid,
+  } = useValidation();
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -45,6 +56,11 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   };
 
   const handleSave = () => {
+    validatePlate(plate);
+    validateYear(year);
+
+    if (!isPlateValid() || !isYearValid()) return;
+
     if (!validateForm()) return;
 
     // Modificado para incluir todos os campos obrigatórios exceto id
@@ -126,12 +142,25 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
                 {renderInput(
                   "Ano",
                   year,
-                  setYear,
+                  (text) => {
+                    setYear(text);
+                    validateYear(text);
+                  },
                   "event",
-                  errors.year,
+                  yearValidations.find((v) => !v.isValid)?.message,
                   "numeric"
                 )}
-                {renderInput("Placa", plate, setPlate, "label", errors.plate)}
+                {renderInput(
+                  "Placa",
+                  plate,
+                  (text) => {
+                    const maskedValue = masks.plate(text);
+                    setPlate(maskedValue);
+                    validatePlate(maskedValue);
+                  },
+                  "label",
+                  plateValidations.find((v) => !v.isValid)?.message
+                )}
               </>
             )}
           </ScrollView>

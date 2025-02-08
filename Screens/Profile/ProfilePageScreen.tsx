@@ -23,7 +23,6 @@ const ProfilePageScreen: React.FC<ProfilePageScreenProps> = ({
   onUpdateUser,
 }) => {
   const handlePhotoUpdate = (newPhotoUrl: string) => {
-    console.log("Updating user photo:", newPhotoUrl);
     onUpdateUser({ ...user, profilePicture: newPhotoUrl });
   };
 
@@ -55,8 +54,6 @@ const ProfilePageScreen: React.FC<ProfilePageScreenProps> = ({
       minute: "2-digit",
     });
   };
-
-  console.log("User data in ProfilePage:", user);
 
   const InfoItem = ({
     icon,

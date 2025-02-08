@@ -103,49 +103,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   };
 
-  const handleLogoutPress = () => {
-    Alert.alert(
-      "Confirmar Logout",
-      "Tem certeza que deseja sair da sua conta?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Sim, sair",
-          onPress: () => {
-            // Removed async/await since onLogout handles everything
-            onLogout().catch((error) => {
-              // We don't need to show any error since logout will happen anyway
-              console.warn("Erro não crítico durante logout:", error);
-            });
-          },
-          style: "destructive",
-        },
-      ]
-    );
-  };
-
   const ProfilePhoto = () => {
-    const imageUrl = user.profilePicture
-      ? api.getProfilePictureUrl(user.profilePicture)
-      : null;
-
     return (
       <TouchableOpacity
         style={styles.profilePhotoContainer}
         onPress={() => onNavigate("profile")}
       >
-        {imageUrl ? (
+        {user.profilePicture ? (
           <Image
-            source={{ uri: imageUrl, cache: "reload" }}
+            source={{ uri: user.profilePicture }}
             style={styles.profilePhoto}
-            resizeMode="cover"
           />
         ) : (
           <View style={styles.profilePhotoPlaceholder}>
-            <Icon name="person" size={20} color="#f5f2e5" />
+            <Icon name="person" size={24} color="#f5f2e5" />
           </View>
         )}
       </TouchableOpacity>

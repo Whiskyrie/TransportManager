@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,33 +8,82 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { ValidationList } from "Components/ValidationList/ValidationList";
+import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
   onNavigateToRegister: () => void;
-  onNavigateToResetPassword: () => void;  // Função para navegação para redefinir senha
+  onNavigateToResetPassword: () => void; // Função para navegação para redefinir senha
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   onNavigateToRegister,
-  onNavigateToResetPassword,  // Recebe a função de navegação
+  onNavigateToResetPassword, // Recebe a função de navegação
 }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [attemptCount, setAttemptCount] = useState(0);
+
+  // Adicionar estados de controle
+  const [focusedField, setFocusedField] = useState<string>("");
+  const [touchedFields, setTouchedFields] = useState({
+    email: false,
+    password: false,
+  });
+
+  const handleFieldFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleFieldBlur = (fieldName: string) => {
+    setFocusedField("");
+    setTouchedFields((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+  };
+
+  const {
+    emailValidations,
+    passwordValidations,
+    validateEmail,
+    validatePassword,
+    isEmailValid,
+    isPasswordValid,
+  } = useValidation();
+
+  useEffect(() => {
+    validateEmail(email);
+  }, [email]);
+
+  useEffect(() => {
+    validatePassword(password);
+  }, [password]);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError("Por favor, preencha todos os campos");
+    setError("");
+
+    if (!isEmailValid() || !isPasswordValid()) {
+      setError("Por favor, corrija os erros de validação");
       return;
     }
 
     try {
-      onLogin(email, password);
+      await onLogin(email, password);
+      setAttemptCount(0); // Reseta as tentativas em caso de sucesso
     } catch (err) {
-      setError("Credenciais inválidas");
+      setAttemptCount((prev) => prev + 1);
+
+      if (attemptCount >= 2) {
+        setError("Muitas tentativas incorretas. Tente redefinir sua senha.");
+        return;
+      }
+
+      setError(`Credenciais inválidas. Tentativa ${attemptCount + 1} de 3.`);
     }
   };
 
@@ -64,6 +113,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          onFocus={() => handleFieldFocus("email")}
+          onBlur={() => handleFieldBlur("email")}
+        />
+        <ValidationList
+          items={emailValidations}
+          isFieldFocused={focusedField === "email"}
+          fieldTouched={touchedFields.email}
         />
 
         <TextInput
@@ -73,6 +129,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          onFocus={() => handleFieldFocus("password")}
+          onBlur={() => handleFieldBlur("password")}
+        />
+        <ValidationList
+          items={passwordValidations}
+          isFieldFocused={focusedField === "password"}
+          fieldTouched={touchedFields.password}
         />
 
         <TouchableOpacity

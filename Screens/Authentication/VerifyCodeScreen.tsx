@@ -9,11 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
+import BackButton from "../../Components/Common/BackButton";
 
-interface VerifyCodeScreenProps { 
+interface VerifyCodeScreenProps {
   onCodeVerified: () => void; // Navega para a tela de nova senha
   onNavigateBack: () => void; // Volta para a tela anterior
 }
@@ -25,13 +27,20 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
   const [inputCode, setInputCode] = useState<string[]>(new Array(6).fill("")); // Supondo que o código tenha 6 dígitos
   const [error, setError] = useState("");
   const [resetCode, setResetCode] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const inputRefs = useRef<TextInput[]>([]);
+  const [scaleAnimations] = useState(() =>
+    Array(6)
+      .fill(0)
+      .map(() => new Animated.Value(1))
+  );
+  const [shakeAnimation] = useState(new Animated.Value(0));
 
   useEffect(() => {
     // Recupera o código armazenado do AsyncStorage quando a tela é carregada
     const fetchResetCode = async () => {
       try {
-        const storedCode = await AsyncStorage.getItem('resetCode');
+        const storedCode = await AsyncStorage.getItem("resetCode");
         if (storedCode) {
           console.log("Código recuperado do AsyncStorage:", storedCode);
           setResetCode(storedCode); // Atualiza o estado com o código recuperado
@@ -44,7 +53,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
     };
     fetchResetCode();
   }, []);
-  
+
   const handleInputChange = (text: string, index: number) => {
     // Limita o input para apenas números e 1 caractere
     const sanitizedText = text.replace(/[^0-9]/g, "").slice(0, 1);
@@ -58,6 +67,50 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
     if (sanitizedText && index < inputRefs.current.length - 1) {
       inputRefs.current[index + 1].focus();
     }
+  };
+
+  const animateInput = (index: number) => {
+    Animated.spring(scaleAnimations[index], {
+      toValue: 1.1,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 40,
+    }).start();
+  };
+
+  const resetInputAnimation = (index: number) => {
+    Animated.spring(scaleAnimations[index], {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 40,
+    }).start();
+  };
+
+  const shakeError = () => {
+    shakeAnimation.setValue(0);
+    Animated.sequence([
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const handleVerifyCode = () => {
@@ -78,6 +131,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       onCodeVerified(); // Navega para a próxima tela
     } else {
       setError("O código inserido está incorreto. Tente novamente.");
+      shakeError();
     }
   };
 
@@ -98,26 +152,55 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
 
         <Text style={sharedStyles.title}>Verificar Código</Text>
         <Text style={sharedStyles.subtitle}>
-          Insira o código que você recebeu para confirmar sua identidade.
+          Por favor, insira o código de 6 dígitos que enviamos para o seu
+          e-mail.
         </Text>
 
         {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
 
-        <View style={styles.codeContainer}>
+        <Animated.View
+          style={[
+            styles.codeContainer,
+            {
+              transform: [{ translateX: shakeAnimation }],
+            },
+          ]}
+        >
           {inputCode.map((digit, index) => (
-            <TextInput
+            <Animated.View
               key={index}
-              ref={(ref) => (inputRefs.current[index] = ref!)}
-              style={styles.codeInput}
-              value={digit}
-              onChangeText={(text) => handleInputChange(text, index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              textAlign="center"
-              autoFocus={index === 0} // Foca no primeiro campo ao carregar a tela
-            />
+              style={[
+                styles.codeInputContainer,
+                {
+                  transform: [{ scale: scaleAnimations[index] }],
+                },
+              ]}
+            >
+              <TextInput
+                ref={(ref) => (inputRefs.current[index] = ref!)}
+                style={[
+                  styles.codeInput,
+                  focusedIndex === index && styles.focusedCodeInput,
+                ]}
+                value={digit}
+                onChangeText={(text) => handleInputChange(text, index)}
+                onFocus={() => {
+                  setFocusedIndex(index);
+                  animateInput(index);
+                }}
+                onBlur={() => {
+                  setFocusedIndex(-1);
+                  resetInputAnimation(index);
+                }}
+                keyboardType="number-pad"
+                maxLength={1}
+                textAlign="center"
+                autoFocus={index === 0}
+              />
+              {focusedIndex === index && <View style={styles.codeInputLine} />}
+            </Animated.View>
           ))}
-        </View>
+        </Animated.View>
 
         <TouchableOpacity
           style={sharedStyles.primaryButton}
@@ -126,11 +209,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
           <Text style={sharedStyles.primaryButtonText}>Verificar Código</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onNavigateBack}>
-          <Text style={sharedStyles.linkText}>
-            {"<"} Voltar para a tela anterior
-          </Text>
-        </TouchableOpacity>
+        <BackButton onPress={onNavigateBack} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -139,18 +218,45 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
 const styles = StyleSheet.create({
   codeContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: theme.spacing.xl,
+    width: "100%",
+    paddingHorizontal: theme.spacing.m,
+  },
+  codeInputContainer: {
+    position: "relative",
+    margin: 4,
   },
   codeInput: {
-    height: 50,
+    height: 60,
     width: 50,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    backgroundColor: theme.colors.contrast,
+    borderWidth: 2,
+    borderColor: theme.colors.inactive,
+    borderRadius: 12,
     textAlign: "center",
     fontSize: 24,
-    marginHorizontal: 5,
+    fontWeight: "bold",
+    color: theme.colors.text,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  focusedCodeInput: {
+    borderColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}20`,
+  },
+  codeInputLine: {
+    position: "absolute",
+    bottom: -8,
+    left: "50%",
+    width: 20,
+    height: 2,
+    backgroundColor: theme.colors.primary,
+    transform: [{ translateX: -10 }],
   },
 });
 

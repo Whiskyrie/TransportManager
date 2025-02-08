@@ -17,13 +17,12 @@ import { DatabaseController } from './database.controller';
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
                 type: 'postgres',
-                host: configService.get('DB_HOST'),
-                port: configService.get('DB_PORT'),
-                username: configService.get('DB_USERNAME'),
-                password: configService.get('DB_PASSWORD'),
-                database: configService.get('DB_NAME'),
+                url: configService.get('DATABASE_URL'),
                 entities: [Route, Driver, Vehicle, User],
                 synchronize: configService.get('NODE_ENV') === 'development',
+                ssl: {
+                    rejectUnauthorized: false
+                },
                 logging: false,
             }),
             inject: [ConfigService],

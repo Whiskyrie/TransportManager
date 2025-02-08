@@ -19,6 +19,7 @@ import { Route, RouteStatus } from "../../Types/routeTypes";
 import { api, handleApiError } from "Services/api";
 import LocationAutocomplete from "./LocationAutoComplete";
 import calculateRouteDetailsWithRateLimit from "Services/distanceCalculatorAPI";
+import { useValidation } from "../../Hooks/useValidation";
 
 interface AddRouteDialogProps {
   visible: boolean;
@@ -46,6 +47,9 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [vehicles, setVehicles] = useState<Vehicles[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [loadingError, setLoadingError] = useState<string>("");
+
+  const { validateLocation, locationValidations, isLocationValid } =
+    useValidation();
 
   const loadDrivers = async () => {
     try {
@@ -106,6 +110,11 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   }, [startLocation, endLocation]);
 
   const validateForm = () => {
+    validateLocation(startLocation);
+    validateLocation(endLocation);
+
+    if (!isLocationValid()) return false;
+
     const newErrors: Record<string, string> = {};
 
     if (!startLocation)
@@ -237,18 +246,24 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                 <>
                   <LocationAutocomplete
                     value={startLocation}
-                    onLocationSelect={setStartLocation}
+                    onLocationSelect={(text) => {
+                      setStartLocation(text);
+                      validateLocation(text);
+                    }}
                     placeholder="Local de Origem"
                     icon="location-on"
-                    error={errors.startLocation}
+                    error={locationValidations.find((v) => !v.isValid)?.message}
                   />
 
                   <LocationAutocomplete
                     value={endLocation}
-                    onLocationSelect={setEndLocation}
+                    onLocationSelect={(text) => {
+                      setEndLocation(text);
+                      validateLocation(text);
+                    }}
                     placeholder="Local de Destino"
                     icon="location-off"
-                    error={errors.endLocation}
+                    error={locationValidations.find((v) => !v.isValid)?.message}
                   />
 
                   {renderReadOnlyInput(
