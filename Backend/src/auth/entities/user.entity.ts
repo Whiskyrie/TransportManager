@@ -22,9 +22,9 @@ export class User {
     @Column({ nullable: true })
     phoneNumber: string;
 
-    @Column({ nullable: true })
+    @Column('text', { nullable: true })
     profilePicture: string;
-
+    
     @CreateDateColumn()
     createdAt: Date;
 
@@ -36,5 +36,11 @@ export class User {
 
     @Column({ nullable: true })
     lastLogin: Date;
+
+    @Column({ nullable: true })
+    resetPasswordCode: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetPasswordExpires: Date;
 }
 

@@ -6,7 +6,6 @@ import { User } from 'src/auth/entities/user.entity';
 import * as sharp from 'sharp';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UploadService {
@@ -15,11 +14,6 @@ export class UploadService {
         private readonly userRepository: Repository<User>,
         private configService: ConfigService,
     ) { }
-
-    private getFileUrl(filename: string): string {
-        const baseUrl = this.configService.get<string>('APP_URL', 'http://10.51.4.169:3000');
-        return `${baseUrl}/uploads/${filename}`;
-    }
 
     async saveProfilePicture(userId: string, file: Express.Multer.File) {
         if (!file) {
@@ -36,49 +30,23 @@ export class UploadService {
             throw new BadRequestException('Usuário não encontrado');
         }
 
-        // Criar diretório de uploads se não existir
-        const uploadDir = join(process.cwd(), 'uploads');
         try {
-            await fs.mkdir(uploadDir, { recursive: true });
-        } catch (error) {
-            console.error('Erro ao criar diretório:', error);
-        }
-
-        // Gerar nome único para o arquivo
-        const fileName = `${uuid()}.jpg`;
-        const filePath = join(uploadDir, fileName);
-
-        try {
-            // Processar e salvar a imagem
-            await sharp(file.buffer)
+            const processedImageBuffer = await sharp(file.buffer)
                 .resize(300, 300, {
                     fit: 'cover',
                     position: 'center',
                 })
                 .jpeg({ quality: 90 })
-                .toFile(filePath);
+                .toBuffer();
 
-            // Deletar foto antiga se existir
-            if (user.profilePicture) {
-                const oldFilePath = join(uploadDir, user.profilePicture.split('/').pop());
-                try {
-                    await fs.unlink(oldFilePath);
-                } catch (error) {
-                    console.error('Erro ao deletar arquivo antigo:', error);
-                }
-            }
+            const base64Image = `data:image/jpeg;base64,${processedImageBuffer.toString('base64')}`;
+            user.profilePicture = base64Image;
 
-            // Salvar a URL completa no banco de dados
-            const fileUrl = this.getFileUrl(fileName);
-            user.profilePicture = fileUrl;
             await this.userRepository.save(user);
 
             return {
                 message: 'Foto de perfil atualizada com sucesso',
-                user: {
-                    ...user,
-                    profilePicture: fileUrl
-                }
+                user
             };
         } catch (error) {
             console.error('Erro ao processar imagem:', error);

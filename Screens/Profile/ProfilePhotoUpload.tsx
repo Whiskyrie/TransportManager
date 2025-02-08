@@ -8,12 +8,14 @@ import {
   StyleSheet,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { MediaTypeOptions } from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { handleApiError, api } from "Services/api";
+import { User, UploadResponse } from "../../Types/authTypes";
 
 interface ProfilePhotoUploadProps {
-  currentPhotoUrl?: string;
-  onPhotoUpdate?: (newPhotoUrl: string) => void;
+  currentPhotoUrl: string | null;
+  onPhotoUpdate: (newPhotoUrl: string) => void;
 }
 
 export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
@@ -39,9 +41,8 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     try {
       const hasPermission = await requestPermissions();
       if (!hasPermission) return;
-
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: MediaTypeOptions.Images, // Permite selecionar fotos e live photos
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -72,11 +73,10 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         type,
       } as any);
 
-      const response = await api.uploadProfilePicture(formData);
+      const { data } = await api.uploadProfilePicture(formData);
 
-      if (response.data.user.profilePicture) {
-        onPhotoUpdate?.(response.data.user.profilePicture);
-        Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
+      if (data.user.profilePicture) {
+        onPhotoUpdate(data.user.profilePicture);
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -131,27 +131,13 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         onLongPress={currentPhotoUrl ? handleDeletePhoto : undefined}
         activeOpacity={0.7}
       >
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#f5f2e5" />
-          </View>
-        ) : currentPhotoUrl ? (
+        {currentPhotoUrl ? (
           <View style={styles.imageWrapper}>
             <Image
-              source={{
-                uri: imageUrl,
-                cache: "reload",
-              }}
+              source={{ uri: currentPhotoUrl }}
               style={styles.photo}
               resizeMode="cover"
-              onError={(error) => {
-                console.error("Image load error:", error.nativeEvent);
-                setError(true);
-              }}
             />
-            <View style={styles.overlay}>
-              <Feather name="camera" size={20} color="#f5f2e5" />
-            </View>
           </View>
         ) : (
           <View style={styles.placeholder}>
@@ -159,6 +145,11 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
             <View style={styles.overlay}>
               <Feather name="camera" size={20} color="#f5f2e5" />
             </View>
+          </View>
+        )}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color="#f5f2e5" />
           </View>
         )}
       </TouchableOpacity>

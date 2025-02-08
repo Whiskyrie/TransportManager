@@ -8,4 +8,8 @@ export class UpdateDriverDto {
     @IsNotEmpty()
     @IsString()
     licenseNumber?: string;
+
+    @IsNotEmpty()
+    @IsString()
+    status?: 'Disponível' | 'Indisponível' | 'Em manutenção';
 }

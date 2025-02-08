@@ -1,3 +1,4 @@
+// DriverList.tsx
 import React from "react";
 import {
   FlatList,
@@ -49,6 +50,20 @@ const DriverList: React.FC<DriverListProps> = ({
         <View style={styles.driverInfo}>
           <View style={styles.headerContainer}>
             <Text style={styles.nameText}>{item.name}</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(item.status) },
+              ]}
+            >
+              <Icon
+                name={getStatusIcon(item.status)}
+                size={12}
+                color="#f6f5f0"
+                style={styles.statusIcon}
+              />
+              <Text style={styles.statusText}>{item.status}</Text>
+            </View>
           </View>
           <View style={styles.driverDetails}>
             <View style={styles.detailRow}>
@@ -58,7 +73,6 @@ const DriverList: React.FC<DriverListProps> = ({
           </View>
         </View>
       </TouchableOpacity>
-      {/* Renderiza os botões de ação apenas se as permissões existirem */}
       {(onEditDriver || onDeleteDriver) && (
         <View style={styles.actionButtons}>
           {onEditDriver && (
@@ -118,6 +132,28 @@ const DriverList: React.FC<DriverListProps> = ({
   );
 };
 
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Disponível":
+      return "#34D399";
+    case "Indisponível":
+      return "#EF4444";
+    default:
+      return "#6B7280";
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "Disponível":
+      return "check-circle";
+    case "Indisponível":
+      return "close-circle";
+    default:
+      return "help-circle";
+  }
+};
+
 const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
@@ -132,20 +168,20 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000000",
+    shadowColor: "#000",
     shadowOffset: {
-      width: 4,
-      height: 8,
+      width: 0,
+      height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4.85,
-    elevation: 12,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   iconContainer: {
-    width: 45,
-    height: 45,
+    width: 50,
+    height: 50,
     borderRadius: 25,
-    backgroundColor: "#f1f1f1",
+    backgroundColor: "#f5f2e5",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -155,7 +191,7 @@ const styles = StyleSheet.create({
   },
   driverInfoFullWidth: {
     flex: 1,
-    marginRight: 0, // Remove margem quando não há botões de ação
+    marginRight: 0,
   },
   driverInfo: {
     justifyContent: "space-between",
@@ -167,9 +203,24 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   nameText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#f5f2e5",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusIcon: {
+    marginRight: 4,
+  },
+  statusText: {
+    color: "#f5f2e5",
+    fontSize: 12,
+    fontWeight: "600",
   },
   driverDetails: {
     marginTop: 4,
@@ -192,7 +243,7 @@ const styles = StyleSheet.create({
   actionButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 4,

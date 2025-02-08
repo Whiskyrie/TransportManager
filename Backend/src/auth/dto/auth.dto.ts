@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength, IsString } from 'class-validator';
+    import { IsEmail, IsNotEmpty, MinLength, IsString } from 'class-validator';
 
 export class RegisterDto {
     @IsNotEmpty()
@@ -26,8 +26,30 @@ export class LoginDto {
     password: string;
 }
 
+export class RequestPasswordResetDto {
+    @IsEmail()
+    email: string;
+}
+
+export class ResetPasswordDto {
+
+    @IsEmail()
+    email: string; // Código de redefinição de senha recebido por e-mail
+
+    @IsNotEmpty()
+    @IsString()
+    newPassword: string;
+}
+
+export class VerifyResetCodeDto {
+    @IsEmail()
+    email: string;
+    
+    @IsNotEmpty()
+    @IsString()
+    code: string;
+}
 export class AuthResponse {
-    token: string;
     user: {
         id: string;
         name: string;
@@ -40,4 +62,5 @@ export class AuthResponse {
         isActive: boolean;
         lastLogin?: Date;
     };
+    token?: string;
 }

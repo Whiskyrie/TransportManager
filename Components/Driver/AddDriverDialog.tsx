@@ -12,6 +12,7 @@ import {
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "../../Types/driverTypes";
+import { useValidation } from "../../Hooks/useValidation";
 
 interface AddDriverDialogProps {
   visible: boolean;
@@ -28,16 +29,22 @@ const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
 }) => {
   const [name, setName] = useState("");
   const [licenseNumber, setLicense] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    validateName,
+    validateLicense,
+    nameValidations,
+    licenseValidations,
+    isNameValid,
+    isLicenseValid,
+  } = useValidation();
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    validateName(name);
+    validateLicense(licenseNumber);
 
-    if (!name) newErrors.name = "Nome é obrigatório";
-    if (!licenseNumber) newErrors.licenseNumber = "CNH é obrigatória";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!isNameValid() || !isLicenseValid()) return false;
+    return true;
   };
 
   const handleSave = () => {
@@ -92,13 +99,25 @@ const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
               <ActivityIndicator size="large" color="#0066CC" />
             ) : (
               <>
-                {renderInput("Nome", name, setName, "person", errors.name)}
+                {renderInput(
+                  "Nome",
+                  name,
+                  (text) => {
+                    setName(text);
+                    validateName(text);
+                  },
+                  "person",
+                  nameValidations.find((v) => !v.isValid)?.message
+                )}
                 {renderInput(
                   "CNH",
                   licenseNumber,
-                  setLicense,
+                  (text) => {
+                    setLicense(text);
+                    validateLicense(text);
+                  },
                   "assignment",
-                  errors.licenseNumber
+                  licenseValidations.find((v) => !v.isValid)?.message
                 )}
               </>
             )}

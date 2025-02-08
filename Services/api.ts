@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginData, AuthResponse, RegisterData, } from 'Types/authTypes';
-import { config } from "Config/config";
-
+import { LoginData, AuthResponse, RegisterData } from 'Types/authTypes';
+import { config } from 'Config/config';
+import { UploadResponse } from 'Types/authTypes';
 
 const createAxiosInstance = (): AxiosInstance => {
     const instance = axios.create({
@@ -16,29 +16,24 @@ const createAxiosInstance = (): AxiosInstance => {
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
-            console.log('Starting Request', JSON.stringify(config, null, 2));
             return config;
         },
         (error) => {
-            console.log('Request Error:', error);
             return Promise.reject(error);
         }
     );
 
     instance.interceptors.response.use(
         (response) => {
-            console.log('Response:', JSON.stringify(response.data, null, 2));
             return response;
         },
         async (error) => {
-            console.log('Response Error:', error);
 
             // Handle 401 errors (unauthorized)
             if (error.response?.status === 401) {
                 await AsyncStorage.removeItem('token');
                 await AsyncStorage.removeItem('user');
-                // You might want to trigger a navigation to login screen here
-                // or emit an event that App.tsx can listen to
+                // Optionally trigger navigation to login screen here
             }
 
             return Promise.reject(error);
@@ -53,13 +48,13 @@ const axiosInstance = createAxiosInstance();
 export const getImageUrl = (filename: string | null): string | null => {
     if (!filename) return null;
 
-    // If the filename is already a full URL, return it as is
+    // Se o filename já for uma URL completa, retorne como está
     if (filename.startsWith('http')) {
         return filename;
     }
 
-    // Construct the full URL
-    return `${config.API_BASE_URL}${config.PROFILE_PICTURES_PATH}/${filename}`;
+    // Construa a URL completa
+    return `${config.API_BASE_URL}/uploads/profile-pictures/${filename}`;
 };
 
 export const api = {
@@ -70,13 +65,25 @@ export const api = {
     register: (data: RegisterData) =>
         axiosInstance.post<AuthResponse>('auth/register', data),
 
+    resetPassword: ({ email, newPassword }: { email: string; newPassword: string }) => {
+        return axiosInstance.post('auth/reset-password', { email, newPassword });
+    },
+    
+
+    // Function to send reset password code to the user's email
+    sendResetPasswordCode: (email: string) => {
+        return axiosInstance.post('auth/send-reset-password-code', { email }, {
+        });
+    },
+    // Function to verify reset password code
+     verifyResetPasswordCode: ({ email, code }: { email: string; code: string }) =>
+    axiosInstance.post('auth/verify-reset-code', { email, code }), 
+           
     logout: async () => {
         try {
-            // Pegue o token antes de removê-lo
             const token = await AsyncStorage.getItem('token');
 
             if (token) {
-                // Faça a requisição com o token diretamente no header
                 await axiosInstance.post('auth/logout', null, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -86,20 +93,32 @@ export const api = {
         } catch (error) {
             console.warn("Erro ao notificar servidor sobre logout:", error);
         } finally {
-            // Sempre limpe o storage local
             await AsyncStorage.multiRemove(['token', 'user']);
         }
     },
-    getProfilePicture: (userId: string) =>
-        axiosInstance.get(`${config.PROFILE_PICTURES_PATH}/${userId}`),
+    getProfilePicture: async (userId: string) => {
+        try {
+            const response = await axiosInstance.get(`users/${userId}/profile-picture`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 
-    // Helper method to get the full image URL
-    getProfilePictureUrl: (filename: string): string =>
-        getImageUrl(filename) || '',
+    getProfilePictureUrl: (filename: string): string => {
+        const url = getImageUrl(filename);
+        if (!url) {
+            console.warn('URL da imagem de perfil inválida:', filename);
+            return '';
+        }
+        
+        // Adiciona um timestamp para evitar cache
+        const timestamp = new Date().getTime();
+        return `${url}?t=${timestamp}`;
+    },
 
-    // Profile endpoints
     uploadProfilePicture: (formData: FormData) =>
-        axiosInstance.post('upload/profile-picture', formData, {
+        axiosInstance.post<UploadResponse>('upload/profile-picture', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -108,7 +127,7 @@ export const api = {
     deleteProfilePicture: () =>
         axiosInstance.delete('upload/profile-picture'),
 
-    // Routes endpoints with proper typing
+    // Routes endpoints
     getAllRoutes: () =>
         axiosInstance.get('routes'),
 

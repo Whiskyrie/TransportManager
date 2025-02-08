@@ -9,6 +9,8 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  Modal,
+  Button,
 } from "react-native";
 import { styles } from "./HomeScreenStyle";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -74,6 +76,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onLogout,
   user,
 }) => {
+  const [isModalVisible, setIsModalVisible] = useState(false); // Controle do Modal
   const [recentRoutes, setRecentRoutes] = useState<Route[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -100,49 +103,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   };
 
-  const handleLogoutPress = () => {
-    Alert.alert(
-      "Confirmar Logout",
-      "Tem certeza que deseja sair da sua conta?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Sim, sair",
-          onPress: () => {
-            // Removed async/await since onLogout handles everything
-            onLogout().catch((error) => {
-              // We don't need to show any error since logout will happen anyway
-              console.warn("Erro não crítico durante logout:", error);
-            });
-          },
-          style: "destructive",
-        },
-      ]
-    );
-  };
-
   const ProfilePhoto = () => {
-    const imageUrl = user.profilePicture
-      ? api.getProfilePictureUrl(user.profilePicture)
-      : null;
-
     return (
       <TouchableOpacity
         style={styles.profilePhotoContainer}
         onPress={() => onNavigate("profile")}
       >
-        {imageUrl ? (
+        {user.profilePicture ? (
           <Image
-            source={{ uri: imageUrl, cache: "reload" }}
+            source={{ uri: user.profilePicture }}
             style={styles.profilePhoto}
-            resizeMode="cover"
           />
         ) : (
           <View style={styles.profilePhotoPlaceholder}>
-            <Icon name="person" size={20} color="#f5f2e5" />
+            <Icon name="person" size={24} color="#f5f2e5" />
           </View>
         )}
       </TouchableOpacity>
@@ -308,33 +282,65 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </ScrollView>
 
-          <View style={styles.bottomNav}>
+          {/* Botões no rodapé */}
+          <View style={styles.footer}>
+            {/* Botão "Início" */}
             <TouchableOpacity
               style={styles.navButton}
               onPress={() => onNavigate("home")}
             >
-              <View style={styles.navIconContainer}>
-                <Icon name="home" size={24} color="#f5f2e5" />
-              </View>
+              <Icon name="home" size={24} color="#fff" />
               <Text style={styles.navText}>Início</Text>
             </TouchableOpacity>
 
+            {/* Botão "Sair" */}
             <TouchableOpacity
               style={styles.navButton}
-              onPress={handleLogoutPress}
+              onPress={() => setIsModalVisible(true)}
             >
-              <View style={styles.navIconContainer}>
-                <Icon name="logout" size={24} color="#f5f2e5" />
-              </View>
+              <Icon name="logout" size={24} color="#fff" />
               <Text style={styles.navText}>Sair</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Modal de Confirmação */}
+          <Modal
+            visible={isModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setIsModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Confirmar Logout</Text>
+                <Text style={styles.modalMessage}>
+                  Tem certeza que deseja sair da sua conta?
+                </Text>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setIsModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.confirmButton]}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      onLogout();
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Sair</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </>
       ) : (
-        // Add loading state or null state
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#a51912" />
-        </View>
+        <ActivityIndicator size="large" color="#000" />
       )}
     </View>
   );

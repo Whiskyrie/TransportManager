@@ -1,16 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
-
+import { ValidationList } from "Components/ValidationList/ValidationList";
+import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
 
 interface RegisterScreenProps {
@@ -34,9 +33,87 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
 
+  const [focusedField, setFocusedField] = useState<string>("");
+  const [touchedFields, setTouchedFields] = useState({
+    name: false,
+    email: false,
+    phone: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  const handleFieldFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleFieldBlur = (fieldName: string) => {
+    setFocusedField("");
+    setTouchedFields((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+  };
+
+  const {
+    emailValidations,
+    passwordValidations,
+    nameValidations,
+    phoneValidations,
+    validateEmail,
+    validatePassword,
+    validateName,
+    validatePhone,
+    isEmailValid,
+    isPasswordValid,
+    isNameValid,
+    isPhoneValid,
+  } = useValidation();
+
+  useEffect(() => {
+    validateName(name);
+  }, [name]);
+
+  useEffect(() => {
+    validateEmail(email);
+  }, [email]);
+
+  useEffect(() => {
+    validatePassword(password);
+  }, [password]);
+
+  useEffect(() => {
+    validatePhone(phoneNumber);
+  }, [phoneNumber]);
+
+  const formatPhoneNumber = (text: string) => {
+    const cleaned = text.replace(/\D/g, "");
+    let formatted = cleaned;
+    if (cleaned.length >= 2) {
+      formatted = `(${cleaned.slice(0, 2)}`;
+      if (cleaned.length >= 7) {
+        formatted += `) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
+      } else if (cleaned.length > 2) {
+        formatted += `) ${cleaned.slice(2)}`;
+      }
+    }
+    return formatted;
+  };
+
+  const handlePhoneNumberChange = (text: string) => {
+    const formatted = formatPhoneNumber(text);
+    setPhoneNumber(formatted);
+  };
+
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword || !phoneNumber) {
-      setError("Por favor, preencha todos os campos");
+    setError("");
+
+    if (
+      !isNameValid() ||
+      !isEmailValid() ||
+      !isPasswordValid() ||
+      !isPhoneValid()
+    ) {
+      setError("Por favor, corrija os erros de validação");
       return;
     }
 
@@ -62,7 +139,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         <Image
-          source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
+          source={require("../../Assets/icon.png")}
           style={[sharedStyles.logo, { marginTop: theme.spacing.xl }]}
           resizeMode="contain"
         />
@@ -77,47 +154,72 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         <TextInput
           style={sharedStyles.input}
           placeholder="Nome completo"
-          placeholderTextColor={`${theme.colors.text}80`}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
+          onFocus={() => handleFieldFocus("name")}
+          onBlur={() => handleFieldBlur("name")}
+        />
+        <ValidationList
+          items={nameValidations}
+          isFieldFocused={focusedField === "name"}
+          fieldTouched={touchedFields.name}
         />
 
         <TextInput
           style={sharedStyles.input}
           placeholder="Email"
-          placeholderTextColor={`${theme.colors.text}80`}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          onFocus={() => handleFieldFocus("email")}
+          onBlur={() => handleFieldBlur("email")}
+        />
+        <ValidationList
+          items={emailValidations}
+          isFieldFocused={focusedField === "email"}
+          fieldTouched={touchedFields.email}
         />
 
         <TextInput
           style={sharedStyles.input}
           placeholder="Telefone"
-          placeholderTextColor={`${theme.colors.text}80`}
           value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          onChangeText={handlePhoneNumberChange}
           keyboardType="phone-pad"
+          onFocus={() => handleFieldFocus("phone")}
+          onBlur={() => handleFieldBlur("phone")}
+        />
+        <ValidationList
+          items={phoneValidations}
+          isFieldFocused={focusedField === "phone"}
+          fieldTouched={touchedFields.phone}
         />
 
         <TextInput
           style={sharedStyles.input}
           placeholder="Senha"
-          placeholderTextColor={`${theme.colors.text}80`}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          onFocus={() => handleFieldFocus("password")}
+          onBlur={() => handleFieldBlur("password")}
+        />
+        <ValidationList
+          items={passwordValidations}
+          isFieldFocused={focusedField === "password"}
+          fieldTouched={touchedFields.password}
         />
 
         <TextInput
           style={sharedStyles.input}
           placeholder="Confirmar senha"
-          placeholderTextColor={`${theme.colors.text}80`}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
+          onFocus={() => handleFieldFocus("confirmPassword")}
+          onBlur={() => handleFieldBlur("confirmPassword")}
         />
 
         <TouchableOpacity

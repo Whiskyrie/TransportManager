@@ -21,7 +21,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
   return (
     <View style={styles.container}>
       <Image
-        source={require("/Users/evand/OneDrive/Documentos/TransportManager/TransportManager/Assets/icon.png")}
+        source={require("../../Assets/icon.png")}
         style={styles.logo}
         resizeMode="contain"
       />

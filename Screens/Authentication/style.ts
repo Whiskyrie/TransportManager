@@ -5,10 +5,12 @@ export const theme = {
         text: "#f5f2e5",
         background: "#1a2b2b",
         contrast: "#545454",
-        highlight: "#390f0fbc",
+        highlight: "#FFFFFF",
         primary: "#310b0b",
         error: "#FF6B6B",
         inactive: "#456565",
+        success: "#28a745",
+        
     },
     spacing: {
         s: 8,
@@ -92,5 +94,10 @@ export const sharedStyles = StyleSheet.create({
         width: 140,
         height: 140,
         marginBottom: theme.spacing.xl,
+    },
+    success: {
+        color: theme.colors.success,
+        marginBottom: theme.spacing.l,
+        fontSize: 14,
     },
 });
