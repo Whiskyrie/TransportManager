@@ -1,11 +1,11 @@
 {
   "name": "transportmanager",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
+  "main": "expo/App.tsx",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -27,9 +27,11 @@
     "expo-image-picker": "~15.1.0",
     "expo-location": "~17.0.1",
     "expo-status-bar": "~1.12.1",
+    "expo-system-ui": "~3.0.7",
     "lodash": "^4.17.21",
     "lucide-react": "^0.454.0",
     "pg": "^8.13.0",
+    "punycode": "^2.3.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
@@ -43,13 +45,13 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "expo-dev-client": "~4.0.29"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/lodash": "^4.17.12",
     "@types/react": "~18.2.79",
-    "@types/react-native": "^0.67.26",
     "@types/react-native-snap-carousel": "^3.8.11",
     "@types/react-native-vector-icons": "^6.4.18",
     "expo": "^51.0.39",

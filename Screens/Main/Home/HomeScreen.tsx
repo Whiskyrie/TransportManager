@@ -4,13 +4,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
-  Alert,
   Image,
   ActivityIndicator,
   Modal,
-  Button,
 } from "react-native";
 import { styles } from "./HomeScreenStyle";
 import Icon from "react-native-vector-icons/MaterialIcons";
