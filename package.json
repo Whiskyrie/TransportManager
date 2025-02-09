@@ -1,7 +1,7 @@
 {
   "name": "transportmanager",
   "version": "1.0.0",
-  "main": "expo/App.tsx",
+  "main": "expo/AppEntry.jsr",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
