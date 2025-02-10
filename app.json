@@ -4,7 +4,6 @@
     "slug": "TransportManager",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "../TransportManager/Assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
