@@ -4,7 +4,14 @@
     "slug": "TransportManager",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#182727"
+    },
+    "adaptiveIcon": {
+      "backgroundColor": "#182727"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -20,6 +27,11 @@
         "WRITE_CONTACTS"
       ]
     },
-    "owner": "whiskyrie"
+    "owner": "whiskyrie",
+    "extra": {
+      "eas": {
+        "projectId": "e72d6884-856c-4fa9-ab1e-1af08be92d25"
+      }
+    }
   }
 }
