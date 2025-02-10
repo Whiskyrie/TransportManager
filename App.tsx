@@ -183,14 +183,10 @@ const App: React.FC = () => {
   const handleResetPassword = async (
     email: string
   ): Promise<{ code: string }> => {
-    console.log("handleResetPassword chamado com email:", email);
-
     try {
       setIsLoading(true);
       // Chama a função da API para enviar o código de redefinição de senha
       const response = await api.sendResetPasswordCode(email);
-      console.log("Resposta completa da API:", response); // Verifique a estrutura completa da resposta da API
-      console.log("Dados da resposta da API:", response.data); // Verifique os dados da resposta da API
 
       // Verifique se a resposta contém o código
       const code = response.data?.code;
@@ -203,7 +199,6 @@ const App: React.FC = () => {
       setResetCode(code); // Atualiza o código no estado]
       setEmail(email); // Atualiza o email no estado
       await AsyncStorage.setItem("resetCode", code); // Salva o código de redefinição no armazenamento local
-      console.log("Código de redefinição armazenado no AsyncStorage:", code);
       Alert.alert("Sucesso", "Código de redefinição de senha enviado!"); // Notifica o usuário
       setCurrentScreen("verifyCode");
       return { code };
@@ -340,6 +335,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-function setError(arg0: string) {
-  throw new Error("Function not implemented.");
-}

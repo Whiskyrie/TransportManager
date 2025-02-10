@@ -18,14 +18,7 @@
         "WRITE_EXTERNAL_STORAGE",
         "READ_CONTACTS",
         "WRITE_CONTACTS"
-      ],
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#182727"
-      }
-    },
-    "web": {
-      "favicon": "./assets/icon.png"
+      ]
     },
     "extra": {
       "eas": {
