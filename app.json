@@ -27,11 +27,6 @@
         "WRITE_CONTACTS"
       ]
     },
-    "owner": "whiskyrie",
-    "extra": {
-      "eas": {
-        "projectId": "e72d6884-856c-4fa9-ab1e-1af08be92d25"
-      }
-    }
+    "owner": "whiskyrie"
   }
 }
