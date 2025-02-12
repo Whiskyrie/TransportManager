@@ -22,7 +22,7 @@ export class User {
     @Column({ nullable: true })
     phoneNumber: string;
 
-    @Column('text', { nullable: true })
+    @Column({ type: 'text', nullable: true })
     profilePicture: string;
     
     @CreateDateColumn()

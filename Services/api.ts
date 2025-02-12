@@ -45,17 +45,22 @@ const createAxiosInstance = (): AxiosInstance => {
 
 const axiosInstance = createAxiosInstance();
 
-// export const getImageUrl = (filename: string | null): string | null => {
-//     if (!filename) return null;
-
-//     // Se o filename já for uma URL completa, retorne como está
-//     if (filename.startsWith('http')) {
-//         return filename;
-//     }
-
-//     // Construa a URL completa
-//     return `${config.API_BASE_URL}/uploads/profile-pictures/${filename}`;
-// };
+// Adicione esta função auxiliar
+export const getImageUrl = (imageData: string | null): string => {
+    if (!imageData) return '';
+    
+    // Se já for uma string base64, retorne como está
+    if (imageData.startsWith('data:image')) {
+        return imageData;
+    }
+    
+    // Se for uma URL, retorne como está
+    if (imageData.startsWith('http')) {
+        return imageData;
+    }
+    
+    return `data:image/jpeg;base64,${imageData}`;
+};
 
 export const api = {
     // Auth endpoints
@@ -104,19 +109,7 @@ export const api = {
             throw error;
         }
     },
-
-    // getProfilePictureUrl: (filename: string): string => {
-    //     // const url = getImageUrl(filename);
-    //     // if (!url) {
-    //     //     console.warn('URL da imagem de perfil inválida:', filename);
-    //     //     return '';
-    //     // }
-        
-    //     // Adiciona um timestamp para evitar cache
-    //     const timestamp = new Date().getTime();
-    //     return `${url}?t=${timestamp}`;
-    // },
-
+    
     uploadProfilePicture: (formData: FormData) =>
         axiosInstance.post<UploadResponse>('upload/profile-picture', formData, {
             headers: {

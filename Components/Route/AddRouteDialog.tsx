@@ -42,6 +42,7 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [selectedDriver, setSelectedDriver] = useState<string>("");
   const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const [drivers, setDrivers] = useState<Drivers[]>([]);
   const [vehicles, setVehicles] = useState<Vehicles[]>([]);
@@ -142,13 +143,16 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (isSaving || !validateForm()) return;
+
+    setIsSaving(true);
 
     const selectedDriverObj = drivers.find((d) => d.id === selectedDriver);
     const selectedVehicleObj = vehicles.find((v) => v.id === selectedVehicle);
 
     if (!selectedDriverObj || !selectedVehicleObj) {
       Alert.alert("Erro", "Motorista ou veículo não encontrado");
+      setIsSaving(false);
       return;
     }
 
@@ -179,12 +183,14 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         },
       };
 
-      onSave(newRoute);
+      await onSave(newRoute);
       resetForm();
       onClose();
     } catch (error) {
       const errorMessage = handleApiError(error);
       Alert.alert("Erro", "Falha ao salvar rota: " + errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -397,7 +403,9 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
               onPress={handleSave}
               type="primary"
               style={styles.button}
-              disabled={isLoading || isLoadingData || !!loadingError}
+              disabled={
+                isLoading || isLoadingData || !!loadingError || isSaving
+              }
             />
           </View>
         </View>

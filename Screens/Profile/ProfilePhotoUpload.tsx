@@ -118,11 +118,6 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     );
   };
 
-  // Use the API's getProfilePictureUrl helper
-  const imageUrl = currentPhotoUrl
-    ? api.getProfilePictureUrl(currentPhotoUrl)
-    : null;
-
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -134,7 +129,11 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         {currentPhotoUrl ? (
           <View style={styles.imageWrapper}>
             <Image
-              source={{ uri: currentPhotoUrl }}
+              source={{
+                uri: currentPhotoUrl.startsWith("data:image")
+                  ? currentPhotoUrl
+                  : `data:image/jpeg;base64,${currentPhotoUrl}`,
+              }}
               style={styles.photo}
               resizeMode="cover"
             />

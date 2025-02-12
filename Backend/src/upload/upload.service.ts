@@ -20,11 +20,6 @@ export class UploadService {
             throw new BadRequestException('Apenas imagens são permitidas');
         }
 
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new BadRequestException('Usuário não encontrado');
-        }
-
         try {
             const processedImageBuffer = await sharp(file.buffer)
                 .resize(300, 300, {
@@ -34,13 +29,22 @@ export class UploadService {
                 .jpeg({ quality: 90 })
                 .toBuffer();
 
-            const base64Image = `data:image/jpeg;base64,${processedImageBuffer.toString('base64')}`;
+            const base64Image = processedImageBuffer.toString('base64');
+            
+            const user = await this.userRepository.findOne({ where: { id: userId } });
+            if (!user) {
+                throw new BadRequestException('Usuário não encontrado');
+            }
+
             user.profilePicture = base64Image;
             await this.userRepository.save(user);
 
             return {
                 message: 'Foto de perfil atualizada com sucesso',
-                user
+                user: {
+                    ...user,
+                    profilePicture: `data:image/jpeg;base64,${base64Image}`
+                }
             };
         } catch (error) {
             throw new BadRequestException(`Erro ao processar imagem: ${error.message}`);
