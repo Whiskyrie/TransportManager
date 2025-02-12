@@ -21,7 +21,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../Assets/icon.png")}
+        source={require("../../assets/icon.png")}
         style={styles.logo}
         resizeMode="contain"
       />

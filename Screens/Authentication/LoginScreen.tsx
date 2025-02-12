@@ -94,7 +94,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     >
       <View style={sharedStyles.content}>
         <Image
-          source={require("../../Assets/icon.png")}
+          source={require("../../assets/icon.png")}
           style={sharedStyles.logo}
           resizeMode="contain"
         />

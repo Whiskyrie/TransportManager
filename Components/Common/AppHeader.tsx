@@ -25,7 +25,7 @@ const AppHeader: React.FC<{ onNavigate: (screen: string) => void }> = ({
       </View>
       <View style={styles.centerContainer}>
         <Image
-          source={require("../../Assets/icon.png")}
+          source={require("../../assets/icon.png")}
           style={styles.logo}
           resizeMode="contain"
         />
