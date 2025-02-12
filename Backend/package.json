@@ -8,7 +8,8 @@
   "scripts": {
     "build": "nest build",
     "start": "nest start",
-    "start:prod": "node dist/main.js",
+    "start:prod": "node dist/main",
+    "start:dev": "nest start --watch",
     "typeorm": "typeorm",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:debug": "nest start --debug --watch",
@@ -93,5 +94,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

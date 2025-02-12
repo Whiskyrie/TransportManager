@@ -7,7 +7,7 @@ import { UploadResponse } from 'Types/authTypes';
 const createAxiosInstance = (): AxiosInstance => {
     const instance = axios.create({
         baseURL: config.API_BASE_URL,
-        timeout: 10000,
+        timeout: 20000, // Você pode aumentar este valor se necessário
     });
 
     instance.interceptors.request.use(
@@ -45,17 +45,17 @@ const createAxiosInstance = (): AxiosInstance => {
 
 const axiosInstance = createAxiosInstance();
 
-export const getImageUrl = (filename: string | null): string | null => {
-    if (!filename) return null;
+// export const getImageUrl = (filename: string | null): string | null => {
+//     if (!filename) return null;
 
-    // Se o filename já for uma URL completa, retorne como está
-    if (filename.startsWith('http')) {
-        return filename;
-    }
+//     // Se o filename já for uma URL completa, retorne como está
+//     if (filename.startsWith('http')) {
+//         return filename;
+//     }
 
-    // Construa a URL completa
-    return `${config.API_BASE_URL}/uploads/profile-pictures/${filename}`;
-};
+//     // Construa a URL completa
+//     return `${config.API_BASE_URL}/uploads/profile-pictures/${filename}`;
+// };
 
 export const api = {
     // Auth endpoints
@@ -105,17 +105,17 @@ export const api = {
         }
     },
 
-    getProfilePictureUrl: (filename: string): string => {
-        const url = getImageUrl(filename);
-        if (!url) {
-            console.warn('URL da imagem de perfil inválida:', filename);
-            return '';
-        }
+    // getProfilePictureUrl: (filename: string): string => {
+    //     // const url = getImageUrl(filename);
+    //     // if (!url) {
+    //     //     console.warn('URL da imagem de perfil inválida:', filename);
+    //     //     return '';
+    //     // }
         
-        // Adiciona um timestamp para evitar cache
-        const timestamp = new Date().getTime();
-        return `${url}?t=${timestamp}`;
-    },
+    //     // Adiciona um timestamp para evitar cache
+    //     const timestamp = new Date().getTime();
+    //     return `${url}?t=${timestamp}`;
+    // },
 
     uploadProfilePicture: (formData: FormData) =>
         axiosInstance.post<UploadResponse>('upload/profile-picture', formData, {
