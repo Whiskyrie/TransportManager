@@ -59,7 +59,7 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         <Image
-          source={require("../../Assets/icon.png")}
+          source={require("../../assets/icon.png")}
           style={[sharedStyles.logo, { marginTop: theme.spacing.xl }]}
           resizeMode="contain"
         />
