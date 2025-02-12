@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Text,
   TextInput,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
@@ -73,7 +73,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }
 
     try {
-      await onLogin(email, password);
+      onLogin(email, password);
       setAttemptCount(0); // Reseta as tentativas em caso de sucesso
     } catch (err) {
       setAttemptCount((prev) => prev + 1);
@@ -92,7 +92,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
     >
-      <View style={sharedStyles.content}>
+      <ScrollView contentContainerStyle={sharedStyles.container}>
         <Image
           source={require("../../assets/icon.png")}
           style={sharedStyles.logo}
@@ -160,7 +160,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
             <Text style={sharedStyles.linkTextHighlight}>Registre-se</Text>
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };

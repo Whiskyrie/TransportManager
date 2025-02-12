@@ -123,7 +123,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     }
 
     try {
-      await onRegister(name, email, password, phoneNumber);
+      onRegister(name, email, password, phoneNumber);
     } catch (err) {
       setError("Falha no registro. Por favor, tente novamente.");
     }
@@ -133,6 +133,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // Ajuste para iOS
     >
       <ScrollView
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}

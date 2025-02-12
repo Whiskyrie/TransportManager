@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
   Text,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { theme, sharedStyles } from './style';
+} from "react-native";
+import { sharedStyles } from "./style";
 
 interface NewPasswordScreenProps {
   onSetNewPassword: (email: string, newPassword: string) => Promise<void>;
@@ -21,44 +20,45 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
   onNavigateToLogin,
   email,
 }) => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
 
   const handleSetNewPassword = async () => {
     // Validações de entrada
     if (!newPassword || !confirmPassword) {
-      setError('Por favor, preencha todos os campos.');
+      setError("Por favor, preencha todos os campos.");
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
+      setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('As senhas não coincidem.');
+      setError("As senhas não coincidem.");
       return;
     }
 
     try {
       setIsLoading(true);
-      setError('');
-      console.log(`Chamando onSetNewPassword com email: ${email} e newPassword: ${newPassword}`);
+      setError("");
+      console.log(
+        `Chamando onSetNewPassword com email: ${email} e newPassword: ${newPassword}`
+      );
       // Chamada à função passada por props
       await onSetNewPassword(email, newPassword);
       onNavigateToLogin(); // Navegar para a tela de login após redefinir
     } catch (err: any) {
-      console.error('Erro ao redefinir senha:', err);
+      console.error("Erro ao redefinir senha:", err);
 
       // Mensagem de erro baseada no status do erro
       if (err.response?.status === 401) {
-        setError('Email não encontrado ou inválido.');
+        setError("Email não encontrado ou inválido.");
       } else {
-        setError('Falha ao redefinir a senha. Tente novamente.');
+        setError("Falha ao redefinir a senha. Tente novamente.");
       }
     } finally {
       setIsLoading(false);
@@ -67,7 +67,7 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
     >
       <ScrollView
@@ -78,7 +78,7 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
         <Text style={sharedStyles.subtitle}>
           Insira sua nova senha para redefinir o acesso.
         </Text>
-        {error && <Text style={{ color: 'red' }}>{error}</Text>}
+        {error && <Text style={{ color: "red" }}>{error}</Text>}
         <TextInput
           style={sharedStyles.input}
           placeholder="Nova Senha"
@@ -101,14 +101,14 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
           disabled={isLoading}
         >
           <Text style={sharedStyles.primaryButtonText}>
-            {isLoading ? 'Redefinindo...' : 'Redefinir senha'}
+            {isLoading ? "Redefinindo..." : "Redefinir senha"}
           </Text>
         </TouchableOpacity>
 
         {/* Link para tela de login */}
         <TouchableOpacity onPress={onNavigateToLogin}>
           <Text style={sharedStyles.linkText}>
-            Lembrei minha senha?{' '}
+            Lembrei minha senha?{" "}
             <Text style={sharedStyles.linkTextHighlight}>Entrar</Text>
           </Text>
         </TouchableOpacity>
