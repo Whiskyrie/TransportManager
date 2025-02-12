@@ -20,9 +20,9 @@ import { DatabaseController } from './database.controller';
                 url: configService.get('DATABASE_URL'),
                 entities: [Route, Driver, Vehicle, User],
                 synchronize: configService.get('NODE_ENV') === 'development',
-                ssl: {
+                ssl: configService.get('NODE_ENV') === 'production' ? {
                     rejectUnauthorized: false
-                },
+                } : false,
                 logging: false,
             }),
             inject: [ConfigService],

@@ -16,7 +16,7 @@ import {
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { join } from 'path';
 
 
@@ -37,15 +37,15 @@ export class UploadController {
             }),
         )
         file: Express.Multer.File,
-        @Request() req: Express.Request,
+        @Request() req: any,
     ) {
-        return this.uploadService.saveProfilePicture(req.user["id"], file);
+        return this.uploadService.saveProfilePicture(req.user.id, file);
     }
 
     @UseGuards(JwtAuthGuard)
     @Delete('profile-picture')
-    async deleteProfilePicture(@Request() req: Express.Request) {
-        return this.uploadService.deleteProfilePicture(req.user["id"]);
+    async deleteProfilePicture(@Request() req: any) {
+        return this.uploadService.deleteProfilePicture(req.user.id);
     }
 
     @Get('profile-picture/:filename')

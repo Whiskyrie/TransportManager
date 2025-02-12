@@ -9,9 +9,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#182727"
     },
-    "adaptiveIcon": {
-      "backgroundColor": "#182727"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -27,6 +24,11 @@
         "WRITE_CONTACTS"
       ]
     },
-    "owner": "whiskyrie"
+    "owner": "whiskyrie",
+    "extra": {
+      "eas": {
+        "projectId": "a59a0c4c-884c-4955-bba8-17289fae5636"
+      }
+    }
   }
 }
