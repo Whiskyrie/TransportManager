@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { MediaTypeOptions } from "expo-image-picker";
@@ -57,31 +58,66 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     }
   };
 
+  // In the uploadImage function of ProfilePhotoUpload.tsx
   const uploadImage = async (uri: string) => {
     setLoading(true);
     setError(false);
 
     try {
-      const formData = new FormData();
-      const filename = uri.split("/").pop() || "photo.jpg";
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : "image/jpeg";
+      // Fetch and validate the image first
+      const response = await fetch(uri);
+      const blob = await response.blob();
 
+      // Validate file size (5MB limit)
+      if (blob.size > 5 * 1024 * 1024) {
+        throw new Error("A imagem deve ter menos de 5MB");
+      }
+
+      // Validate mime type
+      const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validImageTypes.includes(blob.type)) {
+        throw new Error(
+          "Tipo de arquivo não suportado. Use apenas JPG ou PNG."
+        );
+      }
+
+      // Create unique filename
+      const timestamp = new Date().getTime();
+      const fileName = `profile-photo-${timestamp}.${blob.type.split("/")[1]}`;
+
+      // Create FormData
+      const formData = new FormData();
       formData.append("file", {
-        uri,
-        name: filename,
-        type,
+        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
+        type: blob.type,
+        name: fileName,
       } as any);
+
+      // Add detailed logging
+      console.log("Preparando upload:", {
+        fileName,
+        type: blob.type,
+        size: blob.size,
+        uri,
+      });
 
       const { data } = await api.uploadProfilePicture(formData);
 
-      if (data.user.profilePicture) {
+      if (data?.user?.profilePicture) {
         onPhotoUpdate(data.user.profilePicture);
+      } else {
+        throw new Error("Resposta inválida do servidor");
       }
-    } catch (error) {
-      console.error("Upload error:", error);
+    } catch (error: any) {
+      console.error("Erro detalhado:", error.response?.data || error);
       setError(true);
-      Alert.alert("Erro", handleApiError(error));
+
+      // More user-friendly error messages
+      const errorMessage = error.response?.data?.message
+        ? error.response.data.message
+        : error.message || "Erro ao fazer upload da imagem";
+
+      Alert.alert("Erro no Upload", errorMessage);
     } finally {
       setLoading(false);
     }

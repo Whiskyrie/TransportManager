@@ -69,15 +69,6 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
           Insira seu e-mail para receber um código de redefinição.
         </Text>
 
-        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
-        {successMessage ? (
-          <Text
-            style={[sharedStyles.success, { marginBottom: theme.spacing.m }]}
-          >
-            {successMessage}
-          </Text>
-        ) : null}
-
         <TextInput
           style={sharedStyles.input}
           placeholder="Email"
@@ -92,10 +83,13 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
           style={sharedStyles.primaryButton}
           onPress={handleResetPassword}
         >
-          <Text style={sharedStyles.primaryButtonText}>
-            Enviar código de redefinição
-          </Text>
+          <Text style={sharedStyles.primaryButtonText}>Enviar Código</Text>
         </TouchableOpacity>
+
+        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
+        {successMessage ? (
+          <Text style={sharedStyles.success}>{successMessage}</Text>
+        ) : null}
 
         <BackButton onPress={onNavigateToLogin} />
       </ScrollView>

@@ -113,8 +113,15 @@ export const api = {
     uploadProfilePicture: (formData: FormData) =>
         axiosInstance.post<UploadResponse>('upload/profile-picture', formData, {
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data',
             },
+            transformRequest: [(data) => {
+                // Não transformar o FormData
+                return data;
+            }],
+            // Aumentar o timeout para arquivos grandes
+            timeout: 30000,
         }),
 
     deleteProfilePicture: () =>

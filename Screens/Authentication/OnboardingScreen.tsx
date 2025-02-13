@@ -99,7 +99,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
         onHandlerStateChange={onGestureEvent}
         activeOffsetX={[-20, 20]}
       >
-        <ScrollView style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer} // Movido para contentContainerStyle
+        >
           <OnboardingSlide {...slides[currentSlide]} onFinish={onFinish} />
 
           <View style={styles.navigationContainer}>
@@ -147,11 +150,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
     </GestureHandlerRootView>
   );
 };
+
 const styles = StyleSheet.create({
-  content: {
+  scrollView: {
     flex: 1,
     width: "100%",
     height: "100%",
+  },
+  contentContainer: {
+    // Novo estilo para o contentContainer
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

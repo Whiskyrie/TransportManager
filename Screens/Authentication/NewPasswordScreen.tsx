@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
 import { sharedStyles } from "./style";
 
@@ -74,11 +75,13 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={sharedStyles.title}>Definir Nova Senha</Text>
-        <Text style={sharedStyles.subtitle}>
-          Insira sua nova senha para redefinir o acesso.
-        </Text>
-        {error && <Text style={{ color: "red" }}>{error}</Text>}
+        <Image
+          source={require("../../assets/icon.png")}
+          style={sharedStyles.logo}
+          resizeMode="contain"
+        />
+        <Text style={sharedStyles.title}>Nova Senha</Text>
+        {error && <Text style={sharedStyles.error}>{error}</Text>}
         <TextInput
           style={sharedStyles.input}
           placeholder="Nova Senha"
@@ -101,7 +104,7 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
           disabled={isLoading}
         >
           <Text style={sharedStyles.primaryButtonText}>
-            {isLoading ? "Redefinindo..." : "Redefinir senha"}
+            {isLoading ? "Alterando..." : "Alterar Senha"}
           </Text>
         </TouchableOpacity>
 

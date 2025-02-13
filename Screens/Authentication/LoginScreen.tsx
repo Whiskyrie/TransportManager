@@ -6,34 +6,62 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
-import { ScrollView } from "react-native-gesture-handler";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
   onNavigateToRegister: () => void;
-  onNavigateToResetPassword: () => void; // Função para navegação para redefinir senha
+  onNavigateToResetPassword: () => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   onNavigateToRegister,
-  onNavigateToResetPassword, // Recebe a função de navegação
+  onNavigateToResetPassword,
 }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Estados
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [attemptCount, setAttemptCount] = useState(0);
-
-  // Adicionar estados de controle
   const [focusedField, setFocusedField] = useState<string>("");
   const [touchedFields, setTouchedFields] = useState({
     email: false,
     password: false,
   });
+
+  // Hooks
+  const {
+    emailValidations,
+    passwordValidations,
+    validateEmail,
+    validatePassword,
+    isEmailValid,
+    isPasswordValid,
+  } = useValidation();
+
+  // Effects
+  useEffect(() => {
+    validateEmail(formData.email);
+  }, [formData.email]);
+
+  useEffect(() => {
+    validatePassword(formData.password);
+  }, [formData.password]);
+
+  // Handlers
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleFieldFocus = (fieldName: string) => {
     setFocusedField(fieldName);
@@ -47,23 +75,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }));
   };
 
-  const {
-    emailValidations,
-    passwordValidations,
-    validateEmail,
-    validatePassword,
-    isEmailValid,
-    isPasswordValid,
-  } = useValidation();
-
-  useEffect(() => {
-    validateEmail(email);
-  }, [email]);
-
-  useEffect(() => {
-    validatePassword(password);
-  }, [password]);
-
   const handleLogin = async () => {
     setError("");
 
@@ -73,8 +84,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }
 
     try {
-      onLogin(email, password);
-      setAttemptCount(0); // Reseta as tentativas em caso de sucesso
+      await onLogin(formData.email, formData.password);
+      setAttemptCount(0);
     } catch (err) {
       setAttemptCount((prev) => prev + 1);
 
@@ -87,79 +98,93 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
+  // Componentes de renderização
+  const renderHeader = () => (
+    <>
+      <Image
+        source={require("../../assets/icon.png")}
+        style={sharedStyles.logo}
+        resizeMode="contain"
+      />
+      <Text style={sharedStyles.title}>Bem-vindo de volta!</Text>
+      <Text style={sharedStyles.subtitle}>
+        Entre com suas credenciais para continuar
+      </Text>
+      {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
+    </>
+  );
+
+  const renderInputs = () => (
+    <>
+      <TextInput
+        style={sharedStyles.input}
+        placeholder="Email"
+        placeholderTextColor={`${theme.colors.text}80`}
+        value={formData.email}
+        onChangeText={(value) => handleInputChange("email", value)}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        onFocus={() => handleFieldFocus("email")}
+        onBlur={() => handleFieldBlur("email")}
+      />
+      <ValidationList
+        items={emailValidations}
+        isFieldFocused={focusedField === "email"}
+        fieldTouched={touchedFields.email}
+      />
+
+      <TextInput
+        style={sharedStyles.input}
+        placeholder="Senha"
+        placeholderTextColor={`${theme.colors.text}80`}
+        value={formData.password}
+        onChangeText={(value) => handleInputChange("password", value)}
+        secureTextEntry
+        onFocus={() => handleFieldFocus("password")}
+        onBlur={() => handleFieldBlur("password")}
+      />
+      <ValidationList
+        items={passwordValidations}
+        isFieldFocused={focusedField === "password"}
+        fieldTouched={touchedFields.password}
+      />
+    </>
+  );
+
+  const renderButtons = () => (
+    <>
+      <TouchableOpacity
+        style={sharedStyles.primaryButton}
+        onPress={handleLogin}
+      >
+        <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onNavigateToResetPassword}>
+        <Text style={sharedStyles.linkText}>
+          Esqueceu a senha?{" "}
+          <Text style={sharedStyles.linkTextHighlight}>Clique aqui</Text>
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onNavigateToRegister}>
+        <Text style={sharedStyles.linkText}>
+          Não possui uma conta ainda?{" "}
+          <Text style={sharedStyles.linkTextHighlight}>Registre-se</Text>
+        </Text>
+      </TouchableOpacity>
+    </>
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
     >
-      <ScrollView contentContainerStyle={sharedStyles.container}>
-        <Image
-          source={require("../../assets/icon.png")}
-          style={sharedStyles.logo}
-          resizeMode="contain"
-        />
-        <Text style={sharedStyles.title}>Bem-vindo de volta!</Text>
-        <Text style={sharedStyles.subtitle}>
-          Entre com suas credenciais para continuar
-        </Text>
-
-        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Email"
-          placeholderTextColor={`${theme.colors.text}80`}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onFocus={() => handleFieldFocus("email")}
-          onBlur={() => handleFieldBlur("email")}
-        />
-        <ValidationList
-          items={emailValidations}
-          isFieldFocused={focusedField === "email"}
-          fieldTouched={touchedFields.email}
-        />
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Senha"
-          placeholderTextColor={`${theme.colors.text}80`}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          onFocus={() => handleFieldFocus("password")}
-          onBlur={() => handleFieldBlur("password")}
-        />
-        <ValidationList
-          items={passwordValidations}
-          isFieldFocused={focusedField === "password"}
-          fieldTouched={touchedFields.password}
-        />
-
-        <TouchableOpacity
-          style={sharedStyles.primaryButton}
-          onPress={handleLogin}
-        >
-          <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
-        </TouchableOpacity>
-
-        {/* Link para "Esqueceu a senha?" */}
-        <TouchableOpacity onPress={onNavigateToResetPassword}>
-          <Text style={sharedStyles.linkText}>
-            Esqueceu a senha?{" "}
-            <Text style={sharedStyles.linkTextHighlight}>Clique aqui</Text>
-          </Text>
-        </TouchableOpacity>
-
-        {/* Link para a página de registro */}
-        <TouchableOpacity onPress={onNavigateToRegister}>
-          <Text style={sharedStyles.linkText}>
-            Não possui uma conta ainda?{" "}
-            <Text style={sharedStyles.linkTextHighlight}>Registre-se</Text>
-          </Text>
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={sharedStyles.content}>
+        {renderHeader()}
+        {renderInputs()}
+        {renderButtons()}
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -12,6 +12,7 @@ import {
     Get,
     Param,
     Res,
+    BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -32,14 +33,20 @@ export class UploadController {
             new ParseFilePipe({
                 validators: [
                     new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
-                    new FileTypeValidator({ fileType: '.(jpg|jpeg|png)' }),
+                    new FileTypeValidator({ fileType: /^image\/(jpg|jpeg|png)$/ }), // Regex mais precisa
                 ],
+                fileIsRequired: true,
             }),
         )
         file: Express.Multer.File,
         @Request() req: any,
     ) {
-        return this.uploadService.saveProfilePicture(req.user.id, file);
+        try {
+            const result = await this.uploadService.saveProfilePicture(req.user.id, file);
+            return result;
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     @UseGuards(JwtAuthGuard)

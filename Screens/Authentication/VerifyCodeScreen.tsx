@@ -144,25 +144,23 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Image
-          source={require("../../assets/icon.png")}
-          style={[sharedStyles.logo, { marginTop: theme.spacing.xl }]}
-          resizeMode="contain"
-        />
-
         <Text style={sharedStyles.title}>Verificar Código</Text>
         <Text style={sharedStyles.subtitle}>
-          Por favor, insira o código de 6 dígitos que enviamos para o seu
-          e-mail.
+          Digite o código de verificação enviado para seu e-mail
         </Text>
-
-        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
 
         <Animated.View
           style={[
             styles.codeContainer,
             {
-              transform: [{ translateX: shakeAnimation }],
+              transform: [
+                {
+                  translateX: shakeAnimation.interpolate({
+                    inputRange: [-1, 0, 1],
+                    outputRange: [-10, 0, 10],
+                  }),
+                },
+              ],
             },
           ]}
         >
@@ -202,11 +200,13 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
           ))}
         </Animated.View>
 
+        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
+
         <TouchableOpacity
           style={sharedStyles.primaryButton}
           onPress={handleVerifyCode}
         >
-          <Text style={sharedStyles.primaryButtonText}>Verificar Código</Text>
+          <Text style={sharedStyles.primaryButtonText}>Verificar</Text>
         </TouchableOpacity>
 
         <BackButton onPress={onNavigateBack} />
