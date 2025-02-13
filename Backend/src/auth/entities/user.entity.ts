@@ -22,7 +22,7 @@ export class User {
     @Column({ nullable: true })
     phoneNumber: string;
 
-    @Column({ type: 'text', nullable: true }) // 1MB em caracteres
+    @Column({ type: 'text', nullable: true })
     profilePicture: string;
     
     @CreateDateColumn()
