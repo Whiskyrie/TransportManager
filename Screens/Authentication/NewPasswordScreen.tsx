@@ -46,9 +46,6 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
     try {
       setIsLoading(true);
       setError("");
-      console.log(
-        `Chamando onSetNewPassword com email: ${email} e newPassword: ${newPassword}`
-      );
       // Chamada à função passada por props
       await onSetNewPassword(email, newPassword);
       onNavigateToLogin(); // Navegar para a tela de login após redefinir

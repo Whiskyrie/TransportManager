@@ -94,12 +94,6 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       } as any);
 
       // Add detailed logging
-      console.log("Preparando upload:", {
-        fileName,
-        type: blob.type,
-        size: blob.size,
-        uri,
-      });
 
       const { data } = await api.uploadProfilePicture(formData);
 

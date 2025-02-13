@@ -34,10 +34,6 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
       // Chama a função de redefinição passada como prop
       const response = await onResetPassword(email);
       await AsyncStorage.setItem("resetCode", response.code); // Salva o código de redefinição no armazenamento local
-      console.log(
-        "Código de redefinição armazenado no AsyncStorage:",
-        response.code
-      );
       setSuccessMessage(
         "Código de redefinição enviado com sucesso. Verifique seu e-mail."
       );

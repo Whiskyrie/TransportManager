@@ -105,7 +105,6 @@ const RoutesListScreen: React.FC<{
       const response = await api.createRoute(newRoute);
       const savedRoute = formatRoutes([response.data])[0];
       setRoutes((prevRoutes) => [...prevRoutes, savedRoute]);
-      console.log("New route saved:", savedRoute);
       setErrorMessage("");
     } catch (error) {
       const errorMsg = handleApiError(error);

@@ -42,7 +42,6 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       try {
         const storedCode = await AsyncStorage.getItem("resetCode");
         if (storedCode) {
-          console.log("Código recuperado do AsyncStorage:", storedCode);
           setResetCode(storedCode); // Atualiza o estado com o código recuperado
         } else {
           console.log("Nenhum código encontrado no AsyncStorage");
@@ -119,8 +118,6 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       return;
     }
     const fullCode = inputCode.join("").trim();
-    console.log("Código digitado:", fullCode);
-    console.log("Código esperado:", resetCode);
 
     if (fullCode.length !== 6) {
       setError("O código deve ter 6 dígitos.");

@@ -73,7 +73,6 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
     };
 
     // Log para debug
-    console.log("Novo veículo sendo criado:", newVehicle);
 
     onSave(newVehicle);
     clearForm();

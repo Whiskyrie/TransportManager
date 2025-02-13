@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Request, Query, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Request, BadRequestException  } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, AuthResponse, RequestPasswordResetDto, ResetPasswordDto, VerifyResetCodeDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
@@ -58,9 +58,9 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
     const { email, newPassword } = resetPasswordDto;
-    console.log(`Redefinindo senha para o email: ${email}`);
+
     await this.authService.resetPassword(email, newPassword);
-    console.log(`Senha redefinida com sucesso para o email: ${email}`);
+
     return { message: 'Senha redefinida com sucesso' };
   }
 }

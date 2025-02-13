@@ -1,8 +1,6 @@
 import * as nodemailer from 'nodemailer';
 
-// Verifique se as variáveis de ambiente estão definidas corretamente
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-console.log('EMAIL_PASS:', process.env.EMAIL_PASS);
+
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',

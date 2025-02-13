@@ -216,9 +216,6 @@ const App: React.FC = () => {
 
   const handleNewPassword = async (email: string, newPassword: string) => {
     try {
-      console.log(
-        `Chamando API resetPassword com email: ${email} e newPassword: ${newPassword}`
-      );
       const response = await api.resetPassword({ email, newPassword });
       if (response.status === 200) {
         console.log("Senha redefinida com sucesso");

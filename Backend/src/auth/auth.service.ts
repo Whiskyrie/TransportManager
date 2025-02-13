@@ -120,7 +120,6 @@ export class AuthService {
         // Salva o código e sua expiração no banco de dados (exemplo: 10 minutos)
         user.resetPasswordCode = resetCode;
         user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos a partir de agora
-        console.log(`Código de redefinição gerado: ${resetCode}`);
         console.log(`Data de expiração do código: ${user.resetPasswordExpires}`);
         await this.userRepository.save(user);
     
@@ -131,13 +130,11 @@ export class AuthService {
       }
 
     async resetPassword(email: string, newPassword: string): Promise<void> {
-        console.log(`Iniciando redefinição de senha para o email: ${email}`);
         
         // Localiza o usuário pelo email
         const user = await this.userRepository.findOne({ where: { email } });
     
         if (!user) {
-            console.log(`Usuário não encontrado com o email: ${email}`);
             throw new BadRequestException('Usuário não encontrado.');
         }
     

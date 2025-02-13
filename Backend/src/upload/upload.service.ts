@@ -26,7 +26,6 @@ export class UploadService {
                 originalName: file.originalname,
                 mimetype: file.mimetype,
                 size: file.size,
-                encoding: file.encoding,
                 bufferLength: file.buffer?.length
             });
 
@@ -36,8 +35,7 @@ export class UploadService {
             }
 
             // Verify image format before processing
-            const metadata = await sharp(file.buffer).metadata();
-            console.log('Image metadata:', metadata);
+            await sharp(file.buffer).metadata();
 
             // More robust image processing
             const processedImageBuffer = await sharp(file.buffer, {
