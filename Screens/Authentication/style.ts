@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export const theme = {
     colors: {
@@ -35,7 +35,7 @@ export const sharedStyles = StyleSheet.create({
         fontSize: 28,
         fontWeight: "bold",
         color: theme.colors.text,
-        marginBottom: theme.spacing.xl,
+        marginBottom: theme.spacing.m,
         textAlign: "center",
     },
     subtitle: {
@@ -51,7 +51,7 @@ export const sharedStyles = StyleSheet.create({
         backgroundColor: theme.colors.contrast,
         borderRadius: 12,
         paddingHorizontal: theme.spacing.l,
-        marginBottom: theme.spacing.l,
+        marginBottom: theme.spacing.m,
         fontSize: 16,
         color: theme.colors.text,
         borderWidth: 1,
@@ -89,15 +89,44 @@ export const sharedStyles = StyleSheet.create({
         color: theme.colors.error,
         marginBottom: theme.spacing.l,
         fontSize: 14,
+        textAlign: 'center',
     },
     logo: {
-        width: 140,
-        height: 140,
-        marginBottom: theme.spacing.xl,
+        width: 120,
+        height: 120,
+        marginVertical: theme.spacing.xl,
     },
     success: {
         color: theme.colors.success,
         marginBottom: theme.spacing.l,
         fontSize: 14,
+    },
+    keyboardView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: theme.spacing.xl,
+        paddingVertical: theme.spacing.xl,
+    },
+    header: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: theme.spacing.l,
+        paddingTop: Platform.OS === 'android' ? theme.spacing.xl : theme.spacing.m,
+        paddingBottom: theme.spacing.m,
+        backgroundColor: theme.colors.background,
+        zIndex: 1,
+    },
+    contentContainer: {
+        width: '100%',
+        alignItems: 'center',
+    },
+    loginLink: {
+        alignSelf: 'center',
+        paddingVertical: theme.spacing.m,
     },
 });

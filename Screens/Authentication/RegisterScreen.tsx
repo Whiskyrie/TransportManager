@@ -7,10 +7,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  SafeAreaView,
+  View,
+  BackHandler,
+  StyleSheet,
 } from "react-native";
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
-import { theme, sharedStyles } from "./style";
+import { sharedStyles, theme } from "./style";
+import BackButton from "../../Components/Common/BackButton";
 
 interface RegisterScreenProps {
   onRegister: (
@@ -129,116 +134,159 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     }
   };
 
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        onNavigateToLogin();
+        return true;
+      }
+    );
+
+    return () => backHandler.remove();
+  }, [onNavigateToLogin]);
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={sharedStyles.container}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // Ajuste para iOS
-    >
-      <ScrollView
-        contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView style={sharedStyles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={[sharedStyles.keyboardView]}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <Image
-          source={require("../../assets/icon.png")}
-          style={[sharedStyles.logo, { marginTop: theme.spacing.xl }]}
-          resizeMode="contain"
-        />
-
-        <Text style={sharedStyles.title}>Criar uma conta</Text>
-        <Text style={sharedStyles.subtitle}>
-          Preencha seus dados para começar
-        </Text>
-
-        {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Nome completo"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-          onFocus={() => handleFieldFocus("name")}
-          onBlur={() => handleFieldBlur("name")}
-        />
-        <ValidationList
-          items={nameValidations}
-          isFieldFocused={focusedField === "name"}
-          fieldTouched={touchedFields.name}
-        />
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onFocus={() => handleFieldFocus("email")}
-          onBlur={() => handleFieldBlur("email")}
-        />
-        <ValidationList
-          items={emailValidations}
-          isFieldFocused={focusedField === "email"}
-          fieldTouched={touchedFields.email}
-        />
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Telefone"
-          value={phoneNumber}
-          onChangeText={handlePhoneNumberChange}
-          keyboardType="phone-pad"
-          onFocus={() => handleFieldFocus("phone")}
-          onBlur={() => handleFieldBlur("phone")}
-        />
-        <ValidationList
-          items={phoneValidations}
-          isFieldFocused={focusedField === "phone"}
-          fieldTouched={touchedFields.phone}
-        />
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Senha"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          onFocus={() => handleFieldFocus("password")}
-          onBlur={() => handleFieldBlur("password")}
-        />
-        <ValidationList
-          items={passwordValidations}
-          isFieldFocused={focusedField === "password"}
-          fieldTouched={touchedFields.password}
-        />
-
-        <TextInput
-          style={sharedStyles.input}
-          placeholder="Confirmar senha"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          onFocus={() => handleFieldFocus("confirmPassword")}
-          onBlur={() => handleFieldBlur("confirmPassword")}
-        />
-
-        <TouchableOpacity
-          style={sharedStyles.primaryButton}
-          onPress={handleRegister}
+        <ScrollView
+          contentContainerStyle={[
+            sharedStyles.scrollContent,
+            styles.scrollContent,
+          ]}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          <Text style={sharedStyles.primaryButtonText}>Registrar</Text>
-        </TouchableOpacity>
+          <View style={sharedStyles.contentContainer}>
+            <Image
+              source={require("../../assets/icon.png")}
+              style={sharedStyles.logo}
+              resizeMode="contain"
+            />
 
-        <TouchableOpacity onPress={onNavigateToLogin}>
-          <Text style={sharedStyles.linkText}>
-            Já tem uma conta?{" "}
-            <Text style={sharedStyles.linkTextHighlight}>Entrar</Text>
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <Text style={sharedStyles.title}>Criar uma conta</Text>
+            <Text style={sharedStyles.subtitle}>
+              Preencha seus dados para começar
+            </Text>
+
+            {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
+
+            <View style={styles.inputsContainer}>
+              <TextInput
+                style={sharedStyles.input}
+                placeholder="Nome completo"
+                placeholderTextColor={theme.colors.text + "80"}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                onFocus={() => handleFieldFocus("name")}
+                onBlur={() => handleFieldBlur("name")}
+              />
+              <ValidationList
+                items={nameValidations}
+                isFieldFocused={focusedField === "name"}
+                fieldTouched={touchedFields.name}
+              />
+
+              <TextInput
+                style={sharedStyles.input}
+                placeholder="Email"
+                placeholderTextColor={theme.colors.text + "80"}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                onFocus={() => handleFieldFocus("email")}
+                onBlur={() => handleFieldBlur("email")}
+              />
+              <ValidationList
+                items={emailValidations}
+                isFieldFocused={focusedField === "email"}
+                fieldTouched={touchedFields.email}
+              />
+
+              <TextInput
+                style={sharedStyles.input}
+                placeholder="Telefone"
+                placeholderTextColor={theme.colors.text + "80"}
+                value={phoneNumber}
+                onChangeText={handlePhoneNumberChange}
+                keyboardType="phone-pad"
+                onFocus={() => handleFieldFocus("phone")}
+                onBlur={() => handleFieldBlur("phone")}
+              />
+              <ValidationList
+                items={phoneValidations}
+                isFieldFocused={focusedField === "phone"}
+                fieldTouched={touchedFields.phone}
+              />
+
+              <TextInput
+                style={sharedStyles.input}
+                placeholder="Senha"
+                placeholderTextColor={theme.colors.text + "80"}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                onFocus={() => handleFieldFocus("password")}
+                onBlur={() => handleFieldBlur("password")}
+              />
+              <ValidationList
+                items={passwordValidations}
+                isFieldFocused={focusedField === "password"}
+                fieldTouched={touchedFields.password}
+              />
+
+              <TextInput
+                style={sharedStyles.input}
+                placeholder="Confirmar senha"
+                placeholderTextColor={theme.colors.text + "80"}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                onFocus={() => handleFieldFocus("confirmPassword")}
+                onBlur={() => handleFieldBlur("confirmPassword")}
+              />
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={sharedStyles.primaryButton}
+                onPress={handleRegister}
+              >
+                <Text style={sharedStyles.primaryButtonText}>Registrar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={sharedStyles.loginLink}
+                onPress={onNavigateToLogin}
+              >
+                <BackButton onPress={onNavigateToLogin} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: theme.spacing.xl * 2,
+  },
+  inputsContainer: {
+    width: "100%",
+    marginBottom: theme.spacing.s,
+  },
+  buttonContainer: {
+    width: "100%",
+    marginTop: theme.spacing.s,
+  },
+});
 
 export default RegisterScreen;
