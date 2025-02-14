@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+export type DriverStatus = 'Disponível' | 'Indisponível';
+
 @Entity()
 export class Driver {
     @PrimaryGeneratedColumn('uuid')
@@ -10,4 +12,11 @@ export class Driver {
 
     @Column()
     licenseNumber: string;
+
+    @Column({
+            type: 'enum',
+            enum: ['Disponível', 'Indisponível', 'Em manutenção'],
+            default: 'Disponível'
+        })
+        status: DriverStatus;
 }

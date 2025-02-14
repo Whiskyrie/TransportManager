@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
+  Modal,
   Text,
   TextInput,
-  Modal,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
+  ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
+import CustomButton from "../Common/CustomButton";
 import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { useValidation } from "../../Hooks/useValidation";
+import { masks } from "../../Utils/mask";
+import { Picker } from "@react-native-picker/picker";
+import { fipeApi } from "../../Services/fipeApi";
+import { FipeBrand, FipeModel } from "Types/fipeTypes";
 
 interface EditVehicleDialogProps {
   visible: boolean;
@@ -31,20 +35,83 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
 }) => {
   const [editedVehicle, setEditedVehicle] = useState<Partial<Vehicles>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [brands, setBrands] = useState<FipeBrand[]>([]);
+  const [models, setModels] = useState<FipeModel[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [isLoadingFipe, setIsLoadingFipe] = useState(false);
+
+  const {
+    validatePlate,
+    validateYear,
+    plateValidations,
+    yearValidations,
+    isPlateValid,
+    isYearValid,
+  } = useValidation();
 
   useEffect(() => {
-    setEditedVehicle(vehicle);
+    loadBrands();
+  }, []);
+
+  useEffect(() => {
+    if (vehicle) {
+      setEditedVehicle(vehicle);
+      validatePlate(vehicle.plate);
+      validateYear(vehicle.year.toString());
+
+      if (selectedBrand) {
+        loadModels(selectedBrand);
+      }
+    }
     setErrors({});
   }, [vehicle]);
 
+  const loadBrands = async () => {
+    setIsLoadingFipe(true);
+    const brandsData = await fipeApi.getBrands();
+    setBrands(brandsData);
+    setIsLoadingFipe(false);
+  };
+
+  const loadModels = async (brandId: string) => {
+    setIsLoadingFipe(true);
+    const modelsData = await fipeApi.getModels(brandId);
+    setModels(modelsData);
+    setIsLoadingFipe(false);
+  };
+
+  const handleBrandSelect = async (brandCode: string) => {
+    setSelectedBrand(brandCode);
+    const selectedBrandName =
+      brands.find((b) => b.codigo === brandCode)?.nome || "";
+    setEditedVehicle((prev) => ({ ...prev, brand: selectedBrandName }));
+    await loadModels(brandCode);
+  };
+
   const validateForm = () => {
+    validatePlate(editedVehicle.plate || "");
+    validateYear(editedVehicle.year?.toString() || "");
+
+    if (!isPlateValid() || !isYearValid()) {
+      setErrors((prev) => ({
+        ...prev,
+        plate: plateValidations.find((v) => !v.isValid)?.message,
+        year: yearValidations.find((v) => !v.isValid)?.message,
+      }));
+      return false;
+    }
+
     const newErrors: Record<string, string> = {};
 
-    if (!editedVehicle.model) newErrors.model = "Modelo é obrigatório";
-    if (!editedVehicle.brand) newErrors.brand = "Marca é obrigatória";
-    if (!editedVehicle.year) newErrors.year = "Ano é obrigatório";
-    if (!editedVehicle.plate) newErrors.plate = "Placa é obrigatória";
-    if (!editedVehicle.status) newErrors.status = "Status é obrigatório";
+    if (!editedVehicle.model?.trim()) {
+      newErrors.model = "Modelo é obrigatório";
+    }
+    if (!editedVehicle.brand?.trim()) {
+      newErrors.brand = "Marca é obrigatória";
+    }
+    if (!editedVehicle.status) {
+      newErrors.status = "Status é obrigatório";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -77,38 +144,9 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
         value={value?.toString()}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor="#f5f2e5"
+        placeholderTextColor="#a0a0a0"
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
-    </View>
-  );
-
-  const renderStatusPicker = () => (
-    <View style={styles.inputContainer}>
-      <MaterialIcons
-        name="local-parking"
-        size={24}
-        color="#f5f2e5"
-        style={styles.inputIcon}
-      />
-      <View style={[styles.input, styles.pickerContainer]}>
-        <Picker
-          selectedValue={editedVehicle.status}
-          onValueChange={(itemValue) =>
-            setEditedVehicle({
-              ...editedVehicle,
-              status: itemValue as VehicleStatus,
-            })
-          }
-          style={styles.picker}
-          dropdownIconColor="#f5f2e5"
-        >
-          <Picker.Item label="Disponível" value="Disponível" />
-          <Picker.Item label="Indisponível" value="Indisponível" />
-          <Picker.Item label="Em manutenção" value="Em manutenção" />
-        </Picker>
-      </View>
-      {errors.status && <Text style={styles.errorText}>{errors.status}</Text>}
     </View>
   );
 
@@ -124,44 +162,143 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
           </View>
 
           <ScrollView style={styles.scrollContent}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#0066CC" />
+            {isLoading || isLoadingFipe ? (
+              <ActivityIndicator size="large" color="#f5f2e5" />
             ) : (
               <>
-                {renderInput(
-                  "Modelo",
-                  editedVehicle.model,
-                  (text) => setEditedVehicle({ ...editedVehicle, model: text }),
-                  "directions-car",
-                  errors.model
-                )}
-                {renderInput(
-                  "Marca",
-                  editedVehicle.brand,
-                  (text) => setEditedVehicle({ ...editedVehicle, brand: text }),
-                  "build",
-                  errors.brand
-                )}
+                <View style={styles.pickerContainer}>
+                  <MaterialIcons
+                    name="build"
+                    size={24}
+                    color="#f5f2e5"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    selectedValue={selectedBrand}
+                    style={styles.picker}
+                    onValueChange={handleBrandSelect}
+                    dropdownIconColor="#f5f2e5"
+                  >
+                    <Picker.Item
+                      label="Selecione a marca"
+                      value=""
+                      color="#1a2b2b"
+                    />
+                    {brands.map((brand) => (
+                      <Picker.Item
+                        key={brand.codigo}
+                        label={brand.nome}
+                        value={brand.codigo}
+                        color="#1a2b2b"
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
+                <View style={styles.pickerContainer}>
+                  <MaterialIcons
+                    name="directions-car"
+                    size={24}
+                    color="#f5f2e5"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    selectedValue={editedVehicle.model}
+                    style={styles.picker}
+                    onValueChange={(value) =>
+                      setEditedVehicle((prev) => ({ ...prev, model: value }))
+                    }
+                    dropdownIconColor="#f5f2e5"
+                  >
+                    <Picker.Item
+                      label="Selecione o modelo"
+                      value=""
+                      color="#1a2b2b"
+                    />
+                    {models.map((model) => (
+                      <Picker.Item
+                        key={model.codigo}
+                        label={model.nome}
+                        value={model.nome}
+                        color="#1a2b2b"
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
                 {renderInput(
                   "Ano",
                   editedVehicle.year,
-                  (text) =>
-                    setEditedVehicle({
-                      ...editedVehicle,
-                      year: text ? parseInt(text) : undefined,
-                    }),
+                  (text) => {
+                    const year = text.replace(/\D/g, "");
+                    setEditedVehicle((prev) => ({
+                      ...prev,
+                      year: parseInt(year) || undefined,
+                    }));
+                    validateYear(year);
+                  },
                   "event",
-                  errors.year,
+                  errors.year ||
+                    yearValidations.find((v) => !v.isValid)?.message,
                   "numeric"
                 )}
+
                 {renderInput(
                   "Placa",
                   editedVehicle.plate,
-                  (text) => setEditedVehicle({ ...editedVehicle, plate: text }),
+                  (text) => {
+                    const maskedValue = masks.plate(text);
+                    setEditedVehicle((prev) => ({
+                      ...prev,
+                      plate: maskedValue,
+                    }));
+                    validatePlate(maskedValue);
+                  },
                   "label",
-                  errors.plate
+                  errors.plate ||
+                    plateValidations.find((v) => !v.isValid)?.message
                 )}
-                {renderStatusPicker()}
+
+                <View style={styles.pickerContainer}>
+                  <MaterialIcons
+                    name="info"
+                    size={24}
+                    color="#f5f2e5"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    selectedValue={editedVehicle.status}
+                    style={styles.picker}
+                    onValueChange={(value: VehicleStatus) =>
+                      setEditedVehicle((prev) => ({ ...prev, status: value }))
+                    }
+                    dropdownIconColor="#f5f2e5"
+                  >
+                    <Picker.Item
+                      label="Selecione o status"
+                      value=""
+                      color="#1a2b2b"
+                    />
+                    <Picker.Item
+                      label="Disponível"
+                      value="Disponível"
+                      color="#1a2b2b"
+                    />
+                    <Picker.Item
+                      label="Em uso"
+                      value="Em uso"
+                      color="#1a2b2b"
+                    />
+                    <Picker.Item
+                      label="Em manutenção"
+                      value="Em manutenção"
+                      color="#1a2b2b"
+                    />
+                  </Picker>
+                </View>
+                {errors.status && (
+                  <Text style={styles.errorText}>{errors.status}</Text>
+                )}
               </>
             )}
           </ScrollView>
@@ -186,6 +323,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
     </Modal>
   );
 };
+
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -224,6 +362,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 15,
+    position: "relative",
   },
   inputIcon: {
     position: "absolute",
@@ -260,13 +399,33 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   pickerContainer: {
-    padding: 0,
-    paddingLeft: 40,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#243636",
+    borderRadius: 10,
+    backgroundColor: "#243636",
+    position: "relative",
+    height: 50,
+    justifyContent: "center",
+  },
+  pickerIcon: {
+    position: "absolute",
+    left: 10,
+    zIndex: 1,
   },
   picker: {
     color: "#f5f2e5",
-    width: "100%",
+    marginLeft: 30,
     height: 50,
   },
+  pickerItemStyle: {
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
+    fontSize: 16,
+  },
+  pickerError: {
+    borderColor: "#dc3545",
+  },
 });
+
 export default EditVehicleDialog;

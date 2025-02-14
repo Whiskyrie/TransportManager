@@ -14,7 +14,7 @@ import { Picker } from "@react-native-picker/picker";
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Route, RouteLocation, RouteStatus } from "../../Types/routeTypes";
-import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { VehicleStatus } from "../../Types/vehicleTypes";
 import { api, handleApiError } from "Services/api";
 
 interface EditRouteDialogProps {
@@ -83,17 +83,47 @@ const EditRouteDialog: React.FC<EditRouteDialogProps> = ({
       );
     }
   };
+  const updateDriverStatus = async (
+    driverId: string,
+    routeStatus: RouteStatus
+  ) => {
+    let newStatus: VehicleStatus = "Disponível";
+
+    if (routeStatus === "Pendente" || routeStatus === "Em Progresso") {
+      newStatus = "Indisponível";
+    } else if (routeStatus === "Concluído" || routeStatus === "Cancelada") {
+      newStatus = "Disponível";
+    }
+
+    try {
+      await api.updateDriver(driverId, { status: newStatus });
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      Alert.alert(
+        "Erro",
+        "Falha ao atualizar status do motorista: " + errorMessage
+      );
+    }
+  };
 
   const handleSave = async () => {
     if (!validateForm()) return;
 
     try {
-      // Se o status da rota mudou, atualiza o status do veículo
-      if (editedRoute.status !== route.status && editedRoute.vehicle?.id) {
-        await updateVehicleStatus(
-          editedRoute.vehicle.id,
-          editedRoute.status as RouteStatus
-        );
+      // Se o status da rota mudou, atualiza o status do veículo e do motorista
+      if (editedRoute.status !== route.status) {
+        if (editedRoute.vehicle?.id) {
+          await updateVehicleStatus(
+            editedRoute.vehicle.id,
+            editedRoute.status as RouteStatus
+          );
+        }
+        if (editedRoute.driver?.id) {
+          await updateDriverStatus(
+            editedRoute.driver.id,
+            editedRoute.status as RouteStatus
+          );
+        }
       }
 
       await api.updateRoute(route.id, editedRoute);

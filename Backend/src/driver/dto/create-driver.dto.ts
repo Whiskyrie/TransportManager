@@ -9,4 +9,8 @@ export class CreateDriverDto {
     @IsNotEmpty()
     @IsString()
     licenseNumber: string;
+
+    @IsNotEmpty()
+    @IsString()
+    status: 'Disponível' | 'Indisponível' | 'Em manutenção' = 'Disponível';
 }

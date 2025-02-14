@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,11 @@ import {
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Vehicles, VehicleStatus } from "../../Types/vehicleTypes";
+import { useValidation } from "../../Hooks/useValidation";
+import { masks } from "../../Utils/mask";
+import { fipeApi } from "../../Services/fipeApi";
+import { FipeBrand, FipeModel } from "Types/fipeTypes";
+import { Picker } from "@react-native-picker/picker";
 
 interface AddVehicleDialogProps {
   visible: boolean;
@@ -31,6 +36,45 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   const [year, setYear] = useState("");
   const [plate, setPlate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [brands, setBrands] = useState<FipeBrand[]>([]);
+  const [models, setModels] = useState<FipeModel[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [isLoadingFipe, setIsLoadingFipe] = useState(false);
+
+  const {
+    validatePlate,
+    validateYear,
+    plateValidations,
+    yearValidations,
+    isPlateValid,
+    isYearValid,
+  } = useValidation();
+
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  const loadBrands = async () => {
+    setIsLoadingFipe(true);
+    const brandsData = await fipeApi.getBrands();
+    setBrands(brandsData);
+    setIsLoadingFipe(false);
+  };
+
+  const loadModels = async (brandId: string) => {
+    setIsLoadingFipe(true);
+    const modelsData = await fipeApi.getModels(brandId);
+    setModels(modelsData);
+    setIsLoadingFipe(false);
+  };
+
+  const handleBrandSelect = async (brandCode: string) => {
+    setSelectedBrand(brandCode);
+    const selectedBrandName =
+      brands.find((b) => b.codigo === brandCode)?.nome || "";
+    setBrand(selectedBrandName);
+    await loadModels(brandCode);
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -45,6 +89,11 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
   };
 
   const handleSave = () => {
+    validatePlate(plate);
+    validateYear(year);
+
+    if (!isPlateValid() || !isYearValid()) return;
+
     if (!validateForm()) return;
 
     // Modificado para incluir todos os campos obrigatórios exceto id
@@ -57,7 +106,6 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
     };
 
     // Log para debug
-    console.log("Novo veículo sendo criado:", newVehicle);
 
     onSave(newVehicle);
     clearForm();
@@ -111,27 +159,91 @@ const AddVehicleDialog: React.FC<AddVehicleDialogProps> = ({
           </View>
 
           <ScrollView style={styles.scrollContent}>
-            {isLoading ? (
+            {isLoading || isLoadingFipe ? (
               <ActivityIndicator size="large" color="#0066CC" />
             ) : (
               <>
-                {renderInput(
-                  "Modelo",
-                  model,
-                  setModel,
-                  "directions-car",
-                  errors.model
-                )}
-                {renderInput("Marca", brand, setBrand, "build", errors.brand)}
+                <View style={styles.pickerContainer}>
+                  <MaterialIcons
+                    name="build"
+                    size={24}
+                    color="#f5f2e5"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    selectedValue={selectedBrand}
+                    style={styles.picker}
+                    onValueChange={handleBrandSelect}
+                    dropdownIconColor="#f5f2e5"
+                  >
+                    <Picker.Item
+                      label="Selecione a marca"
+                      value=""
+                      color="#1a2b2b"
+                    />
+                    {brands.map((brand) => (
+                      <Picker.Item
+                        key={brand.codigo}
+                        label={brand.nome}
+                        value={brand.codigo}
+                        color="#1a2b2b"
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
+                <View style={styles.pickerContainer}>
+                  <MaterialIcons
+                    name="directions-car"
+                    size={24}
+                    color="#f5f2e5"
+                    style={styles.inputIcon}
+                  />
+                  <Picker
+                    selectedValue={model}
+                    style={styles.picker}
+                    onValueChange={(value) => setModel(value)}
+                    dropdownIconColor="#f5f2e5"
+                  >
+                    <Picker.Item
+                      label="Selecione o modelo"
+                      value=""
+                      color="#1a2b2b"
+                    />
+                    {models.map((model) => (
+                      <Picker.Item
+                        key={model.codigo}
+                        label={model.nome}
+                        value={model.nome}
+                        color="#1a2b2b"
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
                 {renderInput(
                   "Ano",
                   year,
-                  setYear,
+                  (text) => {
+                    setYear(text);
+                    validateYear(text);
+                  },
                   "event",
-                  errors.year,
+                  yearValidations.find((v) => !v.isValid)?.message,
                   "numeric"
                 )}
-                {renderInput("Placa", plate, setPlate, "label", errors.plate)}
+
+                {renderInput(
+                  "Placa",
+                  plate,
+                  (text) => {
+                    const maskedValue = masks.plate(text);
+                    setPlate(maskedValue);
+                    validatePlate(maskedValue);
+                  },
+                  "label",
+                  plateValidations.find((v) => !v.isValid)?.message
+                )}
               </>
             )}
           </ScrollView>
@@ -229,6 +341,34 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  pickerContainer: {
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#243636",
+    borderRadius: 10,
+    backgroundColor: "#243636",
+    position: "relative",
+    height: 50,
+    justifyContent: "center",
+  },
+  pickerIcon: {
+    position: "absolute",
+    left: 10,
+    zIndex: 1,
+  },
+  picker: {
+    color: "#f5f2e5",
+    marginLeft: 30,
+    height: 50,
+  },
+  pickerItemStyle: {
+    backgroundColor: "#243636",
+    color: "#f5f2e5",
+    fontSize: 16,
+  },
+  pickerError: {
+    borderColor: "#dc3545",
   },
 });
 

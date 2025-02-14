@@ -6,14 +6,17 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { MediaTypeOptions } from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { handleApiError, api } from "Services/api";
+import { User, UploadResponse } from "../../Types/authTypes";
 
 interface ProfilePhotoUploadProps {
-  currentPhotoUrl?: string;
-  onPhotoUpdate?: (newPhotoUrl: string) => void;
+  currentPhotoUrl: string | null;
+  onPhotoUpdate: (newPhotoUrl: string) => void;
 }
 
 export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
@@ -39,9 +42,8 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     try {
       const hasPermission = await requestPermissions();
       if (!hasPermission) return;
-
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: MediaTypeOptions.Images, // Permite selecionar fotos e live photos
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -56,32 +58,60 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     }
   };
 
+  // In the uploadImage function of ProfilePhotoUpload.tsx
   const uploadImage = async (uri: string) => {
     setLoading(true);
     setError(false);
 
     try {
-      const formData = new FormData();
-      const filename = uri.split("/").pop() || "photo.jpg";
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : "image/jpeg";
+      // Fetch and validate the image first
+      const response = await fetch(uri);
+      const blob = await response.blob();
 
+      // Validate file size (5MB limit)
+      if (blob.size > 5 * 1024 * 1024) {
+        throw new Error("A imagem deve ter menos de 5MB");
+      }
+
+      // Validate mime type
+      const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validImageTypes.includes(blob.type)) {
+        throw new Error(
+          "Tipo de arquivo não suportado. Use apenas JPG ou PNG."
+        );
+      }
+
+      // Create unique filename
+      const timestamp = new Date().getTime();
+      const fileName = `profile-photo-${timestamp}.${blob.type.split("/")[1]}`;
+
+      // Create FormData
+      const formData = new FormData();
       formData.append("file", {
-        uri,
-        name: filename,
-        type,
+        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
+        type: blob.type,
+        name: fileName,
       } as any);
 
-      const response = await api.uploadProfilePicture(formData);
+      // Add detailed logging
 
-      if (response.data.user.profilePicture) {
-        onPhotoUpdate?.(response.data.user.profilePicture);
-        Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
+      const { data } = await api.uploadProfilePicture(formData);
+
+      if (data?.user?.profilePicture) {
+        onPhotoUpdate(data.user.profilePicture);
+      } else {
+        throw new Error("Resposta inválida do servidor");
       }
-    } catch (error) {
-      console.error("Upload error:", error);
+    } catch (error: any) {
+      console.error("Erro detalhado:", error.response?.data || error);
       setError(true);
-      Alert.alert("Erro", handleApiError(error));
+
+      // More user-friendly error messages
+      const errorMessage = error.response?.data?.message
+        ? error.response.data.message
+        : error.message || "Erro ao fazer upload da imagem";
+
+      Alert.alert("Erro no Upload", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -118,11 +148,6 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     );
   };
 
-  // Use the API's getProfilePictureUrl helper
-  const imageUrl = currentPhotoUrl
-    ? api.getProfilePictureUrl(currentPhotoUrl)
-    : null;
-
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -131,27 +156,17 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         onLongPress={currentPhotoUrl ? handleDeletePhoto : undefined}
         activeOpacity={0.7}
       >
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#f5f2e5" />
-          </View>
-        ) : currentPhotoUrl ? (
+        {currentPhotoUrl ? (
           <View style={styles.imageWrapper}>
             <Image
               source={{
-                uri: imageUrl,
-                cache: "reload",
+                uri: currentPhotoUrl.startsWith("data:image")
+                  ? currentPhotoUrl
+                  : `data:image/jpeg;base64,${currentPhotoUrl}`,
               }}
               style={styles.photo}
               resizeMode="cover"
-              onError={(error) => {
-                console.error("Image load error:", error.nativeEvent);
-                setError(true);
-              }}
             />
-            <View style={styles.overlay}>
-              <Feather name="camera" size={20} color="#f5f2e5" />
-            </View>
           </View>
         ) : (
           <View style={styles.placeholder}>
@@ -159,6 +174,11 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
             <View style={styles.overlay}>
               <Feather name="camera" size={20} color="#f5f2e5" />
             </View>
+          </View>
+        )}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color="#f5f2e5" />
           </View>
         )}
       </TouchableOpacity>

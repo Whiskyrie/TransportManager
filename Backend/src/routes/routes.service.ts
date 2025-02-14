@@ -1,5 +1,5 @@
 // routes.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRouteDto } from './dto/create-route.dto';
@@ -20,6 +20,30 @@ export class RoutesService {
   ) { }
 
   async create(createRouteDto: CreateRouteDto): Promise<Route> {
+    // Verifica se já existe uma rota com o mesmo motorista em status pendente
+    const existingDriverRoute = await this.routeRepository.findOne({
+      where: {
+        driver: { id: createRouteDto.driverId },
+        status: "Pendente",
+      },
+    });
+
+    if (existingDriverRoute) {
+      throw new ConflictException('Este motorista já possui uma rota pendente');
+    }
+
+    // Verifica se o veículo já está em uso
+    const existingVehicleRoute = await this.routeRepository.findOne({
+      where: {
+        vehicle: { id: createRouteDto.vehicleId },
+        status: "Pendente",
+      },
+    });
+
+    if (existingVehicleRoute) {
+      throw new ConflictException('Este veículo já está em uso em outra rota');
+    }
+
     const { vehicleId, driverId } = createRouteDto;
 
     const vehicle = await this.vehicleRepository.findOne({ where: { id: vehicleId } });

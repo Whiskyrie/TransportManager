@@ -1,7 +1,15 @@
 import React from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { Route } from "../../Types/routeTypes";
 import { Vehicles } from "../../Types/vehicleTypes";
+import { api } from "Services/api";
 
 interface DeleteRouteDialogProps {
   visible: boolean;
@@ -23,16 +31,27 @@ const DeleteRouteDialog: React.FC<DeleteRouteDialogProps> = ({
 }) => {
   const handleConfirm = async () => {
     try {
-      // Primeiro, atualize o status do veículo para "Disponível"
+      // Atualiza o status do veículo para Disponível
       await onUpdateVehicle(route.vehicle.id, { status: "Disponível" });
 
-      // Depois, delete a rota
+      // Atualiza o status do motorista para Disponível
+      try {
+        await api.updateDriver(route.driver.id, { status: "Disponível" });
+      } catch (error) {
+        console.error("Erro ao atualizar status do motorista:", error);
+        // Você pode adicionar um Alert aqui se desejar
+      }
+
+      // Deleta a rota
       await onConfirm(route);
 
       onClose();
     } catch (error) {
-      console.error("Erro ao deletar rota e atualizar veículo:", error);
-      // Aqui você pode adicionar uma lógica para mostrar um erro ao usuário
+      console.error("Erro ao deletar rota e atualizar status:", error);
+      Alert.alert(
+        "Erro",
+        "Falha ao deletar rota ou atualizar status dos recursos"
+      );
     }
   };
 

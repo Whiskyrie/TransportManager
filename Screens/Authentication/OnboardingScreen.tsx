@@ -5,6 +5,7 @@ import {
   PanGestureHandler,
   State,
   GestureHandlerRootView,
+  ScrollView,
 } from "react-native-gesture-handler";
 import { theme, sharedStyles } from "./style";
 
@@ -98,7 +99,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
         onHandlerStateChange={onGestureEvent}
         activeOffsetX={[-20, 20]}
       >
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer} // Movido para contentContainerStyle
+        >
           <OnboardingSlide {...slides[currentSlide]} onFinish={onFinish} />
 
           <View style={styles.navigationContainer}>
@@ -141,16 +145,21 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </PanGestureHandler>
     </GestureHandlerRootView>
   );
 };
+
 const styles = StyleSheet.create({
-  content: {
+  scrollView: {
     flex: 1,
     width: "100%",
     height: "100%",
+  },
+  contentContainer: {
+    // Novo estilo para o contentContainer
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

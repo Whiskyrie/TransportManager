@@ -100,18 +100,19 @@ const RoutesListScreen: React.FC<{
     fetchRoutes();
   }, []);
 
-  const handleAddRoute = async (newRoute: Partial<Route>) => {
+  const handleAddRoute = useCallback(async (newRoute: Partial<Route>) => {
     try {
       const response = await api.createRoute(newRoute);
       const savedRoute = formatRoutes([response.data])[0];
       setRoutes((prevRoutes) => [...prevRoutes, savedRoute]);
-      console.log("New route saved:", savedRoute);
       setErrorMessage("");
     } catch (error) {
       const errorMsg = handleApiError(error);
       setErrorMessage(`Error adding route: ${errorMsg}`);
+      throw error; // Propaga o erro para ser tratado no AddRouteDialog
     }
-  };
+  }, []);
+
   const handleUpdateVehicle = async (
     vehicleId: string,
     updates: Partial<Vehicles>

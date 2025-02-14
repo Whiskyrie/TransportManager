@@ -12,6 +12,7 @@ import {
 import CustomButton from "../Common/CustomButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Drivers } from "../../Types/driverTypes";
+import { useValidation } from "../../Hooks/useValidation";
 
 interface EditDriverDialogProps {
   visible: boolean;
@@ -31,19 +32,25 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
   const [editedDriver, setEditedDriver] = useState<Partial<Drivers>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const {
+    validateName,
+    validateLicense,
+    nameValidations,
+    licenseValidations,
+    isNameValid,
+    isLicenseValid,
+  } = useValidation();
+
   useEffect(() => {
     setEditedDriver(driver);
   }, [driver]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    validateName(editedDriver.name || "");
+    validateLicense(editedDriver.licenseNumber || "");
 
-    if (!editedDriver.name) newErrors.name = "Nome é obrigatório";
-    if (!editedDriver.licenseNumber)
-      newErrors.licenseNumber = "CNH é obrigatória";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!isNameValid() || !isLicenseValid()) return false;
+    return true;
   };
 
   const handleSave = () => {
@@ -95,18 +102,23 @@ const EditDriverDialog: React.FC<EditDriverDialogProps> = ({
               <>
                 {renderInput(
                   "Nome",
-                  editedDriver.name,
-                  (text) => setEditedDriver({ ...editedDriver, name: text }),
+                  editedDriver.name || "",
+                  (text) => {
+                    setEditedDriver({ ...editedDriver, name: text });
+                    validateName(text);
+                  },
                   "person",
-                  errors.name
+                  nameValidations.find((v) => !v.isValid)?.message
                 )}
                 {renderInput(
                   "CNH",
-                  editedDriver.licenseNumber,
-                  (text) =>
-                    setEditedDriver({ ...editedDriver, licenseNumber: text }),
+                  editedDriver.licenseNumber || "",
+                  (text) => {
+                    setEditedDriver({ ...editedDriver, licenseNumber: text });
+                    validateLicense(text);
+                  },
                   "assignment",
-                  errors.licenseNumber
+                  licenseValidations.find((v) => !v.isValid)?.message
                 )}
               </>
             )}

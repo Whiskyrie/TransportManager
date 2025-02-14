@@ -19,6 +19,7 @@ import { Route, RouteStatus } from "../../Types/routeTypes";
 import { api, handleApiError } from "Services/api";
 import LocationAutocomplete from "./LocationAutoComplete";
 import calculateRouteDetailsWithRateLimit from "Services/distanceCalculatorAPI";
+import { useValidation } from "../../Hooks/useValidation";
 
 interface AddRouteDialogProps {
   visible: boolean;
@@ -41,11 +42,15 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   const [selectedDriver, setSelectedDriver] = useState<string>("");
   const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const [drivers, setDrivers] = useState<Drivers[]>([]);
   const [vehicles, setVehicles] = useState<Vehicles[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [loadingError, setLoadingError] = useState<string>("");
+
+  const { validateLocation, locationValidations, isLocationValid } =
+    useValidation();
 
   const loadDrivers = async () => {
     try {
@@ -106,6 +111,11 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   }, [startLocation, endLocation]);
 
   const validateForm = () => {
+    validateLocation(startLocation);
+    validateLocation(endLocation);
+
+    if (!isLocationValid()) return false;
+
     const newErrors: Record<string, string> = {};
 
     if (!startLocation)
@@ -133,23 +143,29 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (isSaving || !validateForm()) return;
+
+    setIsSaving(true);
 
     const selectedDriverObj = drivers.find((d) => d.id === selectedDriver);
     const selectedVehicleObj = vehicles.find((v) => v.id === selectedVehicle);
 
     if (!selectedDriverObj || !selectedVehicleObj) {
       Alert.alert("Erro", "Motorista ou veículo não encontrado");
+      setIsSaving(false);
       return;
     }
 
     try {
+      // Atualiza o status do veículo para indisponível
       const updatedVehicle: Partial<Vehicles> = {
         ...selectedVehicleObj,
         status: "Indisponível",
       };
-
       await api.updateVehicle(selectedVehicle, updatedVehicle);
+
+      // Atualiza o status do motorista para indisponível
+      await api.updateDriver(selectedDriver, { status: "Indisponível" });
 
       const newRoute: Partial<Route> = {
         startLocation,
@@ -157,19 +173,24 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
         distance: parseFloat(distance),
         estimatedDuration: parseFloat(estimatedDuration),
         status,
-        driver: selectedDriverObj,
+        driver: {
+          ...selectedDriverObj,
+          status: "Indisponível",
+        },
         vehicle: {
           ...selectedVehicleObj,
           status: "Indisponível",
         },
       };
 
-      onSave(newRoute);
+      await onSave(newRoute);
       resetForm();
       onClose();
     } catch (error) {
       const errorMessage = handleApiError(error);
       Alert.alert("Erro", "Falha ao salvar rota: " + errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -231,18 +252,24 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
                 <>
                   <LocationAutocomplete
                     value={startLocation}
-                    onLocationSelect={setStartLocation}
+                    onLocationSelect={(text) => {
+                      setStartLocation(text);
+                      validateLocation(text);
+                    }}
                     placeholder="Local de Origem"
                     icon="location-on"
-                    error={errors.startLocation}
+                    error={locationValidations.find((v) => !v.isValid)?.message}
                   />
 
                   <LocationAutocomplete
                     value={endLocation}
-                    onLocationSelect={setEndLocation}
+                    onLocationSelect={(text) => {
+                      setEndLocation(text);
+                      validateLocation(text);
+                    }}
                     placeholder="Local de Destino"
                     icon="location-off"
-                    error={errors.endLocation}
+                    error={locationValidations.find((v) => !v.isValid)?.message}
                   />
 
                   {renderReadOnlyInput(
@@ -376,7 +403,9 @@ const AddRouteDialog: React.FC<AddRouteDialogProps> = ({
               onPress={handleSave}
               type="primary"
               style={styles.button}
-              disabled={isLoading || isLoadingData || !!loadingError}
+              disabled={
+                isLoading || isLoadingData || !!loadingError || isSaving
+              }
             />
           </View>
         </View>

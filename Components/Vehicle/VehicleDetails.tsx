@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#f5f2e5",
+    borderBottomColor: "#ffffff",
     paddingBottom: 10,
   },
   detailLabel: {
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   closeButtonText: {
-    color: "#f5f2e5",
+    color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },

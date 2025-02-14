@@ -6,17 +6,40 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#182727"
     },
-    "android": {
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#182727"
       }
     },
-    "web": {
-      "favicon": "./assets/icon.png"
+    "android": {
+      "package": "com.whiskyrie.transportmanager",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#182727"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS"
+      ]
+    },
+    "owner": "whiskyrie",
+    "extra": {
+      "eas": {
+        "projectId": "a59a0c4c-884c-4955-bba8-17289fae5636"
+      }
     }
   }
 }

@@ -1,94 +1,107 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import * as sharp from 'sharp';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UploadService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
-        private configService: ConfigService,
-    ) { }
-
-    private getFileUrl(filename: string): string {
-        const baseUrl = this.configService.get<string>('APP_URL', 'http://10.51.4.169:3000');
-        return `${baseUrl}/uploads/${filename}`;
-    }
+    ) {}
 
     async saveProfilePicture(userId: string, file: Express.Multer.File) {
         if (!file) {
             throw new BadRequestException('Nenhum arquivo enviado');
         }
 
-        // Verificar tipo do arquivo
         if (!file.mimetype.includes('image')) {
             throw new BadRequestException('Apenas imagens são permitidas');
         }
 
-        const user = await this.userRepository.findOne({ where: { id: userId } });
-        if (!user) {
-            throw new BadRequestException('Usuário não encontrado');
-        }
-
-        // Criar diretório de uploads se não existir
-        const uploadDir = join(process.cwd(), 'uploads');
         try {
-            await fs.mkdir(uploadDir, { recursive: true });
-        } catch (error) {
-            console.error('Erro ao criar diretório:', error);
-        }
+            // Detailed logging for debugging
+            console.log('Processing image:', {
+                originalName: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size,
+                bufferLength: file.buffer?.length
+            });
 
-        // Gerar nome único para o arquivo
-        const fileName = `${uuid()}.jpg`;
-        const filePath = join(uploadDir, fileName);
+            // Validate buffer
+            if (!file.buffer || file.buffer.length === 0) {
+                throw new BadRequestException('Buffer da imagem inválido ou vazio');
+            }
 
-        try {
-            // Processar e salvar a imagem
-            await sharp(file.buffer)
+            // Verify image format before processing
+            await sharp(file.buffer).metadata();
+
+            // More robust image processing
+            const processedImageBuffer = await sharp(file.buffer, {
+                failOnError: false,
+                limitInputPixels: 50000000, // Increased limit for larger images
+                density: 300
+            })
+                .rotate() // Auto-rotate based on EXIF
                 .resize(300, 300, {
                     fit: 'cover',
                     position: 'center',
+                    withoutEnlargement: true,
+                    background: { r: 255, g: 255, b: 255, alpha: 1 }
                 })
-                .jpeg({ quality: 90 })
-                .toFile(filePath);
+                .jpeg({
+                    quality: 85,
+                    chromaSubsampling: '4:4:4',
+                    force: true // Always output JPEG
+                })
+                .toBuffer();
 
-            // Deletar foto antiga se existir
-            if (user.profilePicture) {
-                const oldFilePath = join(uploadDir, user.profilePicture.split('/').pop());
-                try {
-                    await fs.unlink(oldFilePath);
-                } catch (error) {
-                    console.error('Erro ao deletar arquivo antigo:', error);
-                }
+            // Validate processed buffer
+            if (!processedImageBuffer || processedImageBuffer.length === 0) {
+                throw new BadRequestException('Falha ao processar a imagem');
             }
 
-            // Salvar a URL completa no banco de dados
-            const fileUrl = this.getFileUrl(fileName);
-            user.profilePicture = fileUrl;
-            await this.userRepository.save(user);
+            const base64Image = processedImageBuffer.toString('base64');
+            
+            // Find and update user
+            const user = await this.userRepository.findOne({ where: { id: userId } });
+            if (!user) {
+                throw new BadRequestException('Usuário não encontrado');
+            }
+
+            // Save the processed image
+            user.profilePicture = base64Image;
+            const savedUser = await this.userRepository.save(user);
 
             return {
                 message: 'Foto de perfil atualizada com sucesso',
                 user: {
-                    ...user,
-                    profilePicture: fileUrl
+                    ...savedUser,
+                    profilePicture: base64Image
                 }
             };
         } catch (error) {
-            console.error('Erro ao processar imagem:', error);
-            throw new BadRequestException('Erro ao processar imagem');
+            console.error('Erro detalhado no processamento da imagem:', {
+                error: error.message,
+                stack: error.stack,
+                code: error.code
+            });
+
+            // More specific error messages
+            if (error.message.includes('Input buffer contains unsupported image format')) {
+                throw new BadRequestException('Formato de imagem não suportado. Use apenas JPG ou PNG.');
+            } else if (error.message.includes('Input buffer is empty')) {
+                throw new BadRequestException('Arquivo de imagem vazio ou corrompido.');
+            } else {
+                throw new BadRequestException(`Erro ao processar imagem: ${error.message}`);
+            }
         }
     }
 
     async deleteProfilePicture(userId: string) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
-
+        
         if (!user) {
             throw new BadRequestException('Usuário não encontrado');
         }
@@ -97,21 +110,11 @@ export class UploadService {
             throw new BadRequestException('Usuário não possui foto de perfil');
         }
 
-        // Modificar para pegar apenas o nome do arquivo
-        const fileName = user.profilePicture.split('/').pop();
-        const filePath = join(process.cwd(), 'uploads', fileName);
+        user.profilePicture = null;
+        await this.userRepository.save(user);
 
-        try {
-            await fs.unlink(filePath);
-            user.profilePicture = null;
-            await this.userRepository.save(user);
-
-            return {
-                message: 'Foto de perfil removida com sucesso'
-            };
-        } catch (error) {
-            console.error('Erro ao deletar arquivo:', error);
-            throw new BadRequestException('Erro ao remover foto de perfil');
-        }
+        return {
+            message: 'Foto de perfil removida com sucesso'
+        };
     }
 }
