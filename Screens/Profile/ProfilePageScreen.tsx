@@ -10,6 +10,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { User } from "Types/authTypes";
 import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
+import { getImageUrl } from "Services/api";
 
 interface ProfilePageScreenProps {
   onNavigate: (screen: string) => void;
@@ -88,7 +89,9 @@ const ProfilePageScreen: React.FC<ProfilePageScreenProps> = ({
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.photoSection}>
           <ProfilePhotoUpload
-            currentPhotoUrl={user.profilePicture}
+            currentPhotoUrl={
+              user.profilePicture ? getImageUrl(user.profilePicture) : null
+            }
             onPhotoUpdate={handlePhotoUpdate}
           />
           <Text style={styles.userName}>{user.name}</Text>

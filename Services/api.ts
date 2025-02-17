@@ -49,7 +49,7 @@ const axiosInstance = createAxiosInstance();
 export const getImageUrl = (imageData: string | null): string => {
     if (!imageData) return '';
     
-    // Se já for uma string base64, retorne como está
+    // Se já for uma string base64 completa, retorne como está
     if (imageData.startsWith('data:image')) {
         return imageData;
     }
@@ -59,7 +59,12 @@ export const getImageUrl = (imageData: string | null): string => {
         return imageData;
     }
     
-    return `data:image/jpeg;base64,${imageData}`;
+    // Se for apenas o base64 sem o prefixo, adicione o prefixo
+    if (imageData.length > 0) {
+        return `data:image/jpeg;base64,${imageData}`;
+    }
+    
+    return '';
 };
 
 export const api = {
@@ -110,22 +115,18 @@ export const api = {
         }
     },
     
-    uploadProfilePicture: (formData: FormData) =>
-        axiosInstance.post<UploadResponse>('upload/profile-picture', formData, {
+    uploadProfilePicture: async (formData: FormData): Promise<UploadResponse> => {
+        const response = await axiosInstance.post('/upload/profile-picture', formData, {
             headers: {
-                'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data',
             },
-            transformRequest: [(data) => {
-                // Não transformar o FormData
-                return data;
-            }],
-            // Aumentar o timeout para arquivos grandes
-            timeout: 30000,
-        }),
+        });
+        return response.data;
+    },
 
-    deleteProfilePicture: () =>
-        axiosInstance.delete('upload/profile-picture'),
+    deleteProfilePicture: async () => {
+        return await axiosInstance.delete('/upload/profile-picture');
+    },
 
     // Routes endpoints
     getAllRoutes: () =>

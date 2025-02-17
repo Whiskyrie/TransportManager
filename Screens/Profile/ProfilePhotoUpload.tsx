@@ -11,7 +11,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { MediaTypeOptions } from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
-import { handleApiError, api } from "Services/api";
+import { handleApiError, api, getImageUrl } from "Services/api";
 import { User, UploadResponse } from "../../Types/authTypes";
 
 interface ProfilePhotoUploadProps {
@@ -58,60 +58,33 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     }
   };
 
-  // In the uploadImage function of ProfilePhotoUpload.tsx
   const uploadImage = async (uri: string) => {
     setLoading(true);
     setError(false);
 
     try {
-      // Fetch and validate the image first
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      // Validate file size (5MB limit)
-      if (blob.size > 5 * 1024 * 1024) {
-        throw new Error("A imagem deve ter menos de 5MB");
-      }
-
-      // Validate mime type
-      const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
-      if (!validImageTypes.includes(blob.type)) {
-        throw new Error(
-          "Tipo de arquivo não suportado. Use apenas JPG ou PNG."
-        );
-      }
-
-      // Create unique filename
-      const timestamp = new Date().getTime();
-      const fileName = `profile-photo-${timestamp}.${blob.type.split("/")[1]}`;
-
-      // Create FormData
       const formData = new FormData();
+
+      // Adicionar extensão correta baseada no tipo do arquivo
+      const fileName = `profile-${Date.now()}.jpg`;
+
       formData.append("file", {
         uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
-        type: blob.type,
+        type: "image/jpeg",
         name: fileName,
       } as any);
 
-      // Add detailed logging
+      const response = await api.uploadProfilePicture(formData);
 
-      const { data } = await api.uploadProfilePicture(formData);
-
-      if (data?.user?.profilePicture) {
-        onPhotoUpdate(data.user.profilePicture);
+      if (response?.user?.profilePicture) {
+        onPhotoUpdate(response.user.profilePicture);
       } else {
         throw new Error("Resposta inválida do servidor");
       }
-    } catch (error: any) {
-      console.error("Erro detalhado:", error.response?.data || error);
+    } catch (error) {
+      console.error("Erro no upload:", error);
       setError(true);
-
-      // More user-friendly error messages
-      const errorMessage = error.response?.data?.message
-        ? error.response.data.message
-        : error.message || "Erro ao fazer upload da imagem";
-
-      Alert.alert("Erro no Upload", errorMessage);
+      Alert.alert("Erro", handleApiError(error));
     } finally {
       setLoading(false);
     }
@@ -159,13 +132,10 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         {currentPhotoUrl ? (
           <View style={styles.imageWrapper}>
             <Image
-              source={{
-                uri: currentPhotoUrl.startsWith("data:image")
-                  ? currentPhotoUrl
-                  : `data:image/jpeg;base64,${currentPhotoUrl}`,
-              }}
+              source={{ uri: getImageUrl(currentPhotoUrl) }}
               style={styles.photo}
               resizeMode="cover"
+              onError={() => setError(true)}
             />
           </View>
         ) : (

@@ -12,7 +12,7 @@ import {
 import { styles } from "./HomeScreenStyle";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Route, RouteLocation } from "Types/routeTypes";
-import { api, handleApiError } from "Services/api";
+import { api, handleApiError, getImageUrl } from "Services/api";
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void;
@@ -108,8 +108,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       >
         {user.profilePicture ? (
           <Image
-            source={{ uri: user.profilePicture }}
+            source={{ uri: getImageUrl(user.profilePicture) }}
             style={styles.profilePhoto}
+            resizeMode="cover"
           />
         ) : (
           <View style={styles.profilePhotoPlaceholder}>
