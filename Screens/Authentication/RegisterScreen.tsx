@@ -11,6 +11,7 @@ import {
   View,
   BackHandler,
   StyleSheet,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
@@ -146,6 +147,29 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     return () => backHandler.remove();
   }, [onNavigateToLogin]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setPhoneNumber("");
+      setError("");
+      setTouchedFields({
+        name: false,
+        email: false,
+        phone: false,
+        password: false,
+        confirmPassword: false,
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <SafeAreaView style={sharedStyles.container}>
       <KeyboardAvoidingView
@@ -160,6 +184,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
           ]}
           showsVerticalScrollIndicator={false}
           bounces={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#a51912"]}
+              tintColor="#a51912"
+            />
+          }
         >
           <View style={sharedStyles.contentContainer}>
             <Image

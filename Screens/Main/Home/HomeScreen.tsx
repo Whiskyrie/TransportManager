@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import { styles } from "./HomeScreenStyle";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -76,6 +77,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false); // Controle do Modal
   const [recentRoutes, setRecentRoutes] = useState<Route[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [refreshing, setRefreshing] = useState(false); // Adicione esta linha
 
   useEffect(() => {
     if (!user) {
@@ -99,6 +101,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       setRecentRoutes([]);
     }
   };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchRecentRoutes();
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const ProfilePhoto = () => {
     return (
@@ -243,7 +256,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
           </View>
 
-          <ScrollView style={styles.scrollView}>
+          <ScrollView
+            style={styles.scrollView}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#a51912"]} // cor do spinner de refresh
+                tintColor="#a51912" // para iOS
+              />
+            }
+          >
             <View style={styles.menuGrid}>
               <MenuItem
                 icon="directions"

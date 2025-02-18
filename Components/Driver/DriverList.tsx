@@ -117,7 +117,9 @@ const DriverList: React.FC<DriverListProps> = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#a51912"]}
+          colors={["#f5f2e5"]}
+          tintColor="#f5f2e5"
+          progressBackgroundColor="#182727"
         />
       }
       ListHeaderComponent={ListHeaderComponent}

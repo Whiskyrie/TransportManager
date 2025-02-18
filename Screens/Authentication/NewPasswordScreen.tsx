@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   Image,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import { sharedStyles } from "./style";
 
@@ -25,6 +26,7 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleSetNewPassword = async () => {
     // Validações de entrada
@@ -63,6 +65,17 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
     }
   };
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setNewPassword("");
+      setConfirmPassword("");
+      setError("");
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -71,6 +84,14 @@ const NewPasswordScreen: React.FC<NewPasswordScreenProps> = ({
       <ScrollView
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#a51912"]}
+            tintColor="#a51912"
+          />
+        }
       >
         <Image
           source={require("../../assets/icon.png")}

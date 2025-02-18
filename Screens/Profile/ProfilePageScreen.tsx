@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { User } from "Types/authTypes";
@@ -23,6 +24,20 @@ const ProfilePageScreen: React.FC<ProfilePageScreenProps> = ({
   user,
   onUpdateUser,
 }) => {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Aqui você pode adicionar a lógica para recarregar os dados do usuário
+      // Por exemplo:
+      // const updatedUser = await api.getUserProfile();
+      // onUpdateUser(updatedUser);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   const handlePhotoUpdate = (newPhotoUrl: string) => {
     onUpdateUser({ ...user, profilePicture: newPhotoUrl });
   };
@@ -86,7 +101,18 @@ const ProfilePageScreen: React.FC<ProfilePageScreenProps> = ({
           <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#f5f2e5"]}
+            tintColor="#f5f2e5"
+            progressBackgroundColor="#182727"
+          />
+        }
+      >
         <View style={styles.photoSection}>
           <ProfilePhotoUpload
             currentPhotoUrl={

@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
@@ -24,6 +25,7 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -45,6 +47,17 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
     }
   };
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setEmail("");
+      setError("");
+      setSuccessMessage("");
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -53,6 +66,14 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
       <ScrollView
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#a51912"]}
+            tintColor="#a51912"
+          />
+        }
       >
         <Image
           source={require("../../assets/icon.png")}

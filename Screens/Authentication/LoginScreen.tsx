@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
@@ -14,6 +15,7 @@ import { theme, sharedStyles } from "./style";
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
+  onNavigate: () => void;
   onNavigateToRegister: () => void;
   onNavigateToResetPassword: () => void;
 }
@@ -35,6 +37,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     email: false,
     password: false,
   });
+  const [refreshing, setRefreshing] = useState(false);
 
   // Hooks
   const {
@@ -97,6 +100,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
       setError(`Credenciais inválidas. Tentativa ${attemptCount + 1} de 3.`);
     }
   };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setFormData({ email: "", password: "" });
+      setError("");
+      setAttemptCount(0);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   // Componentes de renderização
   const renderHeader = () => (
@@ -181,7 +195,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
     >
-      <ScrollView contentContainerStyle={sharedStyles.content}>
+      <ScrollView
+        contentContainerStyle={sharedStyles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#a51912"]}
+            tintColor="#a51912"
+          />
+        }
+      >
         {renderHeader()}
         {renderInputs()}
         {renderButtons()}

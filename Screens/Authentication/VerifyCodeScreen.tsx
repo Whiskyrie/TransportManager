@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Animated,
+  RefreshControl, // Adicione esta linha
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme, sharedStyles } from "./style"; // Ajuste para combinar com a aparência compartilhada
@@ -35,6 +35,7 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       .map(() => new Animated.Value(1))
   );
   const [shakeAnimation] = useState(new Animated.Value(0));
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     // Recupera o código armazenado do AsyncStorage quando a tela é carregada
@@ -132,6 +133,22 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
     }
   };
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setInputCode(new Array(6).fill(""));
+      setError("");
+      setFocusedIndex(-1);
+      // Opcional: Re-buscar o código de verificação
+      const storedCode = await AsyncStorage.getItem("resetCode");
+      if (storedCode) {
+        setResetCode(storedCode);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -140,6 +157,14 @@ const VerifyCodeScreen: React.FC<VerifyCodeScreenProps> = ({
       <ScrollView
         contentContainerStyle={[sharedStyles.content, { paddingVertical: 40 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#a51912"]}
+            tintColor="#a51912"
+          />
+        }
       >
         <Text style={sharedStyles.title}>Verificar Código</Text>
         <Text style={sharedStyles.subtitle}>
