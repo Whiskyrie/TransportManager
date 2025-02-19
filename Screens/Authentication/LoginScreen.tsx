@@ -7,15 +7,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  RefreshControl, // Adicione esta linha
+  ActivityIndicator, // Importação do loader
 } from "react-native";
 import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
 
 interface LoginScreenProps {
-  onLogin: (email: string, password: string) => void;
-  onNavigate: () => void;
+  onLogin: (email: string, password: string) => Promise<void>; // Alterado para Promise<void>
   onNavigateToRegister: () => void;
   onNavigateToResetPassword: () => void;
 }
@@ -25,7 +24,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
   onNavigateToRegister,
   onNavigateToResetPassword,
 }) => {
-  // Estados
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,9 +35,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     email: false,
     password: false,
   });
-  const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Estado para o loader
 
-  // Hooks
   const {
     emailValidations,
     passwordValidations,
@@ -49,7 +46,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     isPasswordValid,
   } = useValidation();
 
-  // Effects
   useEffect(() => {
     validateEmail(formData.email);
   }, [formData.email]);
@@ -58,7 +54,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     validatePassword(formData.password);
   }, [formData.password]);
 
-  // Handlers
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -80,9 +75,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
 
   const handleLogin = async () => {
     setError("");
+    setIsLoading(true); // Inicia o loader
 
     if (!isEmailValid() || !isPasswordValid()) {
       setError("Por favor, corrija os erros de validação");
+      setIsLoading(false); // Desativa o loader
       return;
     }
 
@@ -94,25 +91,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
 
       if (attemptCount >= 2) {
         setError("Muitas tentativas incorretas. Tente redefinir sua senha.");
-        return;
+      } else {
+        setError(`Credenciais inválidas. Tentativa ${attemptCount + 1} de 3.`);
       }
-
-      setError(`Credenciais inválidas. Tentativa ${attemptCount + 1} de 3.`);
+    } finally {
+      setIsLoading(false); // Desativa o loader
     }
   };
 
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    try {
-      setFormData({ email: "", password: "" });
-      setError("");
-      setAttemptCount(0);
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
-
-  // Componentes de renderização
   const renderHeader = () => (
     <>
       <Image
@@ -170,8 +156,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
       <TouchableOpacity
         style={sharedStyles.primaryButton}
         onPress={handleLogin}
+        disabled={isLoading} // Desativa o botão enquanto carrega
       >
-        <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
+        {isLoading ? (
+          <ActivityIndicator color={theme.colors.text} size="small" />
+        ) : (
+          <Text style={sharedStyles.primaryButtonText}>Entrar</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onNavigateToResetPassword}>
@@ -195,17 +186,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={sharedStyles.container}
     >
-      <ScrollView
-        contentContainerStyle={sharedStyles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#a51912"]}
-            tintColor="#a51912"
-          />
-        }
-      >
+      <ScrollView contentContainerStyle={sharedStyles.content}>
         {renderHeader()}
         {renderInputs()}
         {renderButtons()}
