@@ -8,7 +8,6 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { ValidationList } from "Components/ValidationList/ValidationList";
 import { useValidation } from "../../Hooks/useValidation";
 import { theme, sharedStyles } from "./style";
 
@@ -23,7 +22,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
   onNavigateToRegister,
   onNavigateToResetPassword,
 }) => {
-  // Estados
+  // States
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -98,9 +97,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  // Componentes de renderização
+  // Rendering functions
   const renderHeader = () => (
-    <>
+    <React.Fragment>
       <Image
         source={require("../../assets/icon.png")}
         style={sharedStyles.logo}
@@ -111,11 +110,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         Entre com suas credenciais para continuar
       </Text>
       {error ? <Text style={sharedStyles.error}>{error}</Text> : null}
-    </>
+    </React.Fragment>
   );
 
   const renderInputs = () => (
-    <>
+    <React.Fragment>
       <TextInput
         style={sharedStyles.input}
         placeholder="Email"
@@ -126,11 +125,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         autoCapitalize="none"
         onFocus={() => handleFieldFocus("email")}
         onBlur={() => handleFieldBlur("email")}
-      />
-      <ValidationList
-        items={emailValidations}
-        isFieldFocused={focusedField === "email"}
-        fieldTouched={touchedFields.email}
       />
 
       <TextInput
@@ -143,16 +137,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
         onFocus={() => handleFieldFocus("password")}
         onBlur={() => handleFieldBlur("password")}
       />
-      <ValidationList
-        items={passwordValidations}
-        isFieldFocused={focusedField === "password"}
-        fieldTouched={touchedFields.password}
-      />
-    </>
+    </React.Fragment>
   );
 
   const renderButtons = () => (
-    <>
+    <React.Fragment>
       <TouchableOpacity
         style={sharedStyles.primaryButton}
         onPress={handleLogin}
@@ -173,7 +162,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
           <Text style={sharedStyles.linkTextHighlight}>Registre-se</Text>
         </Text>
       </TouchableOpacity>
-    </>
+    </React.Fragment>
   );
 
   return (
